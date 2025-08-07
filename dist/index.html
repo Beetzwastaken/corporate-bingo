@@ -5,135 +5,366 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EngineerMemes.AI - Professional Engineering Humor</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            900: '#0c4a6e'
+                        },
+                        accent: {
+                            500: '#f97316',
+                            600: '#ea580c',
+                        },
+                        pain: {
+                            low: '#10b981',
+                            med: '#f59e0b', 
+                            high: '#ef4444'
+                        }
+                    },
+                    fontFamily: {
+                        'display': ['Space Grotesk', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .pain-meter { background: linear-gradient(to right, #10b981 0%, #f59e0b 50%, #ef4444 100%); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+        
+        .pain-meter { 
+            background: linear-gradient(to right, #10b981 0%, #f59e0b 50%, #ef4444 100%); 
+        }
+        
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .template-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .template-card:hover {
+            border-color: #0ea5e9;
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.15);
+        }
+        
+        .template-card.selected {
+            border-color: #0ea5e9;
+            background: linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
+        .pain-input {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .pain-input:focus {
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+        }
     </style>
 </head>
-<body class="bg-gray-100">
-    <!-- Header -->
-    <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
-        <div class="container mx-auto px-4 py-6">
-            <div class="text-center">
-                <h1 class="text-4xl font-bold mb-2">🤖 EngineerMemes.AI</h1>
-                <p class="text-blue-100">Because crying is unprofessional — Professional Engineering Humor Generator</p>
-                <p class="text-sm text-blue-200 mt-1">Powered by MCP Servers & Autonomous AI Agents</p>
+    <!-- Modern Header with Hero Section -->
+    <header class="relative overflow-hidden bg-gradient-to-br from-primary-900 via-primary-700 to-accent-600 text-white">
+        <div class="absolute inset-0 bg-black/20"></div>
+        <div class="relative container mx-auto px-4 py-16">
+            <div class="text-center max-w-4xl mx-auto">
+                <div class="mb-6">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-white/10 backdrop-blur-sm rounded-full mb-4 border border-white/20">
+                        <span class="text-4xl">🤖</span>
+                    </div>
+                </div>
+                <h1 class="font-display text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                    EngineerMemes.AI
+                </h1>
+                <p class="text-xl md:text-2xl text-blue-100 mb-4 font-medium">
+                    Because crying is unprofessional
+                </p>
+                <p class="text-lg text-blue-200 mb-8">
+                    Professional Engineering Humor Generator powered by AI
+                </p>
+                <div class="flex flex-wrap justify-center gap-2 text-sm">
+                    <span class="glassmorphism px-4 py-2 rounded-full">🎯 Pain Analysis</span>
+                    <span class="glassmorphism px-4 py-2 rounded-full">🎨 Smart Templates</span>
+                    <span class="glassmorphism px-4 py-2 rounded-full">⚡ MCP Powered</span>
+                </div>
             </div>
         </div>
+        <!-- Decorative gradient -->
+        <div class="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-accent-500 via-primary-500 to-accent-500"></div>
     </header>
 
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <!-- Pain Input Section -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <span class="mr-2">😤</span>
-                What's Your Engineering Pain?
-            </h2>
-            <textarea 
-                id="painInput" 
-                class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                rows="3" 
-                placeholder="e.g., 'Client wants to change the spec after we finished fabrication and testing...'"
-                oninput="analyzePain(this.value)"
-            ></textarea>
+    <div class="container mx-auto px-4 py-12 max-w-7xl">
+        <!-- Pain Input Section - Redesigned -->
+        <div class="card-hover bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-8 border border-white/50">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full mb-4 shadow-lg">
+                    <span class="text-2xl">😤</span>
+                </div>
+                <h2 class="font-display text-3xl font-bold text-gray-800 mb-2">
+                    What's Your Engineering Pain?
+                </h2>
+                <p class="text-gray-600">Our AI will analyze your suffering and suggest the perfect meme template</p>
+            </div>
             
-            <!-- Pain Meter -->
-            <div class="mt-4">
-                <div class="flex justify-between text-sm mb-2">
-                    <span class="font-medium text-gray-700">Engineering Pain Level</span>
-                    <span class="font-bold text-gray-800" id="painScore">5/10</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div id="painBar" class="h-3 rounded-full pain-meter transition-all duration-500" style="width: 50%"></div>
-                </div>
-                <div class="mt-2 text-sm text-gray-600" id="painMessage">Standard engineering suffering</div>
-                <div class="flex justify-between text-xs text-gray-500 mt-2">
-                    <span>😊 Zen</span>
-                    <span>😐 Normal</span>
-                    <span>😤 Stressed</span>
-                    <span>😫 Crisis</span>
-                    <span>🤯 Meltdown</span>
+            <div class="max-w-2xl mx-auto">
+                <textarea 
+                    id="painInput" 
+                    class="pain-input w-full p-6 rounded-xl focus:outline-none font-medium text-lg resize-none" 
+                    rows="4" 
+                    placeholder="e.g., 'Client wants to change the spec after we finished fabrication and testing...'"
+                    oninput="analyzePain(this.value)"
+                ></textarea>
+            
+                <!-- Enhanced Pain Meter -->
+                <div class="mt-8 p-6 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-display text-xl font-semibold text-gray-800">Engineering Pain Level</h3>
+                        <div class="text-right">
+                            <div class="text-3xl font-bold text-primary-600" id="painScore">5/10</div>
+                            <div class="text-sm text-gray-500">AI Analysis</div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative mb-4">
+                        <div class="w-full bg-gray-300 rounded-full h-6 shadow-inner">
+                            <div id="painBar" class="h-6 rounded-full pain-meter transition-all duration-700 shadow-sm" style="width: 50%"></div>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-xs font-semibold text-white drop-shadow-sm" id="painMessage">Standard engineering suffering</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-5 gap-2 text-xs text-center">
+                        <div class="flex flex-col items-center">
+                            <span class="text-lg mb-1">😊</span>
+                            <span class="text-pain-low font-medium">Zen</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-lg mb-1">😐</span>
+                            <span class="text-gray-600 font-medium">Normal</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-lg mb-1">😤</span>
+                            <span class="text-pain-med font-medium">Stressed</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-lg mb-1">😫</span>
+                            <span class="text-orange-600 font-medium">Crisis</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-lg mb-1">🤯</span>
+                            <span class="text-pain-high font-medium">Meltdown</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Meme Templates -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <span class="mr-2">🎭</span>
-                Choose Your Weapon
-            </h2>
+        <!-- Meme Templates Section - Redesigned -->
+        <div class="card-hover bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-8 border border-white/50">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full mb-4 shadow-lg">
+                    <span class="text-2xl">🎭</span>
+                </div>
+                <h2 class="font-display text-3xl font-bold text-gray-800 mb-2">
+                    Choose Your Weapon
+                </h2>
+                <p class="text-gray-600">Select the perfect template to express your engineering suffering</p>
+            </div>
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="templates">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6" id="templates">
                 <!-- Templates will be populated by JavaScript -->
             </div>
         </div>
 
-        <!-- Meme Generator -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Meme Generator - Redesigned -->
+        <div class="grid grid-cols-1 xl:grid-cols-5 gap-8">
             <!-- Text Input -->
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                    <span class="mr-2">✏️</span>
-                    Meme Text Editor
-                </h2>
-                
-                <div id="textInputs">
-                    <!-- Text inputs will be populated by JavaScript -->
+            <div class="xl:col-span-2">
+                <div class="card-hover bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/50 h-full">
+                    <div class="text-center mb-6">
+                        <div class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full mb-4 shadow-lg">
+                            <span class="text-xl">✏️</span>
+                        </div>
+                        <h3 class="font-display text-2xl font-bold text-gray-800 mb-2">
+                            Meme Text Editor
+                        </h3>
+                        <p class="text-gray-600 text-sm">Customize your meme with the perfect engineering pain</p>
+                    </div>
+                    
+                    <div id="textInputs">
+                        <!-- Text inputs will be populated by JavaScript -->
+                    </div>
                 </div>
             </div>
 
             <!-- Meme Canvas -->
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                    <span class="mr-2">🎨</span>
-                    Your Suffering, Visualized
-                </h2>
-                
-                <canvas id="memeCanvas" width="400" height="400" class="w-full border-2 border-gray-300 rounded-lg shadow-md mb-4"></canvas>
-                
-                <div class="flex space-x-2">
-                    <button onclick="generateMeme()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                        Generate Meme
-                    </button>
-                    <button onclick="downloadMeme()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium">
-                        💾 Download
-                    </button>
+            <div class="xl:col-span-3">
+                <div class="card-hover bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/50 h-full">
+                    <div class="text-center mb-6">
+                        <div class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full mb-4 shadow-lg">
+                            <span class="text-xl">🎨</span>
+                        </div>
+                        <h3 class="font-display text-2xl font-bold text-gray-800 mb-2">
+                            Your Suffering, Visualized
+                        </h3>
+                        <p class="text-gray-600 text-sm mb-6">AI-powered meme generation with professional quality</p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-6 mb-6">
+                        <canvas id="memeCanvas" width="400" height="400" class="w-full border-2 border-gray-200 rounded-xl shadow-lg bg-white"></canvas>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <button onclick="generateMeme()" class="btn-primary flex-1 text-white px-6 py-4 rounded-xl font-semibold text-lg shadow-lg">
+                            🚀 Generate Meme
+                        </button>
+                        <button onclick="downloadMeme()" class="btn-secondary text-white px-6 py-4 rounded-xl font-semibold shadow-lg">
+                            💾 Download
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Features -->
-        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
-                <div class="text-4xl mb-3">🤖</div>
-                <h3 class="text-lg font-bold text-gray-800 mb-2">AI-Powered</h3>
-                <p class="text-gray-600 text-sm">Advanced pain analysis with engineering-specific keyword detection</p>
+        <!-- Features Section - Redesigned -->
+        <div class="mt-16 mb-12">
+            <div class="text-center mb-12">
+                <h2 class="font-display text-4xl font-bold text-gray-800 mb-4">
+                    Why Engineers Choose Us
+                </h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Professional-grade humor generation built specifically for engineering professionals
+                </p>
             </div>
-            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
-                <div class="text-4xl mb-3">⚙️</div>
-                <h3 class="text-lg font-bold text-gray-800 mb-2">Engineering Focused</h3>
-                <p class="text-gray-600 text-sm">Templates and humor tailored for engineering professionals</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
-                <div class="text-4xl mb-3">🚀</div>
-                <h3 class="text-lg font-bold text-gray-800 mb-2">MCP Enhanced</h3>
-                <p class="text-gray-600 text-sm">Powered by Model Context Protocol servers and autonomous agents</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="card-hover bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/50 text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full mb-6 shadow-lg">
+                        <span class="text-3xl">🤖</span>
+                    </div>
+                    <h3 class="font-display text-xl font-bold text-gray-800 mb-3">AI-Powered Analysis</h3>
+                    <p class="text-gray-600">Advanced natural language processing analyzes your engineering pain with 200+ industry-specific keywords</p>
+                </div>
+                
+                <div class="card-hover bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/50 text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full mb-6 shadow-lg">
+                        <span class="text-3xl">⚙️</span>
+                    </div>
+                    <h3 class="font-display text-xl font-bold text-gray-800 mb-3">Engineering Focused</h3>
+                    <p class="text-gray-600">Templates and humor specifically designed for mechanical, software, electrical, and civil engineering professionals</p>
+                </div>
+                
+                <div class="card-hover bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/50 text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full mb-6 shadow-lg">
+                        <span class="text-3xl">🚀</span>
+                    </div>
+                    <h3 class="font-display text-xl font-bold text-gray-800 mb-3">MCP Enhanced</h3>
+                    <p class="text-gray-600">Powered by Model Context Protocol servers and autonomous AI agents for professional-grade results</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-8 mt-12">
-        <div class="container mx-auto px-4 text-center">
-            <p class="text-lg mb-2">Made with 😅 by engineers, for engineers</p>
-            <p class="text-gray-400 text-sm">
-                Autonomous Agents: Template Generator • Pain Analyzer • Quality Controller • Analytics • Deployment
-            </p>
-            <p class="text-gray-400 text-xs mt-2">
-                Professional Suffering Solutions Since 2025 • MCP-Powered • Claude Code Optimized
-            </p>
+    <!-- Modern Footer -->
+    <footer class="relative bg-gradient-to-br from-gray-900 via-gray-800 to-primary-900 text-white overflow-hidden">
+        <div class="absolute inset-0 bg-black/20"></div>
+        <div class="relative container mx-auto px-4 py-12">
+            <div class="text-center max-w-3xl mx-auto">
+                <div class="mb-8">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full mb-4 border border-white/20">
+                        <span class="text-2xl">🤖</span>
+                    </div>
+                    <h3 class="font-display text-2xl font-bold mb-2">EngineerMemes.AI</h3>
+                    <p class="text-gray-300 text-lg mb-6">Made with 😅 by engineers, for engineers</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-sm">
+                    <div>
+                        <h4 class="font-semibold text-white mb-3">Autonomous Agents</h4>
+                        <ul class="space-y-1 text-gray-300">
+                            <li>• Template Generator</li>
+                            <li>• Pain Analyzer</li>
+                            <li>• Quality Controller</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-white mb-3">MCP Servers</h4>
+                        <ul class="space-y-1 text-gray-300">
+                            <li>• SVGMaker Integration</li>
+                            <li>• OpenCV Processing</li>
+                            <li>• Analytics Engine</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-white mb-3">Engineering Disciplines</h4>
+                        <ul class="space-y-1 text-gray-300">
+                            <li>• Software Engineering</li>
+                            <li>• Mechanical Engineering</li>
+                            <li>• Electrical & Civil</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-t border-white/10 pt-6">
+                    <p class="text-gray-400 text-sm">
+                        Professional Suffering Solutions Since 2025 • MCP-Powered • Claude Code Optimized
+                    </p>
+                    <p class="text-gray-500 text-xs mt-2">
+                        Helping engineers cope with their daily technical suffering through the power of AI-generated humor
+                    </p>
+                </div>
+            </div>
         </div>
     </footer>
 
@@ -254,14 +485,19 @@
         // Render meme templates
         function renderTemplates() {
             const container = document.getElementById('templates');
-            container.innerHTML = memeTemplates.map(template => 
+            container.innerHTML = memeTemplates.map((template, index) => 
                 `<div onclick="selectTemplate(${JSON.stringify(template).replace(/"/g, '&quot;')})" 
-                      class="border-2 border-gray-300 rounded-lg p-3 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all template-card">
-                    <div class="w-full h-20 bg-gray-100 rounded-md mb-2 flex items-center justify-center text-2xl">
-                        ${getTemplateIcon(template.category)}
+                      class="template-card cursor-pointer p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300" id="template-${template.id}">
+                    <div class="flex flex-col items-center">
+                        <div class="w-20 h-20 bg-gradient-to-br from-gray-100 to-blue-100 rounded-xl mb-4 flex items-center justify-center text-3xl shadow-inner">
+                            ${getTemplateIcon(template.category)}
+                        </div>
+                        <h4 class="font-display text-lg font-semibold text-center text-gray-800 mb-2">${template.name}</h4>
+                        <p class="text-sm text-gray-500 text-center capitalize font-medium">${template.category}</p>
+                        <div class="mt-3 px-3 py-1 bg-gray-100 rounded-full text-xs text-gray-600">
+                            ${template.textAreas.length} text ${template.textAreas.length === 1 ? 'area' : 'areas'}
+                        </div>
                     </div>
-                    <h4 class="text-sm font-medium text-center">${template.name}</h4>
-                    <p class="text-xs text-gray-500 text-center capitalize">${template.category}</p>
                 </div>`
             ).join('');
         }
@@ -285,9 +521,13 @@
             
             // Update active template styling
             document.querySelectorAll('.template-card').forEach(el => {
-                el.classList.remove('border-blue-500', 'shadow-md');
-                el.classList.add('border-gray-300');
+                el.classList.remove('selected', 'ring-2', 'ring-primary-500');
             });
+            
+            const selectedCard = document.getElementById(`template-${template.id}`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected', 'ring-2', 'ring-primary-500');
+            }
             
             // Render text inputs
             renderTextInputs();
@@ -297,23 +537,54 @@
         // Render text input fields
         function renderTextInputs() {
             const container = document.getElementById('textInputs');
-            if (!currentTemplate) return;
+            if (!currentTemplate) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-4xl mb-4">🎯</div>
+                        <h4 class="font-display text-lg font-semibold text-gray-600 mb-2">Select a Template</h4>
+                        <p class="text-gray-500 text-sm">Choose a meme template above to start customizing your engineering humor</p>
+                    </div>
+                `;
+                return;
+            }
 
-            container.innerHTML = currentTemplate.textAreas.map(area => 
-                `<div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
+            container.innerHTML = currentTemplate.textAreas.map((area, index) => 
+                `<div class="mb-6">
+                    <label class="block font-display text-base font-semibold text-gray-800 mb-3 flex items-center">
+                        <span class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-primary-500 to-primary-600 text-white text-xs rounded-full mr-2">${index + 1}</span>
                         ${getAreaLabel(area.id)}
                     </label>
-                    <input 
-                        type="text" 
-                        id="text_${area.id}"
-                        placeholder="${area.placeholder}"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        oninput="updateCanvas()"
-                        maxlength="100"
-                    />
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="text_${area.id}"
+                            placeholder="${area.placeholder}"
+                            class="pain-input w-full p-4 rounded-xl focus:outline-none font-medium border-0 text-base"
+                            oninput="updateCanvas()"
+                            maxlength="100"
+                        />
+                        <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-400">
+                            <span id="char-count-${area.id}">0</span>/100
+                        </div>
+                    </div>
                 </div>`
             ).join('');
+            
+            // Add character count listeners
+            currentTemplate.textAreas.forEach(area => {
+                const input = document.getElementById(`text_${area.id}`);
+                const counter = document.getElementById(`char-count-${area.id}`);
+                if (input && counter) {
+                    input.addEventListener('input', () => {
+                        counter.textContent = input.value.length;
+                        if (input.value.length > 80) {
+                            counter.classList.add('text-orange-500');
+                        } else {
+                            counter.classList.remove('text-orange-500');
+                        }
+                    });
+                }
+            });
         }
 
         // Get area label
