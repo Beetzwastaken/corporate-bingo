@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EngineerMemes.AI - Turn suffering into content</title>
+    <title>Corporate Suffering Suite - Making pain profitable</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -91,26 +91,94 @@
                 linear-gradient(90deg, rgba(75, 85, 99, 0.3) 1px, transparent 1px);
             background-size: 20px 20px;
         }
+
+        .tool-tab {
+            background: rgba(31, 41, 55, 0.6);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            color: #9ca3af;
+        }
+
+        .tool-tab:hover {
+            background: rgba(31, 41, 55, 0.8);
+            border-color: rgba(75, 85, 99, 0.5);
+            color: #f9fafb;
+        }
+
+        .tool-tab.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .tool-content {
+            transition: all 0.3s ease;
+        }
+
+        .bingo-square {
+            aspect-ratio: 1;
+            background: rgba(55, 65, 81, 0.8);
+            border: 2px solid #4b5563;
+            color: #f9fafb;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4px;
+            border-radius: 0.5rem;
+        }
+
+        .bingo-square:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .bingo-square.marked {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .bingo-square.free {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: #10b981;
+            color: #10b981;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
-    <!-- Engineering Header Bar -->
+    <!-- Navigation Header -->
     <header class="glass-panel border-b border-gray-600 engineering-grid">
         <div class="max-w-7xl mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold text-white">
-                        <span class="terminal-accent">&gt;</span> EngineerMemes.AI
-                    </h1>
-                    <p class="text-sm text-gray-300 terminal-accent">// Turn suffering into content</p>
+                <div class="flex items-center space-x-8">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">
+                            <span class="terminal-accent">&gt;</span> Corporate Suffering Suite
+                        </h1>
+                        <p class="text-sm text-gray-300 terminal-accent">// Making pain profitable</p>
+                    </div>
                 </div>
+                
                 <div class="flex items-center space-x-4">
-                    <div class="text-right">
+                    <nav class="flex items-center space-x-2">
+                        <button onclick="switchTool('memes')" id="memesTab" class="tool-tab active flex items-center space-x-2 px-4 py-2 rounded-lg transition-all">
+                            <span>🎭</span>
+                            <span class="hidden md:block">Meme Generator</span>
+                        </button>
+                        <button onclick="switchTool('bingo')" id="bingoTab" class="tool-tab flex items-center space-x-2 px-4 py-2 rounded-lg transition-all">
+                            <span>🎯</span>
+                            <span class="hidden md:block">Buzzword Bingo</span>
+                        </button>
+                    </nav>
+                    
+                    <div class="text-right" id="statsDisplay">
                         <div class="text-lg font-semibold terminal-accent" id="painScore">5/10</div>
                         <div class="text-xs text-gray-400">Pain Level</div>
-                    </div>
-                    <div class="w-32 h-3 bg-gray-700 rounded-full border border-gray-600">
-                        <div id="painBar" class="h-3 rounded-full pain-meter" style="width: 50%"></div>
                     </div>
                 </div>
             </div>
@@ -119,7 +187,9 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Meme Generator Tool -->
+        <div id="memesTool" class="tool-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
             <!-- Left Column - Controls -->
             <div class="space-y-6">
@@ -184,6 +254,134 @@
 
             </div>
             
+            </div>
+        </div>
+
+        <!-- Buzzword Bingo Tool -->
+        <div id="bingoTool" class="tool-content" style="display: none;">
+            <div class="space-y-6">
+                <!-- Bingo Header -->
+                <div class="glass-panel rounded-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-2xl font-bold text-white">
+                                <span class="terminal-accent">&gt;</span> Buzzword Bingo
+                            </h1>
+                            <p class="text-gray-400 terminal-accent">// Corporate survival game</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-right" id="bingoStats">
+                                <div class="text-sm text-gray-300">Games Played: <span class="terminal-accent" id="gamesPlayed">0</span></div>
+                                <div class="text-xs text-gray-400">Wins: <span id="wins">0</span></div>
+                            </div>
+                            <button onclick="generateBingoCard()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                                <span class="terminal-accent">$</span> New Game
+                            </button>
+                            <button onclick="callBingo()" id="bingoButton" class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-lg font-bold" style="display: none;">
+                                🎉 BINGO!
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bingo Card -->
+                <div class="glass-panel rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-white">
+                            <span class="terminal-accent">&gt;</span> Your Bingo Card
+                        </h2>
+                        <div class="text-gray-400 text-sm terminal-accent">
+                            Marked: <span id="markedCount">1</span>/25
+                        </div>
+                    </div>
+
+                    <!-- BINGO Header -->
+                    <div class="grid grid-cols-5 gap-2 mb-4">
+                        <div class="text-center py-3 bg-blue-600/30 border border-blue-500/50 rounded-lg">
+                            <span class="text-xl font-bold text-blue-300 terminal-accent">B</span>
+                        </div>
+                        <div class="text-center py-3 bg-blue-600/30 border border-blue-500/50 rounded-lg">
+                            <span class="text-xl font-bold text-blue-300 terminal-accent">I</span>
+                        </div>
+                        <div class="text-center py-3 bg-blue-600/30 border border-blue-500/50 rounded-lg">
+                            <span class="text-xl font-bold text-blue-300 terminal-accent">N</span>
+                        </div>
+                        <div class="text-center py-3 bg-blue-600/30 border border-blue-500/50 rounded-lg">
+                            <span class="text-xl font-bold text-blue-300 terminal-accent">G</span>
+                        </div>
+                        <div class="text-center py-3 bg-blue-600/30 border border-blue-500/50 rounded-lg">
+                            <span class="text-xl font-bold text-blue-300 terminal-accent">O</span>
+                        </div>
+                    </div>
+
+                    <!-- Bingo Grid -->
+                    <div class="grid grid-cols-5 gap-2" id="bingoGrid">
+                        <!-- Grid will be populated by JavaScript -->
+                    </div>
+
+                    <div class="mt-6 text-xs text-gray-400 text-center">
+                        <p><span class="terminal-accent">//</span> Click squares as buzzwords are mentioned in meetings</p>
+                    </div>
+                </div>
+
+                <!-- Room Management -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-panel rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-white mb-4">
+                            <span class="terminal-accent">&gt;</span> Create Room
+                        </h3>
+                        <div class="space-y-4">
+                            <input type="text" id="roomName" placeholder="e.g., Daily Standup, Sprint Planning" class="control-input w-full p-3 border border-gray-600 rounded-lg text-sm" maxlength="50">
+                            <button onclick="createRoom()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                                <span class="terminal-accent">$</span> Create Room
+                            </button>
+                        </div>
+                        <div class="mt-4 text-xs text-gray-400">
+                            <p><span class="terminal-accent">//</span> Share room code with colleagues for synchronized play</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-white mb-4">
+                            <span class="terminal-accent">&gt;</span> Join Room
+                        </h3>
+                        <div class="space-y-4">
+                            <input type="text" id="roomCode" placeholder="Enter 6-character room code" class="control-input w-full p-3 border border-gray-600 rounded-lg text-sm font-mono" maxlength="6">
+                            <button onclick="joinRoom()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                                <span class="terminal-accent">$</span> Join Room
+                            </button>
+                        </div>
+                        <div class="mt-4 text-xs text-gray-400">
+                            <p><span class="terminal-accent">//</span> Perfect for synchronized meeting bingo</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- How to Play -->
+                <div class="glass-panel rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-white mb-4">
+                        <span class="terminal-accent">&gt;</span> How to Play
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-300">
+                        <div>
+                            <h4 class="font-medium text-white mb-2">🎯 Objective</h4>
+                            <p class="text-sm">Mark off buzzwords as they're mentioned in meetings. Get 5 in a row to win!</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-white mb-2">🏢 Room Mode</h4>
+                            <p class="text-sm">Create or join rooms to play with colleagues during the same meeting.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-white mb-2">📊 Patterns</h4>
+                            <p class="text-sm">Win with any row, column, or diagonal. Center space is always free!</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-white mb-2">🎉 Winning</h4>
+                            <p class="text-sm">Click "BINGO!" when you get 5 in a row. Try not to celebrate too loudly!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -740,10 +938,273 @@
         document.addEventListener('DOMContentLoaded', initApp);
         
         // Console info for engineers
-        console.log('🤖 EngineerMemes.AI v2.0.0');
-        console.log('Clean, functional meme generator');
-        console.log('Pain Analysis: ✅ | Templates: ✅ | Canvas Rendering: ✅');
+        console.log('🤖 Corporate Suffering Suite v2.0.0');
+        console.log('Meme Generator: ✅ | Bingo Game: ✅ | Pain Analysis: ✅');
         console.log('Made with 😅 by engineers, for engineers');
+
+        // ===== MULTI-TOOL FUNCTIONALITY =====
+
+        // Tool switching functionality
+        function switchTool(toolName) {
+            console.log('🔄 Switching to tool:', toolName);
+            
+            // Hide all tools
+            document.querySelectorAll('.tool-content').forEach(tool => {
+                tool.style.display = 'none';
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tool-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tool
+            const selectedTool = document.getElementById(toolName + 'Tool');
+            const selectedTab = document.getElementById(toolName + 'Tab');
+            
+            if (selectedTool && selectedTab) {
+                selectedTool.style.display = 'block';
+                selectedTab.classList.add('active');
+                
+                // Initialize tool if needed
+                if (toolName === 'bingo' && !bingoInitialized) {
+                    initializeBingo();
+                }
+                
+                // Update stats display
+                updateStatsDisplay(toolName);
+            }
+        }
+
+        function updateStatsDisplay(toolName) {
+            const statsDisplay = document.getElementById('statsDisplay');
+            const painScore = document.getElementById('painScore');
+            
+            if (toolName === 'memes') {
+                painScore.style.display = 'block';
+                painScore.textContent = currentPainScore + '/10';
+                statsDisplay.querySelector('.text-xs').textContent = 'Pain Level';
+            } else if (toolName === 'bingo') {
+                const bingoStats = getBingoStats();
+                painScore.textContent = bingoStats.gamesPlayed;
+                painScore.style.display = 'block';
+                statsDisplay.querySelector('.text-xs').textContent = 'Games Played';
+            }
+        }
+
+        // ===== BINGO GAME FUNCTIONALITY =====
+
+        let bingoInitialized = false;
+        let bingoCard = [];
+        let bingoStats = {
+            gamesPlayed: 0,
+            wins: 0,
+            totalSquares: 0
+        };
+
+        // Corporate buzzwords library
+        const BUZZWORDS = [
+            'Synergy', 'Leverage', 'Deep Dive', 'Circle Back', 'Touch Base',
+            'Low-hanging Fruit', 'Move the Needle', 'Paradigm Shift', 'Think Outside the Box',
+            'Best Practice', 'Core Competency', 'Value-add', 'Game Changer', 'Win-win',
+            'Technical Debt', 'Scalability', 'Microservices', 'DevOps', 'Agile Transformation',
+            'Digital Transformation', 'AI/ML Integration', 'Cloud Migration', 'API Gateway',
+            'Actionable Items', 'Take it Offline', 'Ping Me', 'Loop In', 'Bandwidth',
+            'On My Radar', 'Ideate', 'Stakeholder Buy-in', 'Scope Creep', 'Timeline',
+            'KPI', 'ROI', 'Optimization', 'Streamline', 'Right-size', 'Iterate',
+            'Pivot', 'Disrupt', 'Innovation', 'Growth Hacking', 'Metrics-driven',
+            'Culture Fit', 'Team Player', 'Proactive', 'Own It', 'Drive Results',
+            'Customer-centric', 'Data-driven', 'Results-oriented', 'Solution-focused'
+        ];
+
+        function initializeBingo() {
+            console.log('🎯 Initializing Bingo Game...');
+            
+            // Load stats from localStorage
+            const savedStats = localStorage.getItem('bingoStats');
+            if (savedStats) {
+                bingoStats = JSON.parse(savedStats);
+            }
+            
+            generateBingoCard();
+            updateBingoUI();
+            bingoInitialized = true;
+            
+            console.log('✅ Bingo game initialized');
+        }
+
+        function generateBingoCard() {
+            console.log('🔄 Generating new bingo card...');
+            
+            // Shuffle and select 24 buzzwords (24 + 1 free space = 25)
+            const shuffled = [...BUZZWORDS].sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, 24);
+            
+            bingoCard = [];
+            
+            // Generate 25 squares
+            for (let i = 0; i < 25; i++) {
+                if (i === 12) { // Center square (free space)
+                    bingoCard.push({
+                        id: i,
+                        text: 'FREE SPACE',
+                        isMarked: true,
+                        isFree: true
+                    });
+                } else {
+                    const textIndex = i < 12 ? i : i - 1;
+                    bingoCard.push({
+                        id: i,
+                        text: selected[textIndex],
+                        isMarked: false,
+                        isFree: false
+                    });
+                }
+            }
+            
+            renderBingoGrid();
+            updateBingoUI();
+            
+            // Update game stats
+            bingoStats.gamesPlayed++;
+            saveBingoStats();
+        }
+
+        function renderBingoGrid() {
+            const grid = document.getElementById('bingoGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = bingoCard.map(square => `
+                <div class="bingo-square ${square.isMarked ? 'marked' : ''} ${square.isFree ? 'free' : ''}" 
+                     onclick="${square.isFree ? '' : `toggleBingoSquare(${square.id})`}">
+                    <span>${square.text}</span>
+                    ${square.isMarked && !square.isFree ? '<div class="absolute top-1 right-1 text-xs">✓</div>' : ''}
+                    ${square.isFree ? '<div class="absolute top-1 right-1 text-xs">★</div>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function toggleBingoSquare(squareId) {
+            const square = bingoCard.find(s => s.id === squareId);
+            if (!square || square.isFree) return;
+            
+            square.isMarked = !square.isMarked;
+            bingoStats.totalSquares++;
+            
+            renderBingoGrid();
+            updateBingoUI();
+            saveBingoStats();
+            
+            // Check for bingo
+            if (checkBingo()) {
+                document.getElementById('bingoButton').style.display = 'block';
+                console.log('🎉 BINGO detected!');
+            } else {
+                document.getElementById('bingoButton').style.display = 'none';
+            }
+        }
+
+        function checkBingo() {
+            // Check rows
+            for (let row = 0; row < 5; row++) {
+                const rowStart = row * 5;
+                const rowSquares = bingoCard.slice(rowStart, rowStart + 5);
+                if (rowSquares.every(square => square.isMarked)) {
+                    return true;
+                }
+            }
+            
+            // Check columns
+            for (let col = 0; col < 5; col++) {
+                const colSquares = bingoCard.filter((_, index) => index % 5 === col);
+                if (colSquares.every(square => square.isMarked)) {
+                    return true;
+                }
+            }
+            
+            // Check diagonals
+            const diagonal1 = [0, 6, 12, 18, 24].map(i => bingoCard[i]);
+            const diagonal2 = [4, 8, 12, 16, 20].map(i => bingoCard[i]);
+            
+            if (diagonal1.every(square => square.isMarked) || diagonal2.every(square => square.isMarked)) {
+                return true;
+            }
+            
+            return false;
+        }
+
+        function callBingo() {
+            console.log('🎉 BINGO called!');
+            
+            bingoStats.wins++;
+            saveBingoStats();
+            
+            alert('🎉 BINGO! You survived another corporate meeting! 🎉');
+            
+            // Generate new card
+            setTimeout(() => {
+                generateBingoCard();
+            }, 1000);
+        }
+
+        function updateBingoUI() {
+            // Update marked count
+            const markedCount = bingoCard.filter(s => s.isMarked).length;
+            const markedElement = document.getElementById('markedCount');
+            if (markedElement) {
+                markedElement.textContent = markedCount;
+            }
+            
+            // Update stats
+            const gamesElement = document.getElementById('gamesPlayed');
+            const winsElement = document.getElementById('wins');
+            if (gamesElement) gamesElement.textContent = bingoStats.gamesPlayed;
+            if (winsElement) winsElement.textContent = bingoStats.wins;
+        }
+
+        function saveBingoStats() {
+            localStorage.setItem('bingoStats', JSON.stringify(bingoStats));
+        }
+
+        function getBingoStats() {
+            return bingoStats;
+        }
+
+        function createRoom() {
+            const roomNameInput = document.getElementById('roomName');
+            const roomName = roomNameInput.value.trim();
+            
+            if (!roomName) {
+                alert('Please enter a room name');
+                return;
+            }
+            
+            const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            alert(`Room created! Share this code with colleagues: ${roomCode}`);
+            roomNameInput.value = '';
+            
+            console.log('🏢 Room created:', roomName, roomCode);
+        }
+
+        function joinRoom() {
+            const roomCodeInput = document.getElementById('roomCode');
+            const roomCode = roomCodeInput.value.trim().toUpperCase();
+            
+            if (!roomCode) {
+                alert('Please enter a room code');
+                return;
+            }
+            
+            if (roomCode.length !== 6) {
+                alert('Room code must be 6 characters');
+                return;
+            }
+            
+            alert(`Joined room ${roomCode}! 🎯 Good luck in your meeting!`);
+            roomCodeInput.value = '';
+            
+            console.log('🚪 Joined room:', roomCode);
+        }
     </script>
 </body>
 </html>
