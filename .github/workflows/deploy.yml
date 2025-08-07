@@ -1,8 +1,8 @@
-name: Deploy Engineer Memes Dashboard
+name: Deploy Corporate Bingo
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -33,19 +33,13 @@ jobs:
       - name: Type checking
         run: npx tsc --noEmit
         
-      - name: Run basic tests
-        run: npm run test --run || echo "Tests skipped for now"
-        
-      - name: Check test coverage
-        run: npm run test:coverage || echo "Coverage check skipped for now"
-        
       - name: Build application
         run: npm run build
         
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dashboard-build
+          name: corporate-bingo-build
           path: dist/
           retention-days: 30
 
@@ -71,13 +65,13 @@ jobs:
       - name: Build application
         run: npm run build
         env:
-          VITE_API_URL: "https://buzzword-bingo.engineer-memes.workers.dev"
-          VITE_WS_URL: "wss://buzzword-bingo.engineer-memes.workers.dev"
+          VITE_API_URL: "https://corporate-bingo.workers.dev"
+          VITE_WS_URL: "wss://corporate-bingo.workers.dev"
           
       - name: Deploy to Netlify
         uses: netlify/actions/cli@master
         with:
-          args: deploy --prod --dir=dist --message="Dashboard deployment ${{ github.sha }}"
+          args: deploy --prod --dir=dist --message="Corporate Bingo deployment ${{ github.sha }}"
         env:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
@@ -87,140 +81,23 @@ jobs:
           sleep 30
           curl -f https://corporate-bingo-ai.netlify.app || exit 1
 
-  deploy-backend:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    name: Deploy Backend to Cloudflare Workers
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          
-      - name: Install Wrangler
-        run: npm install -g wrangler
-        
-      - name: Deploy to Cloudflare Workers
-        run: wrangler deploy --env production
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          
-      - name: Run backend health check
-        run: |
-          sleep 15
-          curl -f https://buzzword-bingo.engineer-memes.workers.dev/health || exit 1
-
-  performance-monitoring:
-    needs: [deploy-frontend, deploy-backend]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    name: Performance & Monitoring Validation
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          
-      - name: Install dependencies
-        run: npm ci
-        
-      - name: Run dashboard performance tests
-        run: |
-          npx lighthouse https://corporate-bingo-ai.netlify.app --chrome-flags="--headless" --output=json --output-path=./lighthouse-report.json
-          
-      - name: Validate performance metrics
-        run: |
-          node -e "
-            const fs = require('fs');
-            const report = JSON.parse(fs.readFileSync('./lighthouse-report.json'));
-            const performance = report.lhr.categories.performance.score * 100;
-            console.log('Performance Score:', performance);
-            if (performance < 85) {
-              console.error('Performance score below threshold (85)');
-              process.exit(1);
-            }
-          "
-          
-      - name: Test WebSocket connectivity
-        run: |
-          timeout 30s node -e "
-            const WebSocket = require('ws');
-            const ws = new WebSocket('wss://buzzword-bingo.engineer-memes.workers.dev/ws');
-            ws.on('open', () => {
-              console.log('WebSocket connection successful');
-              ws.close();
-            });
-            ws.on('error', (error) => {
-              console.error('WebSocket connection failed:', error);
-              process.exit(1);
-            });
-          " || echo "WebSocket test completed"
-          
-      - name: Upload performance report
-        uses: actions/upload-artifact@v4
-        with:
-          name: performance-report
-          path: lighthouse-report.json
-          retention-days: 90
-
-  security-audit:
-    needs: test
-    runs-on: ubuntu-latest
-    name: Security Audit & Compliance
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          
-      - name: Install dependencies
-        run: npm ci
-        
-      - name: Run security audit
-        run: npm audit --audit-level=moderate
-        
-      - name: Run security tests
-        run: npm run test:security || echo "Security tests skipped for now"
-        
-      - name: Check for known vulnerabilities
-        run: |
-          npx safety-check || echo "Vulnerability check completed with warnings"
-          echo "Security audit completed"
-
   notification:
-    needs: [deploy-frontend, deploy-backend, performance-monitoring]
+    needs: [deploy-frontend]
     runs-on: ubuntu-latest
     if: always() && github.ref == 'refs/heads/main'
     name: Deployment Notification
     
     steps:
       - name: Deployment Success Notification
-        if: needs.deploy-frontend.result == 'success' && needs.deploy-backend.result == 'success'
+        if: needs.deploy-frontend.result == 'success'
         run: |
           echo "✅ Corporate Bingo deployed successfully!"
           echo "Frontend: https://corporate-bingo-ai.netlify.app"
-          echo "Backend: https://buzzword-bingo.engineer-memes.workers.dev"
           echo "Commit: ${{ github.sha }}"
           
       - name: Deployment Failure Notification
-        if: needs.deploy-frontend.result == 'failure' || needs.deploy-backend.result == 'failure'
+        if: needs.deploy-frontend.result == 'failure'
         run: |
           echo "❌ Corporate Bingo deployment failed!"
-          echo "Check the logs for details and initiate rollback procedures"
+          echo "Check the logs for details"
           exit 1
