@@ -1,5 +1,5 @@
 // Corporate Bingo - Real-time multiplayer buzzword bingo game
-// Version: 1.1.0 - Clean Corporate Bingo (cache-bust)
+// Version: 1.2.0 - GitHub Actions Fixed & Auto-Deploy Working
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Navigation } from './components/shared/Navigation';
