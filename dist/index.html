@@ -79,7 +79,7 @@
             background: rgba(55, 65, 81, 0.8);
             border: 1px solid #4b5563;
             color: #f9fafb;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -87,15 +87,61 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 2px;
+            padding: 3px;
             border-radius: 0.25rem;
             position: relative;
             min-height: 50px;
+            line-height: 1.1;
+            overflow: hidden;
+            word-break: break-word;
+            hyphens: auto;
+        }
+        .bingo-square span {
+            display: block;
+            width: 100%;
+            font-size: inherit;
+            line-height: inherit;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         .bingo-square.compact {
-            font-size: 0.6rem;
-            padding: 1px;
+            font-size: 0.55rem;
+            padding: 2px;
             min-height: 40px;
+            line-height: 1.05;
+        }
+        
+        /* Mobile responsive improvements */
+        @media (max-width: 768px) {
+            .bingo-square {
+                font-size: 0.6rem;
+                padding: 2px;
+                min-height: 45px;
+                line-height: 1.05;
+            }
+            .bingo-square.compact {
+                font-size: 0.5rem;
+                padding: 1px;
+                min-height: 35px;
+                line-height: 1.0;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .bingo-square {
+                font-size: 0.55rem;
+                padding: 1px;
+                min-height: 40px;
+                line-height: 1.0;
+            }
+            .bingo-square.compact {
+                font-size: 0.45rem;
+                padding: 1px;
+                min-height: 30px;
+                line-height: 0.95;
+            }
         }
         .bingo-square.winning {
             animation: winFlash 1s ease-in-out 3;
@@ -377,19 +423,90 @@
             pendingGroupWins: 0 // Group wins awaiting verification
         };
 
-        // Corporate buzzwords library
+        // Corporate buzzwords library - expanded with 150+ terms
         const BUZZWORDS = [
+            // Classic Corporate Speak
             'Synergy', 'Leverage', 'Deep Dive', 'Circle Back', 'Touch Base',
             'Low-hanging Fruit', 'Move the Needle', 'Paradigm Shift', 'Think Outside the Box',
             'Best Practice', 'Core Competency', 'Value-add', 'Game Changer', 'Win-win',
+            
+            // Tech & Digital
             'Technical Debt', 'Scalability', 'Microservices', 'DevOps', 'Agile Transformation',
             'Digital Transformation', 'AI/ML Integration', 'Cloud Migration', 'API Gateway',
+            'MVP', 'CI/CD Pipeline', 'DevSecOps', 'Containerization', 'Serverless',
+            'Edge Computing', 'Machine Learning', 'Big Data', 'Data Lake', 'Data Mesh',
+            'Blockchain', 'Cryptocurrency', 'NFT', 'Web3', 'Metaverse',
+            
+            // Meeting & Communication
             'Actionable Items', 'Take it Offline', 'Ping Me', 'Loop In', 'Bandwidth',
             'On My Radar', 'Ideate', 'Stakeholder Buy-in', 'Scope Creep', 'Timeline',
+            'Align on This', 'Sync Up', 'Park That', 'Table This', 'Double Click',
+            'Drill Down', 'Level Set', 'Socialize', 'Evangelize', 'Champion',
+            'Cascade Down', 'Run it Up', 'Put a Pin In', 'Peel the Onion', 'Boil the Ocean',
+            
+            // Performance & Metrics
             'KPI', 'ROI', 'Optimization', 'Streamline', 'Right-size', 'Iterate',
+            'OKR', 'SLA', 'NPS', 'CSAT', 'Conversion Rate', 'Funnel Optimization',
+            'A/B Testing', 'Growth Metrics', 'Churn Rate', 'LTV', 'CAC',
+            'Benchmarking', 'Performance Indicators', 'Success Metrics', 'Milestone',
+            
+            // Business Strategy
             'Pivot', 'Disrupt', 'Innovation', 'Growth Hacking', 'Metrics-driven',
+            'Blue Ocean', 'First Mover', 'Market Penetration', 'Competitive Advantage',
+            'Value Proposition', 'Go-to-Market', 'Product-Market Fit', 'Unicorn',
+            'Scale Up', 'Exit Strategy', 'IPO Ready', 'Series A/B/C', 'Valuation',
+            'Burn Rate', 'Runway', 'Hockey Stick Growth', 'Network Effects',
+            
+            // People & Culture
             'Culture Fit', 'Team Player', 'Proactive', 'Own It', 'Drive Results',
-            'Customer-centric', 'Data-driven', 'Results-oriented', 'Solution-focused'
+            'Customer-centric', 'Data-driven', 'Results-oriented', 'Solution-focused',
+            'Thought Leadership', 'Change Agent', 'Rockstar', 'Ninja', 'Guru',
+            '10X Developer', 'Full Stack', 'Growth Mindset', 'Fail Fast', 'Lean In',
+            'Upskilling', 'Reskilling', 'Cross-functional', 'Holistic Approach',
+            'Work-life Balance', 'Psychological Safety', 'Emotional Intelligence',
+            
+            // Business Operations
+            'Operationalize', 'Systematize', 'Automate', 'Optimize', 'Standardize',
+            'SOPs', 'Workflow', 'Process Improvement', 'Lean Six Sigma', 'Kaizen',
+            'Continuous Improvement', 'Quality Assurance', 'Risk Management',
+            'Compliance', 'Governance', 'Audit Trail', 'Due Diligence',
+            
+            // Sales & Marketing
+            'Customer Journey', 'Touchpoint', 'Pain Point', 'Use Case', 'User Story',
+            'Persona', 'Segmentation', 'Targeting', 'Positioning', 'Brand Equity',
+            'Thought Leadership', 'Content Marketing', 'Inbound Marketing', 'Outbound',
+            'Lead Generation', 'Pipeline', 'Qualified Lead', 'Conversion Funnel',
+            'Omnichannel', 'Multi-touch Attribution', 'Lifetime Value',
+            
+            // Finance & Economics
+            'EBITDA', 'Cash Flow', 'P&L', 'Balance Sheet', 'Budget Allocation',
+            'Cost Center', 'Revenue Stream', 'Profit Margin', 'Break-even',
+            'Capital Expenditure', 'Operating Expenses', 'Financial Modeling',
+            'Forecasting', 'Variance Analysis', 'ROI Analysis',
+            
+            // Modern Workplace
+            'Hybrid Work', 'Remote First', 'Async Communication', 'Digital Nomad',
+            'Hot Desking', 'Coworking', 'Flexibility', 'Work from Anywhere',
+            'Virtual Collaboration', 'Video Fatigue', 'Slack Channel', 'Stand-up',
+            'Retrospective', 'Sprint Planning', 'Scrum Master', 'Product Owner',
+            
+            // Trendy Business Terms
+            'ESG', 'Sustainability', 'Carbon Neutral', 'Green Initiative', 'Social Impact',
+            'Purpose-driven', 'Stakeholder Capitalism', 'Triple Bottom Line',
+            'Circular Economy', 'Regenerative Business', 'B-Corp', 'CSR',
+            'Diversity & Inclusion', 'Belonging', 'Unconscious Bias', 'Allyship',
+            
+            // Consultant Speak
+            'Strategic Initiative', 'Transformation', 'Change Management', 'Roadmap',
+            'Framework', 'Methodology', 'Deliverable', 'Workstream', 'Phase Gate',
+            'Milestone Review', 'Status Update', 'Executive Summary', 'Dashboard',
+            'Heat Map', 'SWOT Analysis', 'Gap Analysis', 'Root Cause Analysis',
+            
+            // Startup & VC
+            'Minimum Viable Product', 'Product-Market Fit', 'Traction', 'Validation',
+            'Pivot', 'Iterate', 'Scale', 'Disruptive', 'Innovative', 'Cutting-edge',
+            'Bleeding-edge', 'Game-changing', 'Revolutionary', 'Breakthrough',
+            'Next-gen', 'State-of-the-art', 'World-class', 'Best-in-class'
         ];
 
         function initializeBingo() {
@@ -540,11 +657,28 @@
             grid.innerHTML = bingoCard.map(square => `
                 <div class="bingo-square ${square.isMarked ? 'marked' : ''} ${square.isFree ? 'free' : ''} ${currentCardSize === '3x3' ? 'compact' : ''}" 
                      onclick="${square.isFree ? '' : `toggleBingoSquare(${square.id})`}">
-                    <span>${square.text}</span>
+                    <span class="${getTextSizeClass(square.text, currentCardSize)}">${square.text}</span>
                     ${square.isMarked && !square.isFree ? '<div class="absolute top-1 right-1 text-xs">✓</div>' : ''}
                     ${square.isFree ? '<div class="absolute top-1 right-1 text-xs">★</div>' : ''}
                 </div>
             `).join('');
+        }
+        
+        // Dynamic text sizing based on content length
+        function getTextSizeClass(text, cardSize) {
+            const baseSize = cardSize === '3x3' ? 'compact' : 'normal';
+            const textLength = text.length;
+            
+            // For very long phrases, make text smaller
+            if (textLength > 25) {
+                return baseSize === 'compact' ? 'text-xs' : 'text-sm';
+            } else if (textLength > 18) {
+                return baseSize === 'compact' ? 'text-sm' : 'text-base';
+            } else if (textLength > 12) {
+                return baseSize === 'compact' ? 'text-sm' : 'text-base';
+            } else {
+                return baseSize === 'compact' ? 'text-base' : 'text-lg';
+            }
         }
 
         function toggleBingoSquare(squareId) {
