@@ -423,139 +423,121 @@
             pendingGroupWins: 0 // Group wins awaiting verification
         };
 
-        // Corporate buzzwords library - expanded with 150+ terms
+        // Corporate buzzwords library - focused on humor and meeting comedy
         const BUZZWORDS = [
-            // Classic Corporate Speak
+            // Classic Corporate Speak (The Absolute Worst)
             'Synergy', 'Leverage', 'Deep Dive', 'Circle Back', 'Touch Base',
             'Low-hanging Fruit', 'Move the Needle', 'Paradigm Shift', 'Think Outside the Box',
             'Best Practice', 'Core Competency', 'Value-add', 'Game Changer', 'Win-win',
+            'Right-size', 'Optimize', 'Streamline', 'Ideate', 'Impactful',
             
-            // Tech & Digital
-            'Technical Debt', 'Scalability', 'Microservices', 'DevOps', 'Agile Transformation',
-            'Digital Transformation', 'AI/ML Integration', 'Cloud Migration', 'API Gateway',
-            'MVP', 'CI/CD Pipeline', 'DevSecOps', 'Containerization', 'Serverless',
-            'Edge Computing', 'Machine Learning', 'Big Data', 'Data Lake', 'Data Mesh',
-            'Blockchain', 'Cryptocurrency', 'NFT', 'Web3', 'Metaverse',
-            
-            // Meeting & Communication
-            'Actionable Items', 'Take it Offline', 'Ping Me', 'Loop In', 'Bandwidth',
-            'On My Radar', 'Ideate', 'Stakeholder Buy-in', 'Scope Creep', 'Timeline',
+            // Meeting & Communication Gems  
+            'Take it Offline', 'Ping Me', 'Loop In', 'Bandwidth', 'On My Radar',
             'Align on This', 'Sync Up', 'Park That', 'Table This', 'Double Click',
             'Drill Down', 'Level Set', 'Socialize', 'Evangelize', 'Champion',
             'Cascade Down', 'Run it Up', 'Put a Pin In', 'Peel the Onion', 'Boil the Ocean',
+            'Circle Back Later', 'Take That Offline', 'Sync Up Tomorrow', 'Revisit This',
+            'Follow Up Separately', 'Schedule a Follow-up', 'Set Up Time', 'Grab Time',
+            'Quick Sync', 'Brain Dump', 'Download You', 'Get You Up to Speed',
+            'Bring Everyone Along', 'Get Buy-in', 'Surface This Up', 'Bubble Up',
             
-            // Performance & Metrics
-            'KPI', 'ROI', 'Optimization', 'Streamline', 'Right-size', 'Iterate',
-            'OKR', 'SLA', 'NPS', 'CSAT', 'Conversion Rate', 'Funnel Optimization',
-            'A/B Testing', 'Growth Metrics', 'Churn Rate', 'LTV', 'CAC',
-            'Benchmarking', 'Performance Indicators', 'Success Metrics', 'Milestone',
+            // Meeting Theater & Corporate Comedy
+            'Let\'s Take This Offline', 'We Need to Socialize This', 'Run it by Legal',
+            'Get Finance Involved', 'Check with Compliance', 'Validate with Leadership',
+            'Vet This Through', 'Pressure Test the Idea', 'Stress Test Assumptions',
+            'Sanity Check Numbers', 'Gut Check the Plan', 'Reality Check Timeline',
+            'Can You Speak to That?', 'What\'s Your Take?', 'How Do You See This?',
+            'Where Do You Land?', 'What\'s Your Comfort Level?', 'Any Concerns?',
+            'Red Flags?', 'Deal Breakers?', 'Showstoppers?', 'Blockers?',
+            'Circle Back on Monday', 'Let\'s Unpack This', 'Thoughts?', 'Does That Resonate?',
             
-            // Business Strategy
-            'Pivot', 'Disrupt', 'Innovation', 'Growth Hacking', 'Metrics-driven',
-            'Blue Ocean', 'First Mover', 'Market Penetration', 'Competitive Advantage',
-            'Value Proposition', 'Go-to-Market', 'Product-Market Fit', 'Unicorn',
-            'Scale Up', 'Exit Strategy', 'IPO Ready', 'Series A/B/C', 'Valuation',
-            'Burn Rate', 'Runway', 'Hockey Stick Growth', 'Network Effects',
+            // Corporate Speak Poetry & Fluff
+            'At the End of the Day', 'When All is Said and Done', 'Bottom Line',
+            'Net-Net', 'Long Story Short', 'To Be Completely Transparent',
+            'If I\'m Being Honest', 'To Level Set', 'For Context', 'Background Info',
+            'Quick Backstory', 'History Lesson', 'Let Me Paint a Picture',
+            'Here\'s the Situation', 'Here\'s Where We Are', 'Current State',
+            'Moving Forward', 'Going Forward', 'Path Forward', 'Next Steps',
             
-            // People & Culture
-            'Culture Fit', 'Team Player', 'Proactive', 'Own It', 'Drive Results',
-            'Customer-centric', 'Data-driven', 'Results-oriented', 'Solution-focused',
-            'Thought Leadership', 'Change Agent', 'Rockstar', 'Ninja', 'Guru',
-            '10X Developer', 'Full Stack', 'Growth Mindset', 'Fail Fast', 'Lean In',
-            'Upskilling', 'Reskilling', 'Cross-functional', 'Holistic Approach',
-            'Work-life Balance', 'Psychological Safety', 'Emotional Intelligence',
+            // Absurd Corporate Priorities  
+            'Client-centric Solutions', 'Customer Success Journey', 'Stakeholder Alignment',
+            'Cross-functional Collaboration', 'Omnichannel Experience', 'End-to-end Solutions',
+            'Holistic Approach', 'Strategic Roadmap', 'Digital-first Mindset', 'Data-driven Decisions',
+            'Growth Mindset', 'Innovation Pipeline', 'Transformation Journey', 'Change Management',
+            'Process Optimization', 'Operational Excellence', 'Best-in-class', 'World-class',
+            'Industry-leading', 'Market-leading', 'Award-winning', 'Cutting-edge',
             
-            // Business Operations
-            'Operationalize', 'Systematize', 'Automate', 'Optimize', 'Standardize',
-            'SOPs', 'Workflow', 'Process Improvement', 'Lean Six Sigma', 'Kaizen',
-            'Continuous Improvement', 'Quality Assurance', 'Risk Management',
-            'Compliance', 'Governance', 'Audit Trail', 'Due Diligence',
+            // Hilarious Consultant Word Salad
+            'Value Creation', 'Competitive Advantage', 'Thought Leadership', 'Subject Matter Expert',
+            'Industry Best Practices', 'Benchmarking Studies', 'Gap Analysis', 'SWOT Analysis',
+            'Root Cause Analysis', 'Impact Assessment', 'Business Case Development', 'ROI Analysis',
+            'Cost-benefit Analysis', 'Risk Mitigation', 'Strategic Planning', 'Implementation Roadmap',
+            'Phase Gate Reviews', 'Milestone Tracking', 'Performance Metrics', 'Success Criteria',
+            'Key Performance Indicators', 'Return on Investment', 'Total Cost of Ownership',
             
-            // Sales & Marketing
-            'Customer Journey', 'Touchpoint', 'Pain Point', 'Use Case', 'User Story',
-            'Persona', 'Segmentation', 'Targeting', 'Positioning', 'Brand Equity',
-            'Thought Leadership', 'Content Marketing', 'Inbound Marketing', 'Outbound',
-            'Lead Generation', 'Pipeline', 'Qualified Lead', 'Conversion Funnel',
-            'Omnichannel', 'Multi-touch Attribution', 'Lifetime Value',
+            // Meeting Types & Corporate Events
+            'All Hands Meeting', 'Town Hall', 'Skip Level', 'One-on-One', 'Check-in',
+            'Stand-up', 'Scrum', 'Sprint Planning', 'Retrospective', 'Post-mortem',
+            'Brainstorming Session', 'Ideation Workshop', 'Design Thinking', 'Innovation Lab',
+            'Hackathon', 'Deep Dive Session', 'Working Session', 'Strategic Offsite',
+            'Leadership Retreat', 'Team Building', 'Culture Session', 'Values Workshop',
+            'Kick-off Meeting', 'Status Update', 'Checkpoint Review', 'Quarterly Business Review',
             
-            // Finance & Economics
-            'EBITDA', 'Cash Flow', 'P&L', 'Balance Sheet', 'Budget Allocation',
-            'Cost Center', 'Revenue Stream', 'Profit Margin', 'Break-even',
-            'Capital Expenditure', 'Operating Expenses', 'Financial Modeling',
-            'Forecasting', 'Variance Analysis', 'ROI Analysis',
+            // Startup & Business Development Nonsense
+            'Product-Market Fit', 'Go-to-Market Strategy', 'Minimum Viable Product', 'User Feedback',
+            'Iteration Cycle', 'Pivot Strategy', 'Scale Operations', 'Market Penetration',
+            'Customer Acquisition', 'Revenue Streams', 'Business Model', 'Value Proposition',
+            'Competitive Landscape', 'Market Opportunity', 'Total Addressable Market', 'Monetization Strategy',
+            'Customer Lifecycle', 'User Experience', 'Customer Experience', 'Brand Experience',
             
-            // Modern Workplace
-            'Hybrid Work', 'Remote First', 'Async Communication', 'Digital Nomad',
-            'Hot Desking', 'Coworking', 'Flexibility', 'Work from Anywhere',
-            'Virtual Collaboration', 'Video Fatigue', 'Slack Channel', 'Stand-up',
-            'Retrospective', 'Sprint Planning', 'Scrum Master', 'Product Owner',
+            // People & Culture Comedy
+            'Culture Fit', 'Team Player', 'Self-starter', 'Go-getter', 'Problem Solver',
+            'Strategic Thinker', 'Detail-oriented', 'Results-driven', 'Customer-focused',
+            'Collaborative Leader', 'Change Agent', 'Innovation Champion', 'Brand Ambassador',
+            'Cross-functional Partner', 'Stakeholder Manager', 'Relationship Builder',
+            'Culture Carrier', 'People Person', 'Servant Leader', 'Thought Partner',
+            'Executive Presence', 'Leadership Potential', 'High Performer', 'Top Talent',
             
-            // Trendy Business Terms
-            'ESG', 'Sustainability', 'Carbon Neutral', 'Green Initiative', 'Social Impact',
-            'Purpose-driven', 'Stakeholder Capitalism', 'Triple Bottom Line',
-            'Circular Economy', 'Regenerative Business', 'B-Corp', 'CSR',
-            'Diversity & Inclusion', 'Belonging', 'Unconscious Bias', 'Allyship',
+            // Modern Business Buzzwords  
+            'Digital Transformation', 'Cloud-first', 'AI-powered', 'Machine Learning',
+            'Data Analytics', 'Business Intelligence', 'Predictive Analytics', 'Automation',
+            'Scalable Solutions', 'Agile Methodology', 'DevOps', 'Continuous Improvement',
+            'Innovation Culture', 'Disruptive Technology', 'Emerging Technologies', 'Future-ready',
+            'Next-generation', 'State-of-the-art', 'Revolutionary', 'Groundbreaking',
             
-            // Consultant Speak
-            'Strategic Initiative', 'Transformation', 'Change Management', 'Roadmap',
-            'Framework', 'Methodology', 'Deliverable', 'Workstream', 'Phase Gate',
-            'Milestone Review', 'Status Update', 'Executive Summary', 'Dashboard',
-            'Heat Map', 'SWOT Analysis', 'Gap Analysis', 'Root Cause Analysis',
+            // Sales & Marketing Theater
+            'Customer Journey', 'Buyer Persona', 'Lead Generation', 'Sales Funnel',
+            'Conversion Rate', 'Customer Acquisition Cost', 'Lifetime Value', 'Retention Strategy',
+            'Churn Analysis', 'Upselling', 'Cross-selling', 'Market Segmentation',
+            'Target Audience', 'Brand Positioning', 'Content Marketing', 'Inbound Strategy',
+            'Outbound Campaigns', 'Multi-touch Attribution', 'Lead Nurturing', 'Sales Enablement',
             
-            // Startup & VC
-            'Minimum Viable Product', 'Product-Market Fit', 'Traction', 'Validation',
-            'Pivot', 'Iterate', 'Scale', 'Disruptive', 'Innovative', 'Cutting-edge',
-            'Bleeding-edge', 'Game-changing', 'Revolutionary', 'Breakthrough',
-            'Next-gen', 'State-of-the-art', 'World-class', 'Best-in-class',
+            // Project Management Comedy
+            'Scope Creep', 'Requirements Change', 'Budget Overrun', 'Schedule Slip',
+            'Resource Constraint', 'Dependencies', 'Critical Path', 'Milestone',
+            'Deliverable', 'Work Package', 'Action Item', 'Follow-up Item',
+            'Risk Register', 'Issue Log', 'Change Request', 'Status Report',
+            'Project Charter', 'Statement of Work', 'Work Breakdown Structure', 'Gantt Chart',
             
-            // Oil & Gas Engineering
-            'Upstream Operations', 'Downstream Processing', 'Midstream Infrastructure', 'Wellhead Assembly',
-            'Christmas Tree', 'Blowout Preventer', 'Drilling Mud', 'Casing Program', 'Completion Design',
-            'Reservoir Modeling', 'Enhanced Oil Recovery', 'Water Cut', 'Gas-Oil Ratio', 'Decline Curve',
-            'Production Optimization', 'Artificial Lift', 'ESP Systems', 'Gas Lift', 'Beam Pumping',
-            'Fracturing Operations', 'Proppant Selection', 'Flowback Analysis', 'Well Stimulation',
-            'Subsea Systems', 'FPSO Operations', 'Riser Systems', 'Manifold Design', 'Umbilical Systems',
-            'Process Safety Management', 'HAZOP Study', 'SIL Rating', 'Bow Tie Analysis', 'LOPA Assessment',
-            'Turnaround Planning', 'Shutdown Schedule', 'Pigging Operations', 'Hot Work Permit',
-            'Corrosion Management', 'Cathodic Protection', 'Pipeline Integrity', 'API Standards',
-            'Pressure Testing', 'Hydrostatic Test', 'Pneumatic Test', 'Leak Detection',
+            // Executive & Leadership Speak
+            'Strategic Vision', 'Mission Critical', 'Core Values', 'Company Culture',
+            'Organizational Excellence', 'Leadership Development', 'Succession Planning', 'Talent Management',
+            'Performance Management', 'Engagement Survey', 'Employee Experience', 'Workplace Culture',
+            'Diversity & Inclusion', 'Corporate Social Responsibility', 'Sustainability Initiative', 'ESG Compliance',
+            'Governance Framework', 'Risk Management', 'Compliance Program', 'Audit Trail',
             
-            // Mechanical Engineering
-            'Design for Manufacturability', 'Tolerance Stack-up', 'GD&T Analysis', 'Stress Analysis',
-            'Finite Element Analysis', 'Modal Analysis', 'Vibration Testing', 'Fatigue Life',
-            'Material Selection', 'Heat Treatment', 'Surface Finish', 'Machining Process',
-            'Assembly Sequence', 'Bill of Materials', 'Engineering Change Order', 'Design Review',
-            'Prototype Testing', 'Proof of Concept', 'Design Verification', 'Design Validation',
-            'FMEA Analysis', 'Root Cause Analysis', 'Corrective Action', 'Preventive Maintenance',
-            'Reliability Engineering', 'MTBF Calculation', 'Wear Analysis', 'Lubrication System',
-            'Thermal Management', 'Heat Exchanger', 'Fluid Dynamics', 'Pressure Drop',
-            'Flow Characteristics', 'Pump Selection', 'Valve Sizing', 'Control System',
-            'Automation Integration', 'HMI Design', 'SCADA System', 'PLC Programming',
-            'Instrumentation', 'Calibration Procedure', 'Loop Check', 'Field Device',
+            // Finance & Operations Fluff
+            'Financial Planning', 'Budget Cycle', 'Cost Center', 'Profit Center',
+            'Revenue Recognition', 'Cash Flow', 'Working Capital', 'EBITDA',
+            'Gross Margin', 'Operating Margin', 'Capital Expenditure', 'Operating Expenditure',
+            'Accounts Receivable', 'Accounts Payable', 'Invoice Processing', 'Purchase Order',
+            'Vendor Management', 'Supplier Relations', 'Procurement Process', 'Supply Chain Management',
             
-            // Manufacturing & Production
-            'Lean Manufacturing', 'Six Sigma', 'Kaizen Event', 'Value Stream Mapping',
-            'Continuous Improvement', 'Waste Reduction', 'Cycle Time', 'Takt Time',
-            'OEE Improvement', 'Downtime Analysis', 'Bottleneck Identification', 'Capacity Planning',
-            'Quality Control', 'Statistical Process Control', 'Control Charts', 'Cpk Values',
-            'First Pass Yield', 'Scrap Reduction', 'Rework Analysis', 'Cost of Quality',
-            'Supplier Quality', 'Incoming Inspection', 'Material Traceability', 'Certificate of Compliance',
-            'Work Instructions', 'Standard Operating Procedure', 'Training Matrix', 'Skill Assessment',
-            
-            // Project Engineering
-            'Engineering Deliverables', 'Design Basis', 'Process Flow Diagram', 'P&ID Development',
-            'Equipment Specification', 'Vendor Evaluation', 'Technical Bid Evaluation', 'CAPEX Estimation',
-            'Project Schedule', 'Critical Path Method', 'Resource Allocation', 'Risk Register',
-            'Change Management', 'Scope Creep', 'Budget Variance', 'Schedule Compression',
-            'Commissioning Plan', 'Start-up Procedure', 'Performance Testing', 'Acceptance Criteria',
-            'As-Built Drawings', 'O&M Manual', 'Spare Parts List', 'Warranty Period',
-            
-            // Safety & Compliance
-            'Safety Case', 'Risk Assessment', 'JSA Development', 'Permit to Work',
-            'Lock Out Tag Out', 'Confined Space Entry', 'Hot Work Operations', 'Fall Protection',
-            'PPE Requirements', 'Safety Training', 'Incident Investigation', 'Near Miss Reporting',
-            'Environmental Impact', 'Emissions Monitoring', 'Waste Management', 'Spill Prevention',
-            'Regulatory Compliance', 'Code Requirements', 'Industry Standards', 'Best Practices'
+            // Light Engineering Humor (Relatable but Not Technical)
+            'Technical Debt', 'Legacy System', 'System Upgrade', 'Maintenance Window',
+            'Code Review', 'Quality Control', 'Testing Phase', 'User Acceptance Testing',
+            'Hot Fix', 'Patch Release', 'Version Control', 'Change Management',
+            'Documentation', 'Knowledge Transfer', 'Training Program', 'Best Practices Guide'
         ];
 
         function initializeBingo() {
