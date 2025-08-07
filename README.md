@@ -1,22 +1,23 @@
 # EngineerMemes.AI
 
-🤖 Professional Engineering Humor Generator - Because crying is unprofessional
+Turn suffering into content. Clean, functional meme generator for engineers.
 
-## Overview
+## Live Site
 
-EngineerMemes.AI is an AI-powered meme generator specifically designed for engineering professionals. It analyzes your engineering pain and creates targeted memes to help you cope with the daily suffering of professional engineering work.
+🚀 **[https://engineer-memes-ai.netlify.app](https://engineer-memes-ai.netlify.app)**
 
 ## Features
 
-- **Advanced Pain Analysis**: Detects engineering-specific keywords and assigns pain levels
-- **Professional Templates**: Engineering-focused meme templates 
-- **AI-Powered**: Uses MCP servers for enhanced functionality
-- **Instant Generation**: Create and download memes immediately
-- **Professional Grade**: Built by engineers, for engineers
+- **Pain Analysis**: Smart keyword detection analyzes engineering suffering (1-10 scale)
+- **Clean Interface**: Tool-focused design, no marketing fluff
+- **Live Preview**: Real-time canvas updates as you customize text
+- **Multiple Export**: Download PNG or copy to clipboard
+- **Responsive**: Works on desktop and mobile
 
-## Live Demo
+## Deployment
 
-🚀 **[Try it now!](https://your-netlify-url.netlify.app)**
+- **Primary**: Netlify (automatic deployment from `main` branch)
+- **GitHub Pages**: Disabled (was causing workflow failures)
 
 ## Tech Stack
 
