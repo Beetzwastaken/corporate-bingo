@@ -47,40 +47,21 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    name: Deploy Frontend to Netlify
+    name: Trigger Netlify Build
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          
-      - name: Install dependencies
-        run: npm ci
-        
-      - name: Build application
-        run: npm run build
-        
-      - name: Check build output
+      - name: Trigger Netlify Build Hook
         run: |
-          echo "Build completed, checking dist folder:"
-          ls -la dist/
-          echo "Build artifacts ready for deployment"
+          echo "🚀 Triggering Netlify build for commit ${{ github.sha }}"
+          curl -X POST -d '{"commit": "${{ github.sha }}", "branch": "main"}' \
+               -H "Content-Type: application/json" \
+               ${{ secrets.NETLIFY_BUILD_HOOK }}
+          echo "✅ Build hook triggered successfully"
           
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3.0
-        with:
-          publish-dir: './dist'
-          production-branch: main
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Corporate Bingo deployment ${{ github.sha }}"
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      - name: Wait for Build to Start
+        run: |
+          echo "⏳ Waiting 30 seconds for build to initialize..."
+          sleep 30
 
   notification:
     needs: [deploy-frontend]
