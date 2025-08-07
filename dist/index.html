@@ -337,6 +337,10 @@
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">
+                        <select onchange="changeStorageMode(this.value)" id="storageModeSelect" class="control-input px-2 py-1 rounded text-xs">
+                            <option value="persistent">💾 Keep Stats</option>
+                            <option value="session">🏢 Meeting Only</option>
+                        </select>
                         <select onchange="changeCardSize(this.value)" id="cardSizeSelect" class="control-input px-2 py-1 rounded text-xs">
                             <option value="5x5">5×5</option>
                             <option value="3x3">3×3</option>
@@ -1091,6 +1095,7 @@
         let gameStartTime = null;
         let currentRoom = null;
         let currentUser = 'Guest';
+        let storageMode = 'persistent'; // 'persistent' or 'session'
         let bingoStats = {
             gamesPlayed: 0,
             wins: 0,
@@ -1119,8 +1124,15 @@
         function initializeBingo() {
             console.log('🎯 Initializing Enhanced Bingo Game...');
             
-            // Check for existing username
-            const savedUser = localStorage.getItem('bingoUsername');
+            // Load storage mode preference (always from localStorage)
+            const savedStorageMode = localStorage.getItem('storageMode');
+            if (savedStorageMode) {
+                storageMode = savedStorageMode;
+                document.getElementById('storageModeSelect').value = storageMode;
+            }
+            
+            // Check for existing username using appropriate storage
+            const savedUser = getStorageMethod().getItem('bingoUsername');
             if (!savedUser) {
                 showUsernameModal();
                 return;
@@ -1129,24 +1141,31 @@
                 document.getElementById('currentUser').textContent = currentUser;
             }
             
-            // Load stats from localStorage
-            const savedStats = localStorage.getItem('bingoStats');
+            // Load stats from appropriate storage
+            const savedStats = loadData('bingoStats');
             if (savedStats) {
-                bingoStats = { ...bingoStats, ...JSON.parse(savedStats) };
+                bingoStats = { ...bingoStats, ...savedStats };
             }
             
             // Load current room if exists
-            const savedRoom = localStorage.getItem('currentRoom');
+            const savedRoom = loadData('currentRoom');
             if (savedRoom) {
-                currentRoom = JSON.parse(savedRoom);
+                currentRoom = savedRoom;
                 updateRoomUI();
+            }
+            
+            // Load card size preference
+            const savedCardSize = loadData('cardSize');
+            if (savedCardSize) {
+                currentCardSize = savedCardSize;
+                document.getElementById('cardSizeSelect').value = currentCardSize;
             }
             
             generateBingoCard();
             updateBingoUI();
             bingoInitialized = true;
             
-            console.log('✅ Enhanced Bingo game initialized');
+            console.log('✅ Enhanced Bingo game initialized with', storageMode, 'storage');
         }
 
         function generateBingoCard() {
@@ -1382,7 +1401,7 @@
         function changeCardSize(newSize) {
             console.log('📏 Changing card size to:', newSize);
             currentCardSize = newSize;
-            localStorage.setItem('cardSize', currentCardSize);
+            saveData('cardSize', currentCardSize);
             generateBingoCard(false); // Don't increment game count
             bingoStats.gamesPlayed--; // Adjust since generateBingoCard increments
             saveBingoStats();
@@ -1407,12 +1426,77 @@
             if (userElement) userElement.textContent = currentUser;
         }
 
+        // Storage Utilities
+        function getStorageMethod() {
+            return storageMode === 'persistent' ? localStorage : sessionStorage;
+        }
+        
+        function saveData(key, data) {
+            const storage = getStorageMethod();
+            storage.setItem(key, JSON.stringify(data));
+        }
+        
+        function loadData(key) {
+            const storage = getStorageMethod();
+            const data = storage.getItem(key);
+            return data ? JSON.parse(data) : null;
+        }
+        
+        function removeData(key) {
+            const storage = getStorageMethod();
+            storage.removeItem(key);
+        }
+
         function saveBingoStats() {
-            localStorage.setItem('bingoStats', JSON.stringify(bingoStats));
+            saveData('bingoStats', bingoStats);
         }
 
         function getBingoStats() {
             return bingoStats;
+        }
+        
+        function changeStorageMode(newMode) {
+            console.log('📊 Changing storage mode to:', newMode);
+            
+            if (storageMode === newMode) return;
+            
+            const oldMode = storageMode;
+            storageMode = newMode;
+            
+            // Always save storage mode preference to localStorage (persistent)
+            localStorage.setItem('storageMode', storageMode);
+            
+            // Migrate data if switching modes
+            if (oldMode === 'persistent' && newMode === 'session') {
+                // Moving from persistent to session - copy data to sessionStorage
+                const persistentStats = localStorage.getItem('bingoStats');
+                const persistentUser = localStorage.getItem('bingoUsername');
+                const persistentRoom = localStorage.getItem('currentRoom');
+                const persistentCardSize = localStorage.getItem('cardSize');
+                
+                if (persistentStats) sessionStorage.setItem('bingoStats', persistentStats);
+                if (persistentUser) sessionStorage.setItem('bingoUsername', persistentUser);
+                if (persistentRoom) sessionStorage.setItem('currentRoom', persistentRoom);
+                if (persistentCardSize) sessionStorage.setItem('cardSize', persistentCardSize);
+                
+                alert('🏢 Switched to Meeting Only mode. Your stats will clear when you close the browser.');
+                
+            } else if (oldMode === 'session' && newMode === 'persistent') {
+                // Moving from session to persistent - copy data to localStorage
+                const sessionStats = sessionStorage.getItem('bingoStats');
+                const sessionUser = sessionStorage.getItem('bingoUsername');
+                const sessionRoom = sessionStorage.getItem('currentRoom');
+                const sessionCardSize = sessionStorage.getItem('cardSize');
+                
+                if (sessionStats) localStorage.setItem('bingoStats', sessionStats);
+                if (sessionUser) localStorage.setItem('bingoUsername', sessionUser);
+                if (sessionRoom) localStorage.setItem('currentRoom', sessionRoom);
+                if (sessionCardSize) localStorage.setItem('cardSize', sessionCardSize);
+                
+                alert('💾 Switched to Keep Stats mode. Your progress will be saved permanently.');
+            }
+            
+            console.log('✅ Storage mode changed successfully');
         }
         
         // Username Management
@@ -1428,14 +1512,14 @@
             }
             
             currentUser = username;
-            localStorage.setItem('bingoUsername', currentUser);
+            saveData('bingoUsername', currentUser);
             document.getElementById('currentUser').textContent = currentUser;
             document.getElementById('usernameModal').style.display = 'none';
             
             // Now initialize the game
-            const savedStats = localStorage.getItem('bingoStats');
+            const savedStats = loadData('bingoStats');
             if (savedStats) {
-                bingoStats = { ...bingoStats, ...JSON.parse(savedStats) };
+                bingoStats = { ...bingoStats, ...savedStats };
             }
             
             generateBingoCard();
@@ -1463,7 +1547,7 @@
                 created: Date.now()
             };
             
-            localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+            saveData('currentRoom', currentRoom);
             updateRoomUI();
             roomNameInput.value = '';
             
@@ -1496,7 +1580,7 @@
                 joined: Date.now()
             };
             
-            localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+            saveData('currentRoom', currentRoom);
             updateRoomUI();
             roomCodeInput.value = '';
             
@@ -1510,7 +1594,7 @@
             
             const roomName = currentRoom.name;
             currentRoom = null;
-            localStorage.removeItem('currentRoom');
+            removeData('currentRoom');
             updateRoomUI();
             
             alert(`Left room "${roomName}"`);
