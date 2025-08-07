@@ -7,114 +7,89 @@ export function HomePage() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-white mb-4">
-            <span className="terminal-accent">$</span> Corporate Suffering Suite
+            🎯 Corporate Bingo
           </h1>
           <p className="text-xl text-gray-300 mb-2">
-            Making corporate pain slightly more bearable
+            Transform boring meetings into interactive multiplayer games
           </p>
-          <p className="text-gray-400 terminal-accent text-sm">
-            // Professional suffering solutions since 2025
+          <p className="text-gray-400 text-sm">
+            Real-time buzzword bingo with colleagues - make meetings fun again!
           </p>
         </div>
 
-        {/* Tool Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          {/* Meme Generator */}
-          <Link to="/memes" className="group">
-            <div className="glass-panel rounded-lg p-8 h-full transition-all duration-200 hover:scale-105 border border-gray-600/50 hover:border-blue-500/50">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🎭</div>
-                <h2 className="text-2xl font-bold text-white mb-3">Meme Generator</h2>
-                <p className="text-gray-300 mb-4">Turn suffering into content</p>
-                <div className="space-y-2 text-sm text-gray-400">
-                  <p><span className="terminal-accent">•</span> AI-powered text generation</p>
-                  <p><span className="terminal-accent">•</span> Engineering-specific templates</p>
-                  <p><span className="terminal-accent">•</span> Pain level analysis</p>
-                  <p><span className="terminal-accent">•</span> Professional sharing tools</p>
-                </div>
-                <div className="mt-6">
-                  <span className="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg group-hover:bg-blue-500 transition-colors">
-                    <span className="terminal-accent">$</span> Generate Memes
-                  </span>
-                </div>
-              </div>
-            </div>
-          </Link>
+        {/* Game Features */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          {/* Real-time Multiplayer */}
+          <div className="glass-panel rounded-lg p-6 text-center border border-gray-600/50">
+            <div className="text-4xl mb-4">🚀</div>
+            <h3 className="text-xl font-bold text-white mb-3">Real-time Multiplayer</h3>
+            <p className="text-gray-300 text-sm">
+              Create or join rooms with colleagues. Play bingo together during meetings with instant synchronization.
+            </p>
+          </div>
 
-          {/* Buzzword Bingo */}
-          <Link to="/bingo" className="group">
-            <div className="glass-panel rounded-lg p-8 h-full transition-all duration-200 hover:scale-105 border border-gray-600/50 hover:border-emerald-500/50">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🎯</div>
-                <h2 className="text-2xl font-bold text-white mb-3">Buzzword Bingo</h2>
-                <p className="text-gray-300 mb-4">Corporate survival game</p>
-                <div className="space-y-2 text-sm text-gray-400">
-                  <p><span className="terminal-accent">•</span> Real-time multiplayer rooms</p>
-                  <p><span className="terminal-accent">•</span> Corporate buzzword library</p>
-                  <p><span className="terminal-accent">•</span> Achievement system</p>
-                  <p><span className="terminal-accent">•</span> Meeting survival stats</p>
-                </div>
-                <div className="mt-6">
-                  <span className="inline-block bg-emerald-600 text-white px-4 py-2 rounded-lg group-hover:bg-emerald-500 transition-colors">
-                    <span className="terminal-accent">$</span> Play Bingo
-                  </span>
-                </div>
-              </div>
-            </div>
-          </Link>
-        </div>
+          {/* Buzzword Library */}
+          <div className="glass-panel rounded-lg p-6 text-center border border-gray-600/50">
+            <div className="text-4xl mb-4">📚</div>
+            <h3 className="text-xl font-bold text-white mb-3">400+ Buzzwords</h3>
+            <p className="text-gray-300 text-sm">
+              Curated corporate buzzwords and meeting phrases. From "synergy" to "circle back" - we've got them all.
+            </p>
+          </div>
 
-        {/* Feature Highlights */}
-        <div className="glass-panel rounded-lg p-8">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">
-            <span className="terminal-accent">&gt;</span> Why Choose Suffering Suite?
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="text-3xl mb-3">🤖</div>
-              <h3 className="text-lg font-semibold text-white mb-2">AI-Powered</h3>
-              <p className="text-gray-400 text-sm">
-                Advanced algorithms trained on years of corporate suffering to generate perfect content
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="text-3xl mb-3">🎮</div>
-              <h3 className="text-lg font-semibold text-white mb-2">Gamified Experience</h3>
-              <p className="text-gray-400 text-sm">
-                Turn boring meetings into competitive experiences with achievements and stats
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="text-3xl mb-3">🏢</div>
-              <h3 className="text-lg font-semibent text-white mb-2">Corporate Ready</h3>
-              <p className="text-gray-400 text-sm">
-                Professional tools designed by engineers who understand the daily pain points
-              </p>
-            </div>
+          {/* Easy to Play */}
+          <div className="glass-panel rounded-lg p-6 text-center border border-gray-600/50">
+            <div className="text-4xl mb-4">⚡</div>
+            <h3 className="text-xl font-bold text-white mb-3">Quick Setup</h3>
+            <p className="text-gray-300 text-sm">
+              No registration required. Create a room, share the code with teammates, and start playing instantly.
+            </p>
           </div>
         </div>
 
         {/* Call to Action */}
-        <div className="text-center mt-16">
-          <p className="text-gray-400 mb-4 terminal-accent">
-            // Ready to transform your corporate suffering?
+        <div className="text-center mb-16">
+          <Link 
+            to="/bingo"
+            className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-medium text-lg transition-colors shadow-lg hover:shadow-xl"
+          >
+            🎯 Start Playing Now
+          </Link>
+          <p className="text-gray-400 mt-4 text-sm">
+            Join the fun - make your next meeting more engaging!
           </p>
-          <div className="flex items-center justify-center space-x-4">
-            <Link 
-              to="/memes"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              Start Creating Memes
-            </Link>
-            <Link 
-              to="/bingo"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              Play Bingo Now
-            </Link>
+        </div>
+
+        {/* How It Works */}
+        <div className="glass-panel rounded-lg p-8">
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">
+            How to Play Corporate Bingo
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="text-3xl mb-3">1️⃣</div>
+              <h3 className="text-lg font-semibold text-white mb-2">Create or Join Room</h3>
+              <p className="text-gray-400 text-sm">
+                Start a new game room or join an existing one with a 6-character room code shared by a colleague.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-3xl mb-3">2️⃣</div>
+              <h3 className="text-lg font-semibold text-white mb-2">Get Your Bingo Card</h3>
+              <p className="text-gray-400 text-sm">
+                Each player gets a unique 5x5 bingo card filled with corporate buzzwords and meeting phrases.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-3xl mb-3">3️⃣</div>
+              <h3 className="text-lg font-semibold text-white mb-2">Mark & Win</h3>
+              <p className="text-gray-400 text-sm">
+                Mark off buzzwords as you hear them in your meeting. First to get 5 in a row wins!
+              </p>
+            </div>
           </div>
         </div>
       </div>

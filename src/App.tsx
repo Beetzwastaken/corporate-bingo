@@ -10,7 +10,7 @@ function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-        <Navigation totalMemes={0} />
+        <Navigation activeRooms={0} />
         
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -22,10 +22,10 @@ function App() {
         <footer className="glass-panel border-t border-gray-600/50 mt-12">
           <div className="max-w-7xl mx-auto px-4 py-8 text-center">
             <p className="text-lg text-white">
-              Made with 😅 by engineers, for engineers
+              🎯 Corporate Bingo - Real-time Multiplayer Buzzword Game
             </p>
-            <p className="text-gray-400 mt-2 terminal-accent text-sm">
-              // Professional meeting survival since 2025
+            <p className="text-gray-400 mt-2 text-sm">
+              Transform boring meetings into interactive games since 2025
             </p>
           </div>
         </footer>

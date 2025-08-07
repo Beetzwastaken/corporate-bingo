@@ -1,30 +1,24 @@
 import { Link, useLocation } from 'react-router-dom';
 
 interface NavigationProps {
-  totalMemes: number;
+  activeRooms?: number;
 }
 
-export function Navigation({ totalMemes }: NavigationProps) {
+export function Navigation({ activeRooms = 0 }: NavigationProps) {
   const location = useLocation();
 
   const navItems = [
     {
-      path: '/memes',
-      name: 'Meme Generator',
-      icon: '🎭',
-      description: 'Turn suffering into content'
+      path: '/',
+      name: 'Home',
+      icon: '🏠',
+      description: 'Welcome page'
     },
     {
       path: '/bingo',
-      name: 'Buzzword Bingo',
+      name: 'Play Bingo',
       icon: '🎯',
-      description: 'Corporate survival game'
-    },
-    {
-      path: '/dashboard',
-      name: 'Dashboard',
-      icon: '📊',
-      description: 'Performance analytics'
+      description: 'Join multiplayer game'
     }
   ];
 
@@ -34,12 +28,12 @@ export function Navigation({ totalMemes }: NavigationProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
             <Link to="/" className="flex items-center space-x-3 py-4">
-              <span className="text-2xl">😅</span>
+              <span className="text-2xl">🎯</span>
               <div>
                 <h1 className="text-xl font-bold text-white">
-                  <span className="terminal-accent">$</span> Corporate Suffering Suite
+                  Corporate Bingo
                 </h1>
-                <p className="text-xs text-gray-400 terminal-accent">// Making pain profitable</p>
+                <p className="text-xs text-gray-400">Real-time Multiplayer Buzzword Game</p>
               </div>
             </Link>
           </div>
@@ -69,8 +63,8 @@ export function Navigation({ totalMemes }: NavigationProps) {
 
           <div className="flex items-center space-x-4">
             <div className="text-right text-sm">
-              <div className="terminal-accent font-mono">{totalMemes}</div>
-              <div className="text-gray-400 text-xs">Total Memes</div>
+              <div className="text-blue-400 font-mono">{activeRooms}</div>
+              <div className="text-gray-400 text-xs">Active Rooms</div>
             </div>
           </div>
         </div>
