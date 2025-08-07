@@ -69,7 +69,7 @@ jobs:
           VITE_WS_URL: "wss://corporate-bingo.workers.dev"
           
       - name: Deploy to Netlify
-        uses: netlify/actions/cli@master
+        uses: netlify/actions/cli@v1.2
         with:
           args: deploy --prod --dir=dist --message="Corporate Bingo deployment ${{ github.sha }}"
         env:

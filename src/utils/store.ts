@@ -93,7 +93,7 @@ interface BingoStore {
   // Actions - WebSocket Management
   connectWebSocket: () => Promise<void>;
   disconnectWebSocket: () => void;
-  sendMessage: (type: string, payload?: any) => Promise<void>;
+  sendMessage: (type: string, payload?: Record<string, unknown>) => Promise<void>;
   
   // Actions - Room Operations
   createRoom: (roomName: string) => Promise<{ success: boolean; error?: string }>;
@@ -269,14 +269,20 @@ export const useBingoStore = create<BingoStore>()(
               
               switch (message.type) {
                 case MESSAGE_TYPES.PLAYER_JOINED:
-                  if (message.payload?.player) {
-                    currentState.addPlayerToRoom(message.payload.player);
+                  if (message.payload && typeof message.payload === 'object' && 'player' in message.payload) {
+                    const player = message.payload.player as BingoPlayer;
+                    if (player && typeof player === 'object' && 'id' in player && 'name' in player) {
+                      currentState.addPlayerToRoom(player);
+                    }
                   }
                   break;
                   
                 case MESSAGE_TYPES.PLAYER_LEFT:
-                  if (message.payload?.playerId) {
-                    currentState.removePlayerFromRoom(message.payload.playerId);
+                  if (message.payload && typeof message.payload === 'object' && 'playerId' in message.payload) {
+                    const playerId = message.payload.playerId as string;
+                    if (typeof playerId === 'string') {
+                      currentState.removePlayerFromRoom(playerId);
+                    }
                   }
                   break;
                   
@@ -288,11 +294,12 @@ export const useBingoStore = create<BingoStore>()(
                   
                 case MESSAGE_TYPES.GAME_STATE_UPDATE:
                   // Handle game state synchronization
-                  if (message.payload?.playerCount) {
+                  if (message.payload && typeof message.payload === 'object' && 'playerCount' in message.payload) {
+                    const players = message.payload.players as BingoPlayer[] | undefined;
                     set((state) => ({
                       currentRoom: state.currentRoom ? {
                         ...state.currentRoom,
-                        players: message.payload.players || state.currentRoom.players
+                        players: Array.isArray(players) ? players : state.currentRoom.players
                       } : null
                     }));
                   }
@@ -300,7 +307,10 @@ export const useBingoStore = create<BingoStore>()(
                   
                 case MESSAGE_TYPES.ERROR:
                   console.error('WebSocket error:', message.payload);
-                  set({ connectionError: message.payload?.message || 'WebSocket error' });
+                  const errorMessage = message.payload && typeof message.payload === 'object' && 'message' in message.payload 
+                    ? String(message.payload.message)
+                    : 'WebSocket error';
+                  set({ connectionError: errorMessage });
                   break;
               }
             },

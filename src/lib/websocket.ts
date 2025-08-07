@@ -5,7 +5,7 @@ import { getWebSocketBaseUrl } from './config';
 
 interface WebSocketMessage {
   type: string;
-  payload?: any;
+  payload?: Record<string, unknown>;
   timestamp: number;
 }
 
@@ -133,7 +133,7 @@ export class BingoWebSocketClient {
   }
 
   // Send message to server
-  send(type: string, payload?: any): Promise<void> {
+  send(type: string, payload?: Record<string, unknown>): Promise<void> {
     return new Promise((resolve, reject) => {
       if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
         reject(new Error('WebSocket not connected'));
