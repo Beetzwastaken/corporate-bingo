@@ -1,0 +1,20 @@
+[build]
+  command = "echo 'No build needed - static HTML deployment'"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Redirect for SPA-like behavior (though we're using a single HTML file)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
