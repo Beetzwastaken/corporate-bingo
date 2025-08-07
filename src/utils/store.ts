@@ -579,8 +579,20 @@ export const useBingoStore = create<BingoStore>()(
           }
           
           // No migration needed, return state as-is with updated version
+          // Safely cast persistedState to the expected type
+          const typedPersistedState = persistedState as {
+            playerName?: string;
+            gamesPlayed?: number;
+            wins?: number;
+            totalSquares?: number;
+            appVersion?: string;
+          } | null;
+          
           return {
-            ...persistedState,
+            playerName: typedPersistedState?.playerName || '',
+            gamesPlayed: typedPersistedState?.gamesPlayed || 0,
+            wins: typedPersistedState?.wins || 0,
+            totalSquares: typedPersistedState?.totalSquares || 0,
             appVersion: APP_VERSION
           };
         },
