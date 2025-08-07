@@ -1,0 +1,20 @@
+name = "buzzword-bingo"
+main = "worker.js"
+compatibility_date = "2024-01-15"
+
+[vars]
+CORS_ORIGIN = "https://engineer-memes-ai.netlify.app"
+
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "BingoRoom"
+script_name = "buzzword-bingo"
+
+[build]
+command = ""
+
+[env.production]
+vars = { CORS_ORIGIN = "https://engineer-memes-ai.netlify.app" }
+
+[env.development]  
+vars = { CORS_ORIGIN = "http://localhost:8080" }
