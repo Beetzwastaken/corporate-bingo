@@ -24,11 +24,13 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
         
         body { 
             font-family: 'Inter', 'system-ui', sans-serif; 
-            background: #f9fafb;
+            background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #1f2937 100%);
+            min-height: 100vh;
+            color: #f9fafb;
         }
         
         .pain-meter { 
@@ -36,45 +38,78 @@
         }
         
         .template-card {
-            border: 2px solid transparent;
-            transition: border-color 0.15s ease;
+            border: 2px solid #4b5563;
+            transition: all 0.2s ease;
+            background: rgba(31, 41, 55, 0.8);
+            backdrop-filter: blur(10px);
         }
         
         .template-card:hover {
             border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
         }
         
         .template-card.selected {
             border-color: #3b82f6;
-            background: #f0f9ff;
+            background: rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
         }
         
         .control-input {
-            transition: border-color 0.15s ease;
+            transition: all 0.2s ease;
+            background: rgba(31, 41, 55, 0.9);
+            border-color: #4b5563;
+            color: #f9fafb;
         }
         
         .control-input:focus {
             border-color: #3b82f6;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            background: rgba(31, 41, 55, 1);
+        }
+
+        .control-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .glass-panel {
+            background: rgba(31, 41, 55, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+        }
+
+        .terminal-accent {
+            font-family: 'JetBrains Mono', monospace;
+            color: #10b981;
+        }
+
+        .engineering-grid {
+            background-image: 
+                linear-gradient(rgba(75, 85, 99, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(75, 85, 99, 0.3) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
     </style>
 </head>
 <body>
-    <!-- Minimal Header Bar -->
-    <header class="bg-white border-b border-gray-200">
+    <!-- Engineering Header Bar -->
+    <header class="glass-panel border-b border-gray-600 engineering-grid">
         <div class="max-w-7xl mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">EngineerMemes.AI</h1>
-                    <p class="text-sm text-gray-600">Turn suffering into content</p>
+                    <h1 class="text-2xl font-bold text-white">
+                        <span class="terminal-accent">&gt;</span> EngineerMemes.AI
+                    </h1>
+                    <p class="text-sm text-gray-300 terminal-accent">// Turn suffering into content</p>
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="text-right">
-                        <div class="text-lg font-semibold text-blue-600" id="painScore">5/10</div>
-                        <div class="text-xs text-gray-500">Pain Level</div>
+                        <div class="text-lg font-semibold terminal-accent" id="painScore">5/10</div>
+                        <div class="text-xs text-gray-400">Pain Level</div>
                     </div>
-                    <div class="w-32 h-3 bg-gray-200 rounded-full">
+                    <div class="w-32 h-3 bg-gray-700 rounded-full border border-gray-600">
                         <div id="painBar" class="h-3 rounded-full pain-meter" style="width: 50%"></div>
                     </div>
                 </div>
@@ -90,31 +125,31 @@
             <div class="space-y-6">
                 
                 <!-- Pain Input -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Describe your engineering pain</h2>
+                <div class="glass-panel rounded-lg p-6">
+                    <h2 class="text-lg font-semibold text-white mb-4"><span class="terminal-accent">&gt;</span> Describe your engineering pain</h2>
                     <textarea 
                         id="painInput" 
-                        class="control-input w-full p-3 border border-gray-300 rounded-lg resize-none" 
+                        class="control-input w-full p-3 border border-gray-600 rounded-lg resize-none" 
                         rows="4" 
                         placeholder="e.g., Client wants to change the spec after we finished fabrication and testing..."
                         oninput="analyzePain(this.value)"
                     ></textarea>
-                    <div class="mt-3 text-xs text-gray-500" id="painMessage">Standard engineering suffering</div>
+                    <div class="mt-3 text-xs text-gray-400 terminal-accent" id="painMessage">Standard engineering suffering</div>
                 </div>
 
                 <!-- Template Selector -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Choose template</h2>
+                <div class="glass-panel rounded-lg p-6">
+                    <h2 class="text-lg font-semibold text-white mb-4"><span class="terminal-accent">&gt;</span> Choose template</h2>
                     <div class="grid grid-cols-2 gap-3" id="templates">
                         <!-- Templates will be populated by JavaScript -->
                     </div>
                 </div>
 
                 <!-- Text Customization -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Customize text</h2>
+                <div class="glass-panel rounded-lg p-6">
+                    <h2 class="text-lg font-semibold text-white mb-4"><span class="terminal-accent">&gt;</span> Customize text</h2>
                     <div id="textInputs">
-                        <div class="text-center py-8 text-gray-500">
+                        <div class="text-center py-8 text-gray-400">
                             <div class="text-2xl mb-2">🎯</div>
                             <p class="text-sm">Select a template above to customize text</p>
                         </div>
@@ -127,21 +162,21 @@
             <div class="space-y-6">
                 
                 <!-- Meme Preview -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Preview</h2>
+                <div class="glass-panel rounded-lg p-6">
+                    <h2 class="text-lg font-semibold text-white mb-4"><span class="terminal-accent">&gt;</span> Preview</h2>
                     <div class="flex justify-center mb-4">
-                        <canvas id="memeCanvas" width="400" height="400" class="border border-gray-300 rounded-lg bg-gray-50 max-w-full h-auto"></canvas>
+                        <canvas id="memeCanvas" width="400" height="400" class="border border-gray-600 rounded-lg bg-gray-800 max-w-full h-auto"></canvas>
                     </div>
                     
                     <!-- Action Buttons -->
                     <div class="flex gap-3">
-                        <button onclick="generateMeme()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
-                            Generate Meme
+                        <button onclick="generateMeme()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            <span class="terminal-accent">$</span> Generate Meme
                         </button>
-                        <button onclick="downloadMeme()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium">
+                        <button onclick="downloadMeme()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                             Download
                         </button>
-                        <button onclick="copyToClipboard()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium">
+                        <button onclick="copyToClipboard()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                             Copy
                         </button>
                     </div>
@@ -320,20 +355,20 @@
             const container = document.getElementById('templates');
             container.innerHTML = memeTemplates.map((template, index) => 
                 `<div onclick="selectTemplate(${JSON.stringify(template).replace(/"/g, '&quot;')})" 
-                      class="template-card cursor-pointer p-3 rounded-lg border border-gray-300 bg-white hover:border-blue-500" id="template-${template.id}">
+                      class="template-card cursor-pointer p-3 rounded-lg" id="template-${template.id}">
                     <div class="text-center">
-                        <div class="w-full aspect-square bg-gray-100 rounded-lg mb-3 overflow-hidden">
+                        <div class="w-full aspect-square bg-gray-700 rounded-lg mb-3 overflow-hidden">
                             <img src="${template.imageUrl}" 
                                  alt="${template.name}" 
                                  class="w-full h-full object-cover"
                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
                                  loading="lazy">
-                            <div class="w-full h-full bg-gray-200 rounded-lg items-center justify-center text-2xl hidden">
+                            <div class="w-full h-full bg-gray-600 rounded-lg items-center justify-center text-2xl hidden">
                                 ${getTemplateIcon(template.category)}
                             </div>
                         </div>
-                        <h4 class="text-sm font-medium text-gray-900 mb-1">${template.name}</h4>
-                        <p class="text-xs text-gray-500">${template.textAreas.length} text field${template.textAreas.length === 1 ? '' : 's'}</p>
+                        <h4 class="text-sm font-medium text-white mb-1">${template.name}</h4>
+                        <p class="text-xs text-gray-400">${template.textAreas.length} text field${template.textAreas.length === 1 ? '' : 's'}</p>
                     </div>
                 </div>`
             ).join('');
@@ -385,7 +420,7 @@
             const container = document.getElementById('textInputs');
             if (!currentTemplate) {
                 container.innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
+                    <div class="text-center py-8 text-gray-400">
                         <div class="text-2xl mb-2">🎯</div>
                         <p class="text-sm">Select a template above to customize text</p>
                     </div>
@@ -395,14 +430,14 @@
 
             container.innerHTML = currentTemplate.textAreas.map((area, index) => 
                 `<div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
                         ${getAreaLabel(area.id)}
                     </label>
                     <input 
                         type="text" 
                         id="text_${area.id}"
                         placeholder="${area.placeholder}"
-                        class="control-input w-full p-3 border border-gray-300 rounded-lg text-sm"
+                        class="control-input w-full p-3 border border-gray-600 rounded-lg text-sm"
                         oninput="updateCanvas()"
                         maxlength="100"
                     />
