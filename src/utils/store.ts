@@ -305,13 +305,14 @@ export const useBingoStore = create<BingoStore>()(
                   }
                   break;
                   
-                case MESSAGE_TYPES.ERROR:
+                case MESSAGE_TYPES.ERROR: {
                   console.error('WebSocket error:', message.payload);
                   const errorMessage = message.payload && typeof message.payload === 'object' && 'message' in message.payload 
                     ? String(message.payload.message)
                     : 'WebSocket error';
                   set({ connectionError: errorMessage });
                   break;
+                }
               }
             },
             onConnect: () => {
