@@ -4,7 +4,7 @@
 // CORS helper with security improvements
 function corsHeaders(origin) {
   const allowedOrigins = [
-    'https://engineer-memes-ai.netlify.app',
+    'https://corporate-bingo-ai.netlify.app',
     'http://localhost:8080',
     'http://localhost:3000',
     'http://localhost:5174',

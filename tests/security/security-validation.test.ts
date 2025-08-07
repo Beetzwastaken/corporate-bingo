@@ -132,13 +132,13 @@ describe('Security Validation Testing', () => {
   describe('CORS Security Validation', () => {
     it('validates allowed origins for dashboard API', () => {
       const allowedOrigins = [
-        'https://engineer-memes-ai.netlify.app',
+        'https://corporate-bingo-ai.netlify.app',
         'http://localhost:5175',
         'http://localhost:3000'
       ];
 
       const testOrigins = [
-        { origin: 'https://engineer-memes-ai.netlify.app', shouldAllow: true },
+        { origin: 'https://corporate-bingo-ai.netlify.app', shouldAllow: true },
         { origin: 'http://localhost:5175', shouldAllow: true },
         { origin: 'https://malicious-site.com', shouldAllow: false },
         { origin: 'http://evil.com', shouldAllow: false },
@@ -154,13 +154,13 @@ describe('Security Validation Testing', () => {
     it('prevents CORS bypass attempts', () => {
       const corssBypassAttempts = [
         'null',
-        'https://engineer-memes-ai.netlify.app.evil.com',
+        'https://corporate-bingo-ai.netlify.app.evil.com',
         'https://evil.com',
         'data:text/html,<script>alert("xss")</script>',
         'file://localhost/etc/passwd'
       ];
 
-      const allowedOrigins = ['https://engineer-memes-ai.netlify.app'];
+      const allowedOrigins = ['https://corporate-bingo-ai.netlify.app'];
 
       corssBypassAttempts.forEach(origin => {
         const isAllowed = securityTestUtils.validateCORS(origin, allowedOrigins);
@@ -172,7 +172,7 @@ describe('Security Validation Testing', () => {
       const mockPreflightRequest = {
         method: 'OPTIONS',
         headers: {
-          'Origin': 'https://engineer-memes-ai.netlify.app',
+          'Origin': 'https://corporate-bingo-ai.netlify.app',
           'Access-Control-Request-Method': 'POST',
           'Access-Control-Request-Headers': 'Content-Type, Authorization'
         }
@@ -264,7 +264,7 @@ describe('Security Validation Testing', () => {
   describe('WebSocket Security', () => {
     it('validates WebSocket origin headers', () => {
       const wsOrigins = [
-        { origin: 'https://engineer-memes-ai.netlify.app', valid: true },
+        { origin: 'https://corporate-bingo-ai.netlify.app', valid: true },
         { origin: 'ws://localhost:5175', valid: true },
         { origin: 'https://malicious-site.com', valid: false },
         { origin: null, valid: false },
@@ -272,7 +272,7 @@ describe('Security Validation Testing', () => {
       ];
 
       const allowedWsOrigins = [
-        'https://engineer-memes-ai.netlify.app',
+        'https://corporate-bingo-ai.netlify.app',
         'ws://localhost:5175',
         'http://localhost:5175'
       ];

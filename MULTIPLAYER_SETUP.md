@@ -80,8 +80,7 @@ Update `worker.js` to include your production frontend domain:
 ```javascript
 function corsHeaders(origin) {
   const allowedOrigins = [
-    'https://your-frontend-domain.netlify.app', // Add your domain here
-    'https://engineer-memes-ai.netlify.app',
+    'https://corporate-bingo-ai.netlify.app', // Production domain
     'http://localhost:8080',
     'http://localhost:3000',
     'http://localhost:5174',
