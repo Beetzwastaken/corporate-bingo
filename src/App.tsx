@@ -26,7 +26,7 @@ function App() {
               🎯 Corporate Bingo - Real-time Multiplayer Buzzword Game
             </p>
             <p className="text-gray-400 mt-2 text-sm">
-              Transform boring meetings into interactive games since 2025
+              Transform boring meetings into interactive games since 2025 • v1.2-deploy-test
             </p>
           </div>
         </footer>
