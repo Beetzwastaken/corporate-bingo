@@ -2,69 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Corporate Bingo Game Styles */
+/* Corporate Bingo - Apple Dark Mode Global Styles */
 @layer base {
   html {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   }
   
   body {
-    @apply bg-gray-100 text-gray-900;
+    @apply bg-black text-white;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
 @layer components {
-  .bingo-card {
-    @apply border-2 border-gray-300 rounded-lg shadow-lg bg-white;
+  /* Legacy compatibility - Apple-style panel */
+  .glass-panel {
+    @apply bg-black/80 backdrop-blur-sm border border-white/10 rounded-xl;
   }
   
-  .progress-meter {
-    @apply w-full h-3 bg-gray-200 rounded-full overflow-hidden;
-  }
-  
-  .progress-bar {
-    @apply h-full transition-all duration-500 ease-out;
-  }
-  
-  .progress-low {
-    @apply bg-green-500;
-  }
-  
-  .progress-medium {
-    @apply bg-blue-500;
-  }
-  
-  .progress-high {
-    @apply bg-purple-500;
-  }
-  
-  .progress-complete {
-    @apply bg-yellow-500;
-  }
-  
-  .bingo-square {
-    @apply border-2 border-gray-300 rounded-lg p-2 cursor-pointer transition-all duration-200 hover:shadow-md;
-  }
-  
-  .bingo-square.selected {
-    @apply border-blue-500 shadow-lg;
-  }
-  
-  .bingo-button {
-    @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium;
-  }
-  
-  .win-button {
-    @apply bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors font-medium;
-  }
-}
-
-@layer utilities {
-  .text-shadow {
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  }
-  
-  .text-shadow-heavy {
-    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+  .control-input {
+    @apply bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-400;
   }
 }

@@ -1,132 +1,324 @@
-/* Corporate Bingo - Enhanced Dark Theme */
+/* Corporate Bingo - Apple Dark Mode Theme */
+
+/* Apple Dark Mode Color Variables */
+:root {
+  /* Apple Dark Mode Colors */
+  --apple-black: #000000;
+  --apple-dark: #0a0a0a;
+  --apple-darker: #1a1a1a;
+  --apple-darkest: #2d2d2d;
+  --apple-border: rgba(255, 255, 255, 0.1);
+  --apple-border-strong: rgba(255, 255, 255, 0.2);
+  --apple-text: #ffffff;
+  --apple-text-secondary: #f5f5f7;
+  --apple-secondary: #a1a1aa;
+  --apple-tertiary: #8e8e93;
+  --apple-accent: #007aff;
+  --apple-accent-hover: #0056b3;
+  --apple-sidebar: #1c1c1e;
+  --apple-hover: rgba(255, 255, 255, 0.05);
+  
+  /* System Fonts */
+  --font-system: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+}
 
 #root {
   width: 100vw;
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #1f2937 100%);
-  color: #f9fafb;
+  background: var(--apple-black);
+  color: var(--apple-text);
+  font-family: var(--font-system);
 }
 
-/* Glass Panel Effects */
-.glass-panel {
-  background: rgba(31, 41, 55, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(75, 85, 99, 0.3);
+/* Base Styles */
+* {
+  box-sizing: border-box;
 }
 
-/* Terminal Styling */
-.terminal-accent {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  color: #10b981;
-  font-weight: 500;
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--apple-black);
+  color: var(--apple-text);
+  font-family: var(--font-system);
+  font-size: 14px;
+  line-height: 1.42857;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Engineering Grid Pattern */
-.engineering-grid {
-  background-image: 
-    linear-gradient(rgba(75, 85, 99, 0.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(75, 85, 99, 0.3) 1px, transparent 1px);
-  background-size: 20px 20px;
+/* Apple Theme Classes */
+.bg-apple-dark { background-color: var(--apple-dark); }
+.bg-apple-darker { background-color: var(--apple-darker); }
+.bg-apple-darkest { background-color: var(--apple-darkest); }
+.bg-apple-sidebar { background-color: var(--apple-sidebar); }
+.bg-apple-accent { background-color: var(--apple-accent); }
+.bg-apple-accent-hover { background-color: var(--apple-accent-hover); }
+.bg-apple-hover { background-color: var(--apple-hover); }
+
+.text-apple-text { color: var(--apple-text); }
+.text-apple-secondary { color: var(--apple-secondary); }
+.text-apple-tertiary { color: var(--apple-tertiary); }
+
+.border-apple-border { border-color: var(--apple-border); }
+.border-apple-border-strong { border-color: var(--apple-border-strong); }
+
+.font-system { font-family: var(--font-system); }
+.font-mono { font-family: var(--font-mono); }
+
+/* Apple-style Panels */
+.apple-panel {
+  background: var(--apple-darker);
+  border: 1px solid var(--apple-border);
+  border-radius: 12px;
+  backdrop-filter: blur(20px);
 }
 
-/* Control Inputs */
-.control-input {
+.apple-panel-elevated {
+  background: var(--apple-darkest);
+  border: 1px solid var(--apple-border-strong);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Control Inputs - Apple Style */
+.apple-input {
+  background: var(--apple-darker);
+  border: 1px solid var(--apple-border);
+  border-radius: 8px;
+  color: var(--apple-text);
+  padding: 12px 16px;
+  font-size: 16px;
+  font-family: var(--font-system);
   transition: all 0.2s ease;
-  background: rgba(31, 41, 55, 0.9);
-  border-color: #4b5563;
-  color: #f9fafb;
 }
 
-.control-input:focus {
-  border-color: #3b82f6;
+.apple-input:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-  background: rgba(31, 41, 55, 1);
+  border-color: var(--apple-accent);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
+  background: var(--apple-darkest);
 }
 
-.control-input::placeholder {
-  color: #9ca3af;
+.apple-input::placeholder {
+  color: var(--apple-secondary);
 }
 
-/* Template Cards */
-.template-card {
-  border: 2px solid #4b5563;
+/* Apple-style Buttons */
+.apple-button {
+  background: var(--apple-accent);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-family: var(--font-system);
+  font-size: 16px;
+  font-weight: 500;
+  padding: 12px 24px;
+  cursor: pointer;
   transition: all 0.2s ease;
-  background: rgba(31, 41, 55, 0.8);
-  backdrop-filter: blur(10px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.template-card:hover {
-  border-color: #3b82f6;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+.apple-button:hover {
+  background: var(--apple-accent-hover);
+  transform: translateY(-1px);
 }
 
-.template-card.selected {
-  border-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.2);
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+.apple-button:active {
+  transform: translateY(0);
 }
 
-/* Bingo Progress Animation */
-.progress-meter { 
-  background: linear-gradient(to right, #10b981 0%, #3b82f6 50%, #8b5cf6 100%); 
+.apple-button-secondary {
+  background: var(--apple-darkest);
+  border: 1px solid var(--apple-border);
+  color: var(--apple-text);
 }
 
-/* Scrollbar Styling */
+.apple-button-secondary:hover {
+  background: var(--apple-hover);
+  border-color: var(--apple-border-strong);
+}
+
+/* Bingo Card Styling */
+.bingo-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.bingo-square {
+  aspect-ratio: 1;
+  background: var(--apple-darker);
+  border: 2px solid var(--apple-border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bingo-square:hover {
+  background: var(--apple-hover);
+  border-color: var(--apple-border-strong);
+  transform: scale(1.02);
+}
+
+.bingo-square.marked {
+  background: var(--apple-accent);
+  border-color: var(--apple-accent);
+  color: white;
+}
+
+.bingo-square.free {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  border-color: #10b981;
+  color: white;
+  font-weight: 600;
+}
+
+.bingo-square.winning {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border-color: #f59e0b;
+  color: white;
+  animation: pulse 1s infinite;
+}
+
+/* BINGO Header */
+.bingo-header {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  max-width: 500px;
+  margin: 0 auto 16px;
+}
+
+.bingo-letter {
+  text-align: center;
+  padding: 12px;
+  background: var(--apple-accent);
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+/* Scrollbar Styling - Apple Style */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(31, 41, 55, 0.5);
-  border-radius: 4px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(75, 85, 99, 0.8);
+  background: var(--apple-secondary);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(75, 85, 99, 1);
+  background: var(--apple-text-secondary);
 }
 
 /* Loading Animations */
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 1;
   }
-  to {
-    transform: rotate(360deg);
+  50% { 
+    transform: scale(1.05);
+    opacity: 0.8;
   }
 }
 
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
+.animate-spin { animation: spin 1s linear infinite; }
+.animate-pulse { animation: pulse 2s ease-in-out infinite; }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .glass-panel {
-    margin: 0.5rem;
+  .bingo-grid {
+    max-width: 320px;
+    gap: 6px;
   }
   
-  .engineering-grid {
-    background-size: 10px 10px;
+  .bingo-square {
+    font-size: 10px;
+    padding: 4px;
+    border-radius: 8px;
+  }
+  
+  .bingo-header {
+    max-width: 320px;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  
+  .bingo-letter {
+    font-size: 18px;
+    padding: 8px;
+  }
+  
+  .apple-panel {
+    margin: 8px;
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bingo-grid {
+    max-width: 280px;
+    gap: 4px;
+  }
+  
+  .bingo-square {
+    font-size: 9px;
+    padding: 2px;
+    border-radius: 6px;
+  }
+  
+  .bingo-header {
+    max-width: 280px;
+    gap: 4px;
+  }
+  
+  .bingo-letter {
+    font-size: 16px;
+    padding: 6px;
   }
 }
 
 /* Print Styles */
 @media print {
-  .glass-panel {
+  .apple-panel {
     background: white;
     border: 1px solid #ccc;
+    color: black;
   }
   
-  .terminal-accent {
-    color: #000;
+  .bingo-square {
+    background: white;
+    border-color: #ccc;
+    color: black;
   }
 }

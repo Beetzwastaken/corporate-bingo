@@ -63,8 +63,7 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
         </div>
 
         <div className="mt-4 text-center text-xs text-gray-500">
-          <p>🚧 Authentication coming soon</p>
-          <p className="terminal-accent">// Currently in development</p>
+          <p>Continue without account for now</p>
         </div>
       </div>
     </div>

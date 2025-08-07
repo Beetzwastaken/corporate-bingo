@@ -557,6 +557,7 @@ const BUZZWORDS = [
     
     // Virtual Meeting Comedy Gold
     'You\'re Muted', 'Can You Hear Me?', 'Are You There?', 'Hello? Hello?',
+    'Can You Unmute?', 'Still Muted', 'You\'re Still Muted', 'Unmute Please',
     'Can Everyone See My Screen?', 'Are You Presenting?', 'Who\'s Presenting?',
     'Let Me Share My Screen', 'Can You See This?', 'Is This Visible?',
     'Sorry, I Was Muted', 'You Cut Out There', 'Your Audio is Breaking Up',
@@ -577,6 +578,7 @@ const BUZZWORDS = [
     'Construction Outside', 'Leaf Blower', 'Lawnmower Outside',
     'I Have a Hard Stop', 'Need to Drop in 10 Minutes', 'Another Meeting Starting',
     'Double Booked', 'Conflict with Another Meeting', 'Need to Jump to Another Call',
+    'Back-to-back Meetings', 'Calendar Conflict', 'Overbooked', 'Running Late',
     'Can We Record This?', 'Is This Being Recorded?', 'I\'ll Start Recording',
     'Meeting Notes', 'Action Items', 'Who\'s Taking Notes?',
     'I\'ll Send a Recap', 'Follow-up Email', 'Meeting Summary',
@@ -630,6 +632,8 @@ const BUZZWORDS = [
     'Cross-functional Partner', 'Stakeholder Manager', 'Relationship Builder',
     'Culture Carrier', 'People Person', 'Servant Leader', 'Thought Partner',
     'Executive Presence', 'Leadership Potential', 'High Performer', 'Top Talent',
+    'Growth Mindset', 'Emotional Intelligence', 'Psychological Safety', 'Inclusive Leader',
+    'Belonging', 'Authentic Self', 'Vulnerability', 'Empathy-driven',
     
     // Modern Business Buzzwords  
     'Digital Transformation', 'Cloud-first', 'AI-powered', 'Machine Learning',
@@ -637,6 +641,8 @@ const BUZZWORDS = [
     'Scalable Solutions', 'Agile Methodology', 'DevOps', 'Continuous Improvement',
     'Innovation Culture', 'Disruptive Technology', 'Emerging Technologies', 'Future-ready',
     'Next-generation', 'State-of-the-art', 'Revolutionary', 'Groundbreaking',
+    'Hybrid Work', 'Digital-first', 'Customer Journey', 'User Experience',
+    'Remote-first', 'Async Communication', 'Work-life Balance', 'Flexible Schedule',
     
     // Sales & Marketing Theater
     'Customer Journey', 'Buyer Persona', 'Lead Generation', 'Sales Funnel',
@@ -658,6 +664,8 @@ const BUZZWORDS = [
     'Performance Management', 'Engagement Survey', 'Employee Experience', 'Workplace Culture',
     'Diversity & Inclusion', 'Corporate Social Responsibility', 'Sustainability Initiative', 'ESG Compliance',
     'Governance Framework', 'Risk Management', 'Compliance Program', 'Audit Trail',
+    'Purpose-driven', 'Values-based', 'Stakeholder Capitalism', 'Triple Bottom Line',
+    'Social Impact', 'Environmental Stewardship', 'Conscious Leadership', 'Sustainable Growth',
     
     // Finance & Operations Fluff
     'Financial Planning', 'Budget Cycle', 'Cost Center', 'Profit Center',
@@ -666,11 +674,13 @@ const BUZZWORDS = [
     'Accounts Receivable', 'Accounts Payable', 'Invoice Processing', 'Purchase Order',
     'Vendor Management', 'Supplier Relations', 'Procurement Process', 'Supply Chain Management',
     
-    // Light Engineering Humor (Relatable but Not Technical)
+    // Light Tech Humor (Relatable but Not Technical)
     'Technical Debt', 'Legacy System', 'System Upgrade', 'Maintenance Window',
     'Code Review', 'Quality Control', 'Testing Phase', 'User Acceptance Testing',
     'Hot Fix', 'Patch Release', 'Version Control', 'Change Management',
-    'Documentation', 'Knowledge Transfer', 'Training Program', 'Best Practices Guide'
+    'Documentation', 'Knowledge Transfer', 'Training Program', 'Best Practices Guide',
+    'System Integration', 'API First', 'Microservices', 'Container Strategy',
+    'Platform Approach', 'Service Mesh', 'Event-driven', 'Serverless'
 ];
 
 // Durable Object - BingoRoom handles individual room state and real-time gameplay
