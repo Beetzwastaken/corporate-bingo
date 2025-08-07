@@ -126,4 +126,4 @@ Made with 😅 by developers who've survived too many "synergistic deep dives". 
 
 ---
 
-**🚀 Professional Meeting Entertainment Since 2025 • Real Multiplayer • Claude Code Optimized • v1.1**
+**🚀 Professional Meeting Entertainment Since 2025 • Real Multiplayer • Claude Code Optimized • v1.2-deploy-test**
