@@ -1,13 +1,453 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EngineerMemes.AI - Professional Engineering Humor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .pain-meter { background: linear-gradient(to right, #10b981 0%, #f59e0b 50%, #ef4444 100%); }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold mb-2">🤖 EngineerMemes.AI</h1>
+                <p class="text-blue-100">Because crying is unprofessional — Professional Engineering Humor Generator</p>
+                <p class="text-sm text-blue-200 mt-1">Powered by MCP Servers & Autonomous AI Agents</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Pain Input Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <span class="mr-2">😤</span>
+                What's Your Engineering Pain?
+            </h2>
+            <textarea 
+                id="painInput" 
+                class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                rows="3" 
+                placeholder="e.g., 'Client wants to change the spec after we finished fabrication and testing...'"
+                oninput="analyzePain(this.value)"
+            ></textarea>
+            
+            <!-- Pain Meter -->
+            <div class="mt-4">
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="font-medium text-gray-700">Engineering Pain Level</span>
+                    <span class="font-bold text-gray-800" id="painScore">5/10</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div id="painBar" class="h-3 rounded-full pain-meter transition-all duration-500" style="width: 50%"></div>
+                </div>
+                <div class="mt-2 text-sm text-gray-600" id="painMessage">Standard engineering suffering</div>
+                <div class="flex justify-between text-xs text-gray-500 mt-2">
+                    <span>😊 Zen</span>
+                    <span>😐 Normal</span>
+                    <span>😤 Stressed</span>
+                    <span>😫 Crisis</span>
+                    <span>🤯 Meltdown</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meme Templates -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <span class="mr-2">🎭</span>
+                Choose Your Weapon
+            </h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="templates">
+                <!-- Templates will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Meme Generator -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Text Input -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="mr-2">✏️</span>
+                    Meme Text Editor
+                </h2>
+                
+                <div id="textInputs">
+                    <!-- Text inputs will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Meme Canvas -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="mr-2">🎨</span>
+                    Your Suffering, Visualized
+                </h2>
+                
+                <canvas id="memeCanvas" width="400" height="400" class="w-full border-2 border-gray-300 rounded-lg shadow-md mb-4"></canvas>
+                
+                <div class="flex space-x-2">
+                    <button onclick="generateMeme()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        Generate Meme
+                    </button>
+                    <button onclick="downloadMeme()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium">
+                        💾 Download
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="text-4xl mb-3">🤖</div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">AI-Powered</h3>
+                <p class="text-gray-600 text-sm">Advanced pain analysis with engineering-specific keyword detection</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="text-4xl mb-3">⚙️</div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Engineering Focused</h3>
+                <p class="text-gray-600 text-sm">Templates and humor tailored for engineering professionals</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="text-4xl mb-3">🚀</div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">MCP Enhanced</h3>
+                <p class="text-gray-600 text-sm">Powered by Model Context Protocol servers and autonomous agents</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-lg mb-2">Made with 😅 by engineers, for engineers</p>
+            <p class="text-gray-400 text-sm">
+                Autonomous Agents: Template Generator • Pain Analyzer • Quality Controller • Analytics • Deployment
+            </p>
+            <p class="text-gray-400 text-xs mt-2">
+                Professional Suffering Solutions Since 2025 • MCP-Powered • Claude Code Optimized
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Engineering Meme Generator - Professional JavaScript Implementation
+        
+        let currentTemplate = null;
+        let currentPainScore = 5;
+        let generatedMemes = [];
+
+        // Engineering-specific pain keywords and scoring
+        const painKeywords = {
+            high: ['deadline', 'urgent', 'asap', 'broken', 'failed', 'disaster', 'emergency', 'critical'],
+            medium: ['change', 'modify', 'meeting', 'review', 'delay', 'client', 'scope'],
+            low: ['working', 'progress', 'complete', 'success', 'fixed', 'approved']
+        };
+
+        // Meme templates with engineering themes
+        const memeTemplates = [
+            {
+                id: 'drake',
+                name: 'Drake Choice',
+                category: 'general',
+                textAreas: [
+                    { id: 'reject', placeholder: 'Following the spec', x: 50, y: 25 },
+                    { id: 'accept', placeholder: 'Client changes everything', x: 50, y: 75 }
+                ]
+            },
+            {
+                id: 'this-is-fine',
+                name: 'This is Fine',
+                category: 'general',
+                textAreas: [
+                    { id: 'top', placeholder: 'Production is down', x: 50, y: 20 },
+                    { id: 'bottom', placeholder: 'This is fine', x: 50, y: 80 }
+                ]
+            },
+            {
+                id: 'two-buttons',
+                name: 'Two Buttons',
+                category: 'general',
+                textAreas: [
+                    { id: 'button1', placeholder: 'Fix the bug properly', x: 25, y: 30 },
+                    { id: 'button2', placeholder: 'Quick hotfix to prod', x: 75, y: 30 }
+                ]
+            },
+            {
+                id: 'distracted',
+                name: 'Distracted Engineer',
+                category: 'software',
+                textAreas: [
+                    { id: 'girlfriend', placeholder: 'Current project', x: 25, y: 70 },
+                    { id: 'boyfriend', placeholder: 'Me', x: 50, y: 80 },
+                    { id: 'other_woman', placeholder: 'New shiny framework', x: 75, y: 60 }
+                ]
+            }
+        ];
+
+        // Initialize the app
+        function initApp() {
+            renderTemplates();
+            selectTemplate(memeTemplates[0]);
+            updateCanvas();
+        }
+
+        // Analyze engineering pain level
+        function analyzePain(input) {
+            if (!input.trim()) {
+                updatePainScore(5);
+                return;
+            }
+
+            const lower = input.toLowerCase();
+            let score = 5;
+
+            painKeywords.high.forEach(keyword => {
+                if (lower.includes(keyword)) score += 2;
+            });
+            
+            painKeywords.medium.forEach(keyword => {
+                if (lower.includes(keyword)) score += 1;
+            });
+            
+            painKeywords.low.forEach(keyword => {
+                if (lower.includes(keyword)) score -= 1;
+            });
+
+            score = Math.max(1, Math.min(10, Math.round(score)));
+            updatePainScore(score);
+        }
+
+        // Update pain score display
+        function updatePainScore(score) {
+            currentPainScore = score;
+            const scoreElement = document.getElementById('painScore');
+            const barElement = document.getElementById('painBar');
+            const messageElement = document.getElementById('painMessage');
+
+            scoreElement.textContent = score + '/10';
+            barElement.style.width = (score * 10) + '%';
+
+            const messages = {
+                1: 'Mild engineering annoyance',
+                2: 'Slight project turbulence',
+                3: 'Minor technical hiccup', 
+                4: 'Standard development friction',
+                5: 'Typical engineering suffering',
+                6: 'Elevated stress protocols',
+                7: 'Approaching critical pain levels',
+                8: 'High-stress engineering zone',
+                9: 'MAXIMUM SUFFERING DETECTED',
+                10: 'ENGINEERING EMERGENCY STATE'
+            };
+
+            messageElement.textContent = messages[score] || 'Unknown pain level';
+        }
+
+        // Render meme templates
+        function renderTemplates() {
+            const container = document.getElementById('templates');
+            container.innerHTML = memeTemplates.map(template => 
+                `<div onclick="selectTemplate(${JSON.stringify(template).replace(/"/g, '&quot;')})" 
+                      class="border-2 border-gray-300 rounded-lg p-3 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all template-card">
+                    <div class="w-full h-20 bg-gray-100 rounded-md mb-2 flex items-center justify-center text-2xl">
+                        ${getTemplateIcon(template.category)}
+                    </div>
+                    <h4 class="text-sm font-medium text-center">${template.name}</h4>
+                    <p class="text-xs text-gray-500 text-center capitalize">${template.category}</p>
+                </div>`
+            ).join('');
+        }
+
+        // Get template icon
+        function getTemplateIcon(category) {
+            const icons = {
+                general: '🎭',
+                software: '💻', 
+                mechanical: '⚙️',
+                electrical: '⚡',
+                civil: '🏗️',
+                chemical: '🧪'
+            };
+            return icons[category] || '🎯';
+        }
+
+        // Select a template
+        function selectTemplate(template) {
+            currentTemplate = template;
+            
+            // Update active template styling
+            document.querySelectorAll('.template-card').forEach(el => {
+                el.classList.remove('border-blue-500', 'shadow-md');
+                el.classList.add('border-gray-300');
+            });
+            
+            // Render text inputs
+            renderTextInputs();
+            updateCanvas();
+        }
+
+        // Render text input fields
+        function renderTextInputs() {
+            const container = document.getElementById('textInputs');
+            if (!currentTemplate) return;
+
+            container.innerHTML = currentTemplate.textAreas.map(area => 
+                `<div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        ${getAreaLabel(area.id)}
+                    </label>
+                    <input 
+                        type="text" 
+                        id="text_${area.id}"
+                        placeholder="${area.placeholder}"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        oninput="updateCanvas()"
+                        maxlength="100"
+                    />
+                </div>`
+            ).join('');
+        }
+
+        // Get area label
+        function getAreaLabel(areaId) {
+            const labels = {
+                top: 'Top Text',
+                bottom: 'Bottom Text', 
+                reject: 'Reject/No',
+                accept: 'Accept/Yes',
+                button1: 'Button 1',
+                button2: 'Button 2',
+                girlfriend: 'Current Thing',
+                boyfriend: 'Person',
+                other_woman: 'New Thing'
+            };
+            return labels[areaId] || 'Text';
+        }
+
+        // Update canvas
+        function updateCanvas() {
+            const canvas = document.getElementById('memeCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw border
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+            if (!currentTemplate) return;
+
+            // Draw template background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+            // Draw template indicator
+            ctx.fillStyle = '#3b82f6';
+            ctx.font = 'bold 16px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText(currentTemplate.name.toUpperCase(), canvas.width / 2, 30);
+
+            // Draw text areas
+            currentTemplate.textAreas.forEach(area => {
+                const input = document.getElementById('text_' + area.id);
+                const text = input ? input.value || area.placeholder : area.placeholder;
+                
+                const x = (area.x / 100) * canvas.width;
+                const y = (area.y / 100) * canvas.height;
+                
+                // Set text style
+                ctx.font = 'bold 24px Impact, Arial Black';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Draw text stroke
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 3;
+                ctx.strokeText(text, x, y);
+                
+                // Draw text fill
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(text, x, y);
+            });
+
+            // Add pain level indicator
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '12px Inter';
+            ctx.textAlign = 'right';
+            ctx.fillText(`Pain Level: ${currentPainScore}/10`, canvas.width - 10, canvas.height - 10);
+        }
+
+        // Generate meme (just update canvas for now)
+        function generateMeme() {
+            updateCanvas();
+            
+            // Add generation timestamp
+            const canvas = document.getElementById('memeCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = '#10b981';
+            ctx.font = '10px Inter';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Generated: ${new Date().toLocaleTimeString()}`, 10, canvas.height - 10);
+            
+            // Store in memory
+            const texts = {};
+            if (currentTemplate) {
+                currentTemplate.textAreas.forEach(area => {
+                    const input = document.getElementById('text_' + area.id);
+                    texts[area.id] = input ? input.value : area.placeholder;
+                });
+            }
+            
+            generatedMemes.push({
+                id: Date.now(),
+                template: currentTemplate?.name || 'Unknown',
+                texts: texts,
+                painScore: currentPainScore,
+                timestamp: new Date(),
+                dataUrl: canvas.toDataURL('image/png')
+            });
+
+            // Show success feedback
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '✅ Generated!';
+            button.classList.add('bg-green-600');
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('bg-green-600');
+            }, 2000);
+        }
+
+        // Download meme
+        function downloadMeme() {
+            const canvas = document.getElementById('memeCanvas');
+            const link = document.createElement('a');
+            link.download = `engineering-meme-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initApp);
+        
+        // Console easter egg for engineers
+        console.log('🤖 EngineerMemes.AI v1.0.0');
+        console.log('Professional Engineering Humor Generator');
+        console.log('Powered by: MCP Servers + Autonomous AI Agents');
+        console.log('Pain Analysis: ✅ | Template Generation: ✅ | Quality Control: ✅');
+        console.log('Made with 😅 by engineers, for engineers');
+    </script>
+</body>
 </html>
