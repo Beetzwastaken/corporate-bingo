@@ -39,48 +39,60 @@ jobs:
         
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main'
         with:
           name: corporate-bingo-build
           path: dist/
           retention-days: 30
 
-  deploy-frontend:
+  deploy:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    name: Trigger Netlify Build
+    name: Deploy to Netlify
     
     steps:
-      - name: Trigger Netlify Build Hook
-        run: |
-          echo "🚀 Triggering Netlify build for commit ${{ github.sha }}"
-          curl -X POST -d '{"commit": "${{ github.sha }}", "branch": "main"}' \
-               -H "Content-Type: application/json" \
-               ${{ secrets.NETLIFY_BUILD_HOOK }}
-          echo "✅ Build hook triggered successfully"
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
           
-      - name: Wait for Build to Start
+      - name: Install dependencies and build
         run: |
-          echo "⏳ Waiting 30 seconds for build to initialize..."
-          sleep 30
-
-  notification:
-    needs: [deploy-frontend]
-    runs-on: ubuntu-latest
-    if: always() && github.ref == 'refs/heads/main'
-    name: Deployment Notification
-    
-    steps:
+          npm ci
+          npm run build
+          
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: './dist'
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "🚀 Deploy ${{ github.event.head_commit.message }} (${{ github.sha }})"
+          enable-pull-request-comment: false
+          enable-commit-comment: true
+          overwrites-pull-request-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 10
+          
       - name: Deployment Success Notification
-        if: needs.deploy-frontend.result == 'success'
+        if: success()
         run: |
           echo "✅ Corporate Bingo deployed successfully!"
-          echo "Frontend: https://corporate-bingo-ai.netlify.app"
-          echo "Commit: ${{ github.sha }}"
+          echo "🌐 Frontend: https://corporate-bingo-ai.netlify.app"
+          echo "📝 Commit: ${{ github.sha }}"
+          echo "🎯 Cache-busting solution active - version tracking enabled"
           
       - name: Deployment Failure Notification
-        if: needs.deploy-frontend.result == 'failure'
+        if: failure()
         run: |
           echo "❌ Corporate Bingo deployment failed!"
-          echo "Check the logs for details"
+          echo "🔍 Check the logs above for details"
+          echo "💡 Common issues: Missing secrets, build errors, or Netlify API limits"
           exit 1

@@ -559,8 +559,8 @@ export const useBingoStore = create<BingoStore>()(
           appVersion: state.appVersion
         }),
         // Migration function to handle version changes
-        migrate: (persistedState: any) => {
-          const storedVersion = persistedState?.appVersion;
+        migrate: (persistedState: unknown) => {
+          const storedVersion = (persistedState as { appVersion?: string } | null)?.appVersion;
           
           logVersionInfo(storedVersion);
           
