@@ -119,7 +119,7 @@
             background: rgba(55, 65, 81, 0.8);
             border: 2px solid #4b5563;
             color: #f9fafb;
-            font-size: 0.75rem;
+            font-size: 0.9rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -127,8 +127,22 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 4px;
+            padding: 6px;
             border-radius: 0.5rem;
+            position: relative;
+        }
+        .bingo-square.compact {
+            font-size: 0.75rem;
+            padding: 4px;
+        }
+        .bingo-square.winning {
+            animation: winFlash 1s ease-in-out 3;
+            background: rgba(16, 185, 129, 0.4) !important;
+            border-color: #10b981 !important;
+        }
+        @keyframes winFlash {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); }
         }
 
         .bingo-square:hover {
@@ -147,6 +161,52 @@
             border-color: #10b981;
             color: #10b981;
             cursor: not-allowed;
+        }
+        
+        /* BINGO Modal */
+        .bingo-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        .bingo-modal-content {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            border: 2px solid #10b981;
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            max-width: 400px;
+            animation: modalSlideIn 0.5s ease-out;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px) scale(0.8); }
+            to { transform: translateY(0) scale(1); }
+        }
+        
+        /* Username Modal */
+        .username-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
         }
     </style>
 </head>
@@ -269,17 +329,23 @@
                             </h1>
                             <p class="text-gray-400 terminal-accent">// Corporate survival game</p>
                         </div>
-                        <div class="flex items-center space-x-4">
+                        <div class="flex flex-wrap items-center gap-3">
                             <div class="text-right" id="bingoStats">
-                                <div class="text-sm text-gray-300">Games Played: <span class="terminal-accent" id="gamesPlayed">0</span></div>
-                                <div class="text-xs text-gray-400">Wins: <span id="wins">0</span></div>
+                                <div class="text-sm text-gray-300">User: <span class="terminal-accent" id="currentUser">Guest</span></div>
+                                <div class="text-xs text-gray-400">Games: <span id="gamesPlayed">0</span> | Wins: <span id="wins">0</span></div>
                             </div>
-                            <button onclick="generateBingoCard()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                                <span class="terminal-accent">$</span> New Game
-                            </button>
-                            <button onclick="callBingo()" id="bingoButton" class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-lg font-bold" style="display: none;">
-                                🎉 BINGO!
-                            </button>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="generateBingoCard()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg font-medium transition-colors text-sm">
+                                    <span class="terminal-accent">$</span> New Game
+                                </button>
+                                <button onclick="regenerateCard()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium transition-colors text-sm">
+                                    🔄 Regenerate
+                                </button>
+                                <select onchange="changeCardSize(this.value)" id="cardSizeSelect" class="control-input px-3 py-2 rounded-lg text-sm">
+                                    <option value="5x5">5×5 Standard</option>
+                                    <option value="3x3">3×3 Quick</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -315,7 +381,7 @@
                     </div>
 
                     <!-- Bingo Grid -->
-                    <div class="grid grid-cols-5 gap-2" id="bingoGrid">
+                    <div class="grid gap-2" id="bingoGrid">
                         <!-- Grid will be populated by JavaScript -->
                     </div>
 
@@ -325,7 +391,30 @@
                 </div>
 
                 <!-- Room Management -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Current Room Status -->
+                    <div class="glass-panel rounded-lg p-6" id="roomStatusPanel">
+                        <h3 class="text-lg font-semibold text-white mb-4">
+                            <span class="terminal-accent">&gt;</span> Room Status
+                        </h3>
+                        <div id="roomStatus">
+                            <div class="text-gray-400 text-sm">
+                                <p class="mb-2">🏠 <span class="terminal-accent">Solo Play</span></p>
+                                <p class="text-xs">Not in a room</p>
+                            </div>
+                        </div>
+                        <div id="roomParticipants" style="display: none;">
+                            <h4 class="text-sm font-medium text-white mt-4 mb-2">Participants:</h4>
+                            <div id="participantsList" class="space-y-1">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                            <button onclick="leaveRoom()" class="w-full mt-4 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm transition-colors">
+                                Leave Room
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Create Room -->
                     <div class="glass-panel rounded-lg p-6">
                         <h3 class="text-lg font-semibold text-white mb-4">
                             <span class="terminal-accent">&gt;</span> Create Room
@@ -337,10 +426,11 @@
                             </button>
                         </div>
                         <div class="mt-4 text-xs text-gray-400">
-                            <p><span class="terminal-accent">//</span> Share room code with colleagues for synchronized play</p>
+                            <p><span class="terminal-accent">//</span> Share room code with colleagues</p>
                         </div>
                     </div>
 
+                    <!-- Join Room -->
                     <div class="glass-panel rounded-lg p-6">
                         <h3 class="text-lg font-semibold text-white mb-4">
                             <span class="terminal-accent">&gt;</span> Join Room
@@ -352,7 +442,7 @@
                             </button>
                         </div>
                         <div class="mt-4 text-xs text-gray-400">
-                            <p><span class="terminal-accent">//</span> Perfect for synchronized meeting bingo</p>
+                            <p><span class="terminal-accent">//</span> Synchronized meeting bingo</p>
                         </div>
                     </div>
                 </div>
@@ -384,6 +474,34 @@
             </div>
         </div>
     </main>
+
+    <!-- Username Setup Modal -->
+    <div id="usernameModal" class="username-modal" style="display: none;">
+        <div class="bingo-modal-content">
+            <h2 class="text-xl font-bold text-white mb-4">👋 Welcome to Corporate Suffering Suite!</h2>
+            <p class="text-gray-300 mb-6">Enter your name to get started:</p>
+            <input type="text" id="usernameInput" placeholder="Your name (e.g., John)" class="control-input w-full p-3 border border-gray-600 rounded-lg text-sm mb-4" maxlength="20">
+            <button onclick="setUsername()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                <span class="terminal-accent">$</span> Start Playing
+            </button>
+        </div>
+    </div>
+
+    <!-- BINGO Celebration Modal -->
+    <div id="bingoModal" class="bingo-modal" style="display: none;">
+        <div class="bingo-modal-content">
+            <div class="text-6xl mb-4">🎉</div>
+            <h2 class="text-3xl font-bold text-green-400 mb-2 terminal-accent">BINGO!</h2>
+            <p class="text-xl text-white mb-4">You survived another corporate meeting!</p>
+            <div class="text-gray-300 mb-6" id="winDetails">
+                <p>Winning pattern: <span class="terminal-accent" id="winPattern">Row</span></p>
+                <p>Time: <span class="terminal-accent" id="gameTime">2:45</span></p>
+            </div>
+            <button onclick="closeBingoModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
+                🎯 Play Again
+            </button>
+        </div>
+    </div>
 
     <script>
         // Engineering Meme Generator - Professional JavaScript Implementation
@@ -992,14 +1110,22 @@
             }
         }
 
-        // ===== BINGO GAME FUNCTIONALITY =====
+        // ===== ENHANCED BINGO GAME FUNCTIONALITY =====
 
         let bingoInitialized = false;
         let bingoCard = [];
+        let currentCardSize = '5x5';
+        let gameStartTime = null;
+        let currentRoom = null;
+        let currentUser = 'Guest';
         let bingoStats = {
             gamesPlayed: 0,
             wins: 0,
-            totalSquares: 0
+            totalSquares: 0,
+            winStreak: 0,
+            bestTime: 0,
+            averageTime: 0,
+            favoritePatterns: {}
         };
 
         // Corporate buzzwords library
@@ -1018,33 +1144,55 @@
         ];
 
         function initializeBingo() {
-            console.log('🎯 Initializing Bingo Game...');
+            console.log('🎯 Initializing Enhanced Bingo Game...');
+            
+            // Check for existing username
+            const savedUser = localStorage.getItem('bingoUsername');
+            if (!savedUser) {
+                showUsernameModal();
+                return;
+            } else {
+                currentUser = savedUser;
+                document.getElementById('currentUser').textContent = currentUser;
+            }
             
             // Load stats from localStorage
             const savedStats = localStorage.getItem('bingoStats');
             if (savedStats) {
-                bingoStats = JSON.parse(savedStats);
+                bingoStats = { ...bingoStats, ...JSON.parse(savedStats) };
+            }
+            
+            // Load current room if exists
+            const savedRoom = localStorage.getItem('currentRoom');
+            if (savedRoom) {
+                currentRoom = JSON.parse(savedRoom);
+                updateRoomUI();
             }
             
             generateBingoCard();
             updateBingoUI();
             bingoInitialized = true;
             
-            console.log('✅ Bingo game initialized');
+            console.log('✅ Enhanced Bingo game initialized');
         }
 
         function generateBingoCard() {
-            console.log('🔄 Generating new bingo card...');
+            console.log('🔄 Generating new bingo card...', currentCardSize);
+            gameStartTime = Date.now();
             
-            // Shuffle and select 24 buzzwords (24 + 1 free space = 25)
+            const gridSize = currentCardSize === '3x3' ? 9 : 25;
+            const freeSpaceIndex = currentCardSize === '3x3' ? 4 : 12;
+            const numBuzzwords = currentCardSize === '3x3' ? 8 : 24;
+            
+            // Shuffle and select buzzwords 
             const shuffled = [...BUZZWORDS].sort(() => Math.random() - 0.5);
-            const selected = shuffled.slice(0, 24);
+            const selected = shuffled.slice(0, numBuzzwords);
             
             bingoCard = [];
             
-            // Generate 25 squares
-            for (let i = 0; i < 25; i++) {
-                if (i === 12) { // Center square (free space)
+            // Generate squares
+            for (let i = 0; i < gridSize; i++) {
+                if (i === freeSpaceIndex) { // Center square (free space)
                     bingoCard.push({
                         id: i,
                         text: 'FREE SPACE',
@@ -1052,7 +1200,7 @@
                         isFree: true
                     });
                 } else {
-                    const textIndex = i < 12 ? i : i - 1;
+                    const textIndex = i < freeSpaceIndex ? i : i - 1;
                     bingoCard.push({
                         id: i,
                         text: selected[textIndex],
@@ -1074,8 +1222,12 @@
             const grid = document.getElementById('bingoGrid');
             if (!grid) return;
             
+            // Set grid layout based on card size
+            const cols = currentCardSize === '3x3' ? 3 : 5;
+            grid.className = `grid grid-cols-${cols} gap-2`;
+            
             grid.innerHTML = bingoCard.map(square => `
-                <div class="bingo-square ${square.isMarked ? 'marked' : ''} ${square.isFree ? 'free' : ''}" 
+                <div class="bingo-square ${square.isMarked ? 'marked' : ''} ${square.isFree ? 'free' : ''} ${currentCardSize === '3x3' ? 'compact' : ''}" 
                      onclick="${square.isFree ? '' : `toggleBingoSquare(${square.id})`}">
                     <span>${square.text}</span>
                     ${square.isMarked && !square.isFree ? '<div class="absolute top-1 right-1 text-xs">✓</div>' : ''}
@@ -1095,71 +1247,153 @@
             updateBingoUI();
             saveBingoStats();
             
-            // Check for bingo
-            if (checkBingo()) {
-                document.getElementById('bingoButton').style.display = 'block';
-                console.log('🎉 BINGO detected!');
-            } else {
-                document.getElementById('bingoButton').style.display = 'none';
+            // Check for automatic bingo
+            const winResult = checkBingo();
+            if (winResult) {
+                triggerAutoBingo(winResult);
             }
         }
 
         function checkBingo() {
+            const gridSize = currentCardSize === '3x3' ? 3 : 5;
+            
             // Check rows
-            for (let row = 0; row < 5; row++) {
-                const rowStart = row * 5;
-                const rowSquares = bingoCard.slice(rowStart, rowStart + 5);
+            for (let row = 0; row < gridSize; row++) {
+                const rowStart = row * gridSize;
+                const rowSquares = bingoCard.slice(rowStart, rowStart + gridSize);
                 if (rowSquares.every(square => square.isMarked)) {
-                    return true;
+                    return {
+                        type: 'row',
+                        pattern: `Row ${row + 1}`,
+                        winningSquares: rowSquares.map(s => s.id)
+                    };
                 }
             }
             
             // Check columns
-            for (let col = 0; col < 5; col++) {
-                const colSquares = bingoCard.filter((_, index) => index % 5 === col);
+            for (let col = 0; col < gridSize; col++) {
+                const colSquares = bingoCard.filter((_, index) => index % gridSize === col);
                 if (colSquares.every(square => square.isMarked)) {
-                    return true;
+                    return {
+                        type: 'column',
+                        pattern: `Column ${col + 1}`,
+                        winningSquares: colSquares.map(s => s.id)
+                    };
                 }
             }
             
             // Check diagonals
-            const diagonal1 = [0, 6, 12, 18, 24].map(i => bingoCard[i]);
-            const diagonal2 = [4, 8, 12, 16, 20].map(i => bingoCard[i]);
+            const diagonal1 = [];
+            const diagonal2 = [];
             
-            if (diagonal1.every(square => square.isMarked) || diagonal2.every(square => square.isMarked)) {
-                return true;
+            for (let i = 0; i < gridSize; i++) {
+                diagonal1.push(bingoCard[i * gridSize + i]);
+                diagonal2.push(bingoCard[i * gridSize + (gridSize - 1 - i)]);
             }
             
-            return false;
+            if (diagonal1.every(square => square.isMarked)) {
+                return {
+                    type: 'diagonal',
+                    pattern: 'Main Diagonal',
+                    winningSquares: diagonal1.map(s => s.id)
+                };
+            }
+            
+            if (diagonal2.every(square => square.isMarked)) {
+                return {
+                    type: 'diagonal',
+                    pattern: 'Anti Diagonal',
+                    winningSquares: diagonal2.map(s => s.id)
+                };
+            }
+            
+            return null;
         }
 
-        function callBingo() {
-            console.log('🎉 BINGO called!');
+        // Enhanced Bingo Functions
+        
+        function triggerAutoBingo(winResult) {
+            console.log('🎉 AUTO-BINGO triggered!', winResult);
             
+            // Highlight winning squares
+            winResult.winningSquares.forEach(squareId => {
+                const square = document.querySelector(`[onclick="toggleBingoSquare(${squareId})"]`);
+                if (square) {
+                    square.classList.add('winning');
+                }
+            });
+            
+            // Calculate game time
+            const gameTime = Math.round((Date.now() - gameStartTime) / 1000);
+            const timeString = `${Math.floor(gameTime / 60)}:${(gameTime % 60).toString().padStart(2, '0')}`;
+            
+            // Update stats
             bingoStats.wins++;
+            bingoStats.winStreak++;
+            if (bingoStats.bestTime === 0 || gameTime < bingoStats.bestTime) {
+                bingoStats.bestTime = gameTime;
+            }
+            bingoStats.averageTime = Math.round((bingoStats.averageTime * (bingoStats.wins - 1) + gameTime) / bingoStats.wins);
+            bingoStats.favoritePatterns[winResult.type] = (bingoStats.favoritePatterns[winResult.type] || 0) + 1;
+            
             saveBingoStats();
             
-            alert('🎉 BINGO! You survived another corporate meeting! 🎉');
+            // Show celebration modal
+            document.getElementById('winPattern').textContent = winResult.pattern;
+            document.getElementById('gameTime').textContent = timeString;
+            document.getElementById('bingoModal').style.display = 'flex';
             
-            // Generate new card
+            // Notify room if in multiplayer
+            if (currentRoom) {
+                broadcastBingo(winResult, timeString);
+            }
+        }
+        
+        function closeBingoModal() {
+            document.getElementById('bingoModal').style.display = 'none';
+            // Remove winning highlights
+            document.querySelectorAll('.bingo-square.winning').forEach(square => {
+                square.classList.remove('winning');
+            });
+            // Generate new card after short delay
             setTimeout(() => {
                 generateBingoCard();
-            }, 1000);
+            }, 500);
+        }
+        
+        function regenerateCard() {
+            console.log('🔄 Regenerating card (keeping stats)...');
+            generateBingoCard(false); // Don't increment game count
+            bingoStats.gamesPlayed--; // Adjust since generateBingoCard increments
+            saveBingoStats();
+        }
+        
+        function changeCardSize(newSize) {
+            console.log('📏 Changing card size to:', newSize);
+            currentCardSize = newSize;
+            localStorage.setItem('cardSize', currentCardSize);
+            generateBingoCard(false); // Don't increment game count
+            bingoStats.gamesPlayed--; // Adjust since generateBingoCard increments
+            saveBingoStats();
         }
 
         function updateBingoUI() {
             // Update marked count
             const markedCount = bingoCard.filter(s => s.isMarked).length;
+            const totalSquares = bingoCard.length;
             const markedElement = document.getElementById('markedCount');
             if (markedElement) {
-                markedElement.textContent = markedCount;
+                markedElement.textContent = `${markedCount}/${totalSquares}`;
             }
             
             // Update stats
             const gamesElement = document.getElementById('gamesPlayed');
             const winsElement = document.getElementById('wins');
+            const userElement = document.getElementById('currentUser');
+            
             if (gamesElement) gamesElement.textContent = bingoStats.gamesPlayed;
             if (winsElement) winsElement.textContent = bingoStats.wins;
+            if (userElement) userElement.textContent = currentUser;
         }
 
         function saveBingoStats() {
@@ -1169,7 +1403,36 @@
         function getBingoStats() {
             return bingoStats;
         }
-
+        
+        // Username Management
+        function showUsernameModal() {
+            document.getElementById('usernameModal').style.display = 'flex';
+        }
+        
+        function setUsername() {
+            const username = document.getElementById('usernameInput').value.trim();
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+            
+            currentUser = username;
+            localStorage.setItem('bingoUsername', currentUser);
+            document.getElementById('currentUser').textContent = currentUser;
+            document.getElementById('usernameModal').style.display = 'none';
+            
+            // Now initialize the game
+            const savedStats = localStorage.getItem('bingoStats');
+            if (savedStats) {
+                bingoStats = { ...bingoStats, ...JSON.parse(savedStats) };
+            }
+            
+            generateBingoCard();
+            updateBingoUI();
+            bingoInitialized = true;
+        }
+        
+        // Room Management Functions
         function createRoom() {
             const roomNameInput = document.getElementById('roomName');
             const roomName = roomNameInput.value.trim();
@@ -1180,8 +1443,20 @@
             }
             
             const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-            alert(`Room created! Share this code with colleagues: ${roomCode}`);
+            
+            currentRoom = {
+                code: roomCode,
+                name: roomName,
+                host: currentUser,
+                participants: [currentUser],
+                created: Date.now()
+            };
+            
+            localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+            updateRoomUI();
             roomNameInput.value = '';
+            
+            alert(`Room "${roomName}" created!\nRoom Code: ${roomCode}\nShare this code with colleagues.`);
             
             console.log('🏢 Room created:', roomName, roomCode);
         }
@@ -1200,10 +1475,78 @@
                 return;
             }
             
-            alert(`Joined room ${roomCode}! 🎯 Good luck in your meeting!`);
+            // Simulate joining room (in real app, this would check server)
+            const roomName = `Meeting Room ${roomCode}`;
+            currentRoom = {
+                code: roomCode,
+                name: roomName,
+                host: 'Unknown',
+                participants: [currentUser, 'Alice', 'Bob'], // Simulated participants
+                joined: Date.now()
+            };
+            
+            localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+            updateRoomUI();
             roomCodeInput.value = '';
             
+            alert(`Joined room "${roomName}"! 🎯 Good luck in your meeting!`);
+            
             console.log('🚪 Joined room:', roomCode);
+        }
+        
+        function leaveRoom() {
+            if (!currentRoom) return;
+            
+            const roomName = currentRoom.name;
+            currentRoom = null;
+            localStorage.removeItem('currentRoom');
+            updateRoomUI();
+            
+            alert(`Left room "${roomName}"`);
+            console.log('🚪 Left room');
+        }
+        
+        function updateRoomUI() {
+            const roomStatusElement = document.getElementById('roomStatus');
+            const roomParticipantsElement = document.getElementById('roomParticipants');
+            const participantsListElement = document.getElementById('participantsList');
+            
+            if (currentRoom) {
+                // Show room status
+                roomStatusElement.innerHTML = `
+                    <div class="text-gray-300 text-sm">
+                        <p class="mb-1">🏠 <span class="terminal-accent">${currentRoom.name}</span></p>
+                        <p class="text-xs">Code: <span class="terminal-accent font-mono">${currentRoom.code}</span></p>
+                        <p class="text-xs">${currentRoom.participants.length} participants</p>
+                    </div>
+                `;
+                
+                // Show participants list
+                participantsListElement.innerHTML = currentRoom.participants.map(participant => `
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-300">${participant}</span>
+                        ${participant === currentRoom.host ? '<span class="text-yellow-400 text-xs">👑 Host</span>' : ''}
+                        ${participant === currentUser ? '<span class="text-green-400 text-xs">You</span>' : ''}
+                    </div>
+                `).join('');
+                
+                roomParticipantsElement.style.display = 'block';
+            } else {
+                // Show solo play status
+                roomStatusElement.innerHTML = `
+                    <div class="text-gray-400 text-sm">
+                        <p class="mb-2">🏠 <span class="terminal-accent">Solo Play</span></p>
+                        <p class="text-xs">Not in a room</p>
+                    </div>
+                `;
+                roomParticipantsElement.style.display = 'none';
+            }
+        }
+        
+        function broadcastBingo(winResult, timeString) {
+            // Simulate broadcasting bingo win to room participants
+            console.log('📢 Broadcasting BINGO to room:', currentRoom.code, winResult);
+            // In a real implementation, this would send to server/other players
         }
     </script>
 </body>
