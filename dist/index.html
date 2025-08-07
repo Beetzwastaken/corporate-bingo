@@ -166,43 +166,55 @@
             low: ['working', 'progress', 'complete', 'success', 'fixed', 'approved']
         };
 
-        // Meme templates with engineering themes
+        // Meme templates with actual images and engineering themes
         const memeTemplates = [
             {
                 id: 'drake',
                 name: 'Drake Choice',
                 category: 'general',
+                imageUrl: 'https://i.imgflip.com/30b1gx.jpg',
+                width: 400,
+                height: 400,
                 textAreas: [
-                    { id: 'reject', placeholder: 'Following the spec', x: 50, y: 25 },
-                    { id: 'accept', placeholder: 'Client changes everything', x: 50, y: 75 }
+                    { id: 'reject', placeholder: 'Following the spec', x: 75, y: 25, width: 40, fontSize: 20, color: 'black' },
+                    { id: 'accept', placeholder: 'Client changes everything', x: 75, y: 75, width: 40, fontSize: 20, color: 'black' }
                 ]
             },
             {
                 id: 'this-is-fine',
                 name: 'This is Fine',
                 category: 'general',
+                imageUrl: 'https://i.imgflip.com/26am.jpg',
+                width: 400,
+                height: 400,
                 textAreas: [
-                    { id: 'top', placeholder: 'Production is down', x: 50, y: 20 },
-                    { id: 'bottom', placeholder: 'This is fine', x: 50, y: 80 }
+                    { id: 'top', placeholder: 'Production is down', x: 50, y: 15, width: 80, fontSize: 24, color: 'white' },
+                    { id: 'bottom', placeholder: 'This is fine', x: 50, y: 85, width: 80, fontSize: 20, color: 'black' }
                 ]
             },
             {
                 id: 'two-buttons',
                 name: 'Two Buttons',
                 category: 'general',
+                imageUrl: 'https://i.imgflip.com/1g8my4.jpg',
+                width: 400,
+                height: 400,
                 textAreas: [
-                    { id: 'button1', placeholder: 'Fix the bug properly', x: 25, y: 30 },
-                    { id: 'button2', placeholder: 'Quick hotfix to prod', x: 75, y: 30 }
+                    { id: 'button1', placeholder: 'Fix the bug properly', x: 20, y: 35, width: 25, fontSize: 16, color: 'black' },
+                    { id: 'button2', placeholder: 'Quick hotfix to prod', x: 80, y: 35, width: 25, fontSize: 16, color: 'black' }
                 ]
             },
             {
                 id: 'distracted',
-                name: 'Distracted Engineer',
+                name: 'Distracted Boyfriend',
                 category: 'software',
+                imageUrl: 'https://i.imgflip.com/1ur9b0.jpg',
+                width: 400,
+                height: 400,
                 textAreas: [
-                    { id: 'girlfriend', placeholder: 'Current project', x: 25, y: 70 },
-                    { id: 'boyfriend', placeholder: 'Me', x: 50, y: 80 },
-                    { id: 'other_woman', placeholder: 'New shiny framework', x: 75, y: 60 }
+                    { id: 'girlfriend', placeholder: 'Current project', x: 15, y: 85, width: 20, fontSize: 14, color: 'white' },
+                    { id: 'boyfriend', placeholder: 'Me', x: 45, y: 85, width: 15, fontSize: 14, color: 'white' },
+                    { id: 'other_woman', placeholder: 'New framework', x: 80, y: 75, width: 25, fontSize: 14, color: 'white' }
                 ]
             }
         ];
@@ -303,15 +315,22 @@
             messageElement.textContent = messages[score] || 'Unknown pain level';
         }
 
-        // Render meme templates
+        // Render meme templates with image previews
         function renderTemplates() {
             const container = document.getElementById('templates');
             container.innerHTML = memeTemplates.map((template, index) => 
                 `<div onclick="selectTemplate(${JSON.stringify(template).replace(/"/g, '&quot;')})" 
-                      class="template-card cursor-pointer p-4 rounded-lg border border-gray-300 bg-white hover:border-blue-500" id="template-${template.id}">
+                      class="template-card cursor-pointer p-3 rounded-lg border border-gray-300 bg-white hover:border-blue-500" id="template-${template.id}">
                     <div class="text-center">
-                        <div class="w-12 h-12 bg-gray-100 rounded-lg mb-3 flex items-center justify-center text-xl mx-auto">
-                            ${getTemplateIcon(template.category)}
+                        <div class="w-full aspect-square bg-gray-100 rounded-lg mb-3 overflow-hidden">
+                            <img src="${template.imageUrl}" 
+                                 alt="${template.name}" 
+                                 class="w-full h-full object-cover"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+                                 loading="lazy">
+                            <div class="w-full h-full bg-gray-200 rounded-lg items-center justify-center text-2xl hidden">
+                                ${getTemplateIcon(template.category)}
+                            </div>
                         </div>
                         <h4 class="text-sm font-medium text-gray-900 mb-1">${template.name}</h4>
                         <p class="text-xs text-gray-500">${template.textAreas.length} text field${template.textAreas.length === 1 ? '' : 's'}</p>
@@ -407,7 +426,10 @@
             return labels[areaId] || 'Text';
         }
 
-        // Update canvas
+        // Store loaded images to avoid reloading
+        const imageCache = {};
+
+        // Update canvas with real meme images
         function updateCanvas() {
             const canvas = document.getElementById('memeCanvas');
             const ctx = canvas.getContext('2d');
@@ -421,46 +443,111 @@
             ctx.lineWidth = 2;
             ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
-            if (!currentTemplate) return;
-
-            // Draw template background
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(10, 10, canvas.width - 20, canvas.height - 20);
-
-            // Draw template indicator
-            ctx.fillStyle = '#3b82f6';
-            ctx.font = 'bold 16px Inter';
-            ctx.textAlign = 'center';
-            ctx.fillText(currentTemplate.name.toUpperCase(), canvas.width / 2, 30);
-
-            // Draw text areas
-            currentTemplate.textAreas.forEach(area => {
-                const input = document.getElementById('text_' + area.id);
-                const text = input ? input.value || area.placeholder : area.placeholder;
-                
-                const x = (area.x / 100) * canvas.width;
-                const y = (area.y / 100) * canvas.height;
-                
-                // Set text style
-                ctx.font = 'bold 24px Impact, Arial Black';
+            if (!currentTemplate) {
+                // Show placeholder when no template selected
+                ctx.fillStyle = '#6b7280';
+                ctx.font = '16px Inter';
                 ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                
-                // Draw text stroke
-                ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 3;
-                ctx.strokeText(text, x, y);
-                
-                // Draw text fill
-                ctx.fillStyle = '#ffffff';
-                ctx.fillText(text, x, y);
-            });
+                ctx.fillText('Select a meme template to get started', canvas.width / 2, canvas.height / 2);
+                return;
+            }
 
-            // Add pain level indicator
-            ctx.fillStyle = '#6b7280';
-            ctx.font = '12px Inter';
-            ctx.textAlign = 'right';
-            ctx.fillText(`Pain Level: ${currentPainScore}/10`, canvas.width - 10, canvas.height - 10);
+            // Load and draw the meme image
+            loadMemeImage(currentTemplate, (img) => {
+                // Clear canvas again
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw the meme image
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                // Draw text overlays
+                currentTemplate.textAreas.forEach(area => {
+                    const input = document.getElementById('text_' + area.id);
+                    const text = input ? input.value || area.placeholder : area.placeholder;
+                    
+                    if (!text) return;
+                    
+                    const x = (area.x / 100) * canvas.width;
+                    const y = (area.y / 100) * canvas.height;
+                    const maxWidth = (area.width / 100) * canvas.width;
+                    
+                    // Set text style based on template configuration
+                    ctx.font = `bold ${area.fontSize}px Impact, Arial Black, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    // Draw text with outline for visibility
+                    ctx.strokeStyle = area.color === 'white' ? '#000000' : '#ffffff';
+                    ctx.lineWidth = 3;
+                    ctx.fillStyle = area.color;
+                    
+                    // Word wrap for long text
+                    const words = text.split(' ');
+                    const lines = [];
+                    let currentLine = '';
+                    
+                    words.forEach(word => {
+                        const testLine = currentLine ? `${currentLine} ${word}` : word;
+                        const metrics = ctx.measureText(testLine);
+                        
+                        if (metrics.width > maxWidth && currentLine) {
+                            lines.push(currentLine);
+                            currentLine = word;
+                        } else {
+                            currentLine = testLine;
+                        }
+                    });
+                    if (currentLine) lines.push(currentLine);
+                    
+                    // Draw each line
+                    const lineHeight = area.fontSize * 1.2;
+                    const startY = y - ((lines.length - 1) * lineHeight) / 2;
+                    
+                    lines.forEach((line, index) => {
+                        const lineY = startY + (index * lineHeight);
+                        ctx.strokeText(line, x, lineY);
+                        ctx.fillText(line, x, lineY);
+                    });
+                });
+
+                // Add subtle pain level indicator
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'right';
+                ctx.fillText(`Pain: ${currentPainScore}/10`, canvas.width - 10, canvas.height - 10);
+            });
+        }
+
+        // Load meme image with caching
+        function loadMemeImage(template, callback) {
+            if (imageCache[template.id]) {
+                callback(imageCache[template.id]);
+                return;
+            }
+            
+            const img = new Image();
+            img.crossOrigin = 'anonymous'; // Handle CORS for external images
+            
+            img.onload = () => {
+                imageCache[template.id] = img;
+                callback(img);
+            };
+            
+            img.onerror = () => {
+                console.warn('Failed to load meme image:', template.imageUrl);
+                // Fallback to colored rectangle with template name
+                const canvas = document.getElementById('memeCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                ctx.fillStyle = '#e5e7eb';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#374151';
+                ctx.font = 'bold 20px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText(template.name, canvas.width / 2, canvas.height / 2);
+            };
+            
+            img.src = template.imageUrl;
         }
 
         // Generate meme (just update canvas for now)
