@@ -49,7 +49,7 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
           </div>
 
           <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
-            <span className="terminal-accent">$</span> {mode === 'login' ? 'Login' : 'Create Account'}
+            {mode === 'login' ? 'Login' : 'Create Account'}
           </button>
         </div>
 

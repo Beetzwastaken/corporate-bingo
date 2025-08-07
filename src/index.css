@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Engineering Meme Generator Styles */
+/* Corporate Bingo Game Styles */
 @layer base {
   html {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -14,48 +14,48 @@
 }
 
 @layer components {
-  .meme-canvas {
+  .bingo-card {
     @apply border-2 border-gray-300 rounded-lg shadow-lg bg-white;
   }
   
-  .pain-meter {
+  .progress-meter {
     @apply w-full h-3 bg-gray-200 rounded-full overflow-hidden;
   }
   
-  .pain-bar {
+  .progress-bar {
     @apply h-full transition-all duration-500 ease-out;
   }
   
-  .pain-low {
+  .progress-low {
     @apply bg-green-500;
   }
   
-  .pain-medium {
+  .progress-medium {
+    @apply bg-blue-500;
+  }
+  
+  .progress-high {
+    @apply bg-purple-500;
+  }
+  
+  .progress-complete {
     @apply bg-yellow-500;
   }
   
-  .pain-high {
-    @apply bg-orange-500;
-  }
-  
-  .pain-extreme {
-    @apply bg-red-600;
-  }
-  
-  .template-card {
+  .bingo-square {
     @apply border-2 border-gray-300 rounded-lg p-2 cursor-pointer transition-all duration-200 hover:shadow-md;
   }
   
-  .template-card.selected {
-    @apply border-engineer-blue shadow-lg;
+  .bingo-square.selected {
+    @apply border-blue-500 shadow-lg;
   }
   
-  .engineer-button {
-    @apply bg-engineer-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium;
+  .bingo-button {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium;
   }
   
-  .pain-button {
-    @apply bg-pain-red text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium;
+  .win-button {
+    @apply bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors font-medium;
   }
 }
 

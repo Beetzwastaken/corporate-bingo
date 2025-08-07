@@ -1,4 +1,4 @@
-// Shared API functions for the corporate suffering suite
+// Shared API functions for Corporate Bingo
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -6,36 +6,25 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
-// Meme generation API
-export async function generateMemeText(pain: string): Promise<ApiResponse<{ topText: string; bottomText: string }>> {
+// Buzzword suggestions API
+export async function suggestBuzzwords(): Promise<ApiResponse<{ suggestions: string[] }>> {
   try {
-    // TODO: Replace with actual API call to AI service
-    // For now, simulate API response
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 500));
     
-    const responses = {
-      client: { topText: 'Client Requirements', bottomText: 'Subject to change without notice' },
-      deadline: { topText: 'Impossible Deadline', bottomText: 'Make it happen anyway' },
-      meeting: { topText: 'Could have been an email', bottomText: 'Scheduled for 2 hours' },
-      bug: { topText: 'It\'s not a bug', bottomText: 'It\'s a feature' },
-      spec: { topText: 'According to the spec', bottomText: 'What spec?' }
-    };
-    
-    const keyword = Object.keys(responses).find(key => 
-      pain.toLowerCase().includes(key)
-    );
+    const suggestions = [
+      'Synergy', 'Leverage', 'Deep Dive', 'Circle Back', 'Touch Base',
+      'Low-hanging Fruit', 'Move the Needle', 'Paradigm Shift', 'Think Outside the Box',
+      'Best Practice', 'Core Competency', 'Value-add', 'Game Changer', 'Win-win'
+    ];
     
     return {
       success: true,
-      data: keyword ? responses[keyword as keyof typeof responses] : {
-        topText: 'Engineering Excellence',
-        bottomText: 'Professional Suffering'
-      }
+      data: { suggestions }
     };
   } catch {
     return {
       success: false,
-      error: 'Failed to generate meme text'
+      error: 'Failed to get buzzword suggestions'
     };
   }
 }
@@ -83,14 +72,14 @@ export async function joinBingoRoom(roomCode: string): Promise<ApiResponse<{ roo
 }
 
 // Analytics API
-export async function trackMemeGeneration(memeData: {
-  templateId: string;
-  painScore: number;
-  category: string;
+export async function trackBuzzwordUsage(buzzwordData: {
+  word: string;
+  gameId: string;
+  timestamp: Date;
 }): Promise<ApiResponse<void>> {
   try {
     // TODO: Send to analytics service
-    console.log('Tracking meme generation:', memeData);
+    console.log('Tracking buzzword usage:', buzzwordData);
     return { success: true };
   } catch {
     return {

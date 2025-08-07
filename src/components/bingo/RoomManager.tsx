@@ -106,7 +106,7 @@ export function RoomManager({ currentRoom, onCreateRoom, onJoinRoom, onLeaveRoom
                   </div>
                 ) : (
                   <>
-                    <span className="terminal-accent">$</span> Create Room
+                    Create Room
                   </>
                 )}
               </button>
@@ -147,7 +147,7 @@ export function RoomManager({ currentRoom, onCreateRoom, onJoinRoom, onLeaveRoom
                   </div>
                 ) : (
                   <>
-                    <span className="terminal-accent">$</span> Join Room
+                    Join Room
                   </>
                 )}
               </button>
