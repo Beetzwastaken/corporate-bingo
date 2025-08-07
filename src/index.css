@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Engineering Meme Generator Styles */
+@layer base {
+  html {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-100 text-gray-900;
+  }
+}
+
+@layer components {
+  .meme-canvas {
+    @apply border-2 border-gray-300 rounded-lg shadow-lg bg-white;
+  }
+  
+  .pain-meter {
+    @apply w-full h-3 bg-gray-200 rounded-full overflow-hidden;
+  }
+  
+  .pain-bar {
+    @apply h-full transition-all duration-500 ease-out;
+  }
+  
+  .pain-low {
+    @apply bg-green-500;
+  }
+  
+  .pain-medium {
+    @apply bg-yellow-500;
+  }
+  
+  .pain-high {
+    @apply bg-orange-500;
+  }
+  
+  .pain-extreme {
+    @apply bg-red-600;
+  }
+  
+  .template-card {
+    @apply border-2 border-gray-300 rounded-lg p-2 cursor-pointer transition-all duration-200 hover:shadow-md;
+  }
+  
+  .template-card.selected {
+    @apply border-engineer-blue shadow-lg;
+  }
+  
+  .engineer-button {
+    @apply bg-engineer-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium;
+  }
+  
+  .pain-button {
+    @apply bg-pain-red text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  .text-shadow-heavy {
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+  }
+}
