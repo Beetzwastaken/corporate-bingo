@@ -64,21 +64,23 @@ jobs:
         
       - name: Build application
         run: npm run build
-        env:
-          VITE_API_URL: "https://corporate-bingo.workers.dev"
-          VITE_WS_URL: "wss://corporate-bingo.workers.dev"
-          
-      - name: Install Netlify CLI
-        run: npm install -g netlify-cli
         
-      - name: Deploy to Netlify
-        run: netlify deploy --prod --dir=dist --message="Corporate Bingo deployment ${{ github.sha }}"
-        env:
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      - name: Check build output
+        run: |
+          echo "Build completed, checking dist folder:"
+          ls -la dist/
+          echo "Build artifacts ready for deployment"
           
-      - name: Deployment complete
-        run: echo "✅ Deployment submitted to Netlify"
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: './dist'
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Corporate Bingo deployment ${{ github.sha }}"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
   notification:
     needs: [deploy-frontend]
