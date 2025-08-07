@@ -1,8 +1,15 @@
-# 🚀 EngineerMemes.AI - Ready for Netlify Deployment
+# 🚀 EngineerMemes.AI - Netlify Deployment Options
 
-## Quick Netlify Deployment (Manual - 2 minutes)
+## Option 1: Quick Manual Deploy (2 minutes)
+For immediate testing - but you'd need to re-upload for each change.
 
-Since the Netlify CLI is having technical issues, here's the manual deployment method that will get your app live immediately:
+## Option 2: Automatic Git Deploy (5 minutes setup, then automatic forever!)
+**RECOMMENDED** - Same setup as your SPAIRO and web-showcase projects.
+See `GITHUB_SETUP.md` for automatic deployment instructions.
+
+---
+
+## Option 1: Quick Manual Deployment
 
 ### Method 1: Netlify Drag & Drop (Recommended)
 
