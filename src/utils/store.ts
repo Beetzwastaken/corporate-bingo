@@ -1,47 +1,508 @@
-// Zustand Store for Corporate Bingo
-// Simple state management for bingo game functionality
+// Zustand Store for Corporate Bingo - Enhanced Multiplayer State Management
+// Handles room state, player management, and WebSocket connections
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
+import { BingoWebSocketClient, createWebSocketClient, MESSAGE_TYPES } from '../lib/websocket';
+import { createBingoRoom, joinBingoRoom } from '../lib/api';
 
+// Player interface
+export interface BingoPlayer {
+  id: string;
+  name: string;
+  isHost?: boolean;
+  currentScore?: number;
+  totalScore?: number;
+  isConnected?: boolean;
+  joinedAt?: number;
+}
+
+// Room interface
+export interface BingoRoom {
+  id: string;
+  name: string;
+  code: string;
+  players: BingoPlayer[];
+  isActive: boolean;
+  roundNumber?: number;
+  createdAt?: Date;
+  maxPlayers?: number;
+}
+
+// Square interface
+export interface BingoSquare {
+  id: string;
+  text: string;
+  isMarked: boolean;
+  isFree?: boolean;
+}
+
+// Game state interface
+export interface GameState {
+  board: BingoSquare[];
+  markedSquares: boolean[];
+  hasWon: boolean;
+  winningPattern?: number[];
+}
+
+// Store interface
 interface BingoStore {
-  // Basic state
-  currentRoom: string | null;
+  // Connection state
+  isConnected: boolean;
+  connectionError: string | null;
+  isConnecting: boolean;
+  
+  // Player state  
+  currentPlayer: BingoPlayer | null;
   playerName: string;
   
-  // Stats
+  // Room state
+  currentRoom: BingoRoom | null;
+  
+  // Game state
+  gameState: GameState;
+  
+  // WebSocket client
+  wsClient: BingoWebSocketClient | null;
+  
+  // Stats (persisted)
   gamesPlayed: number;
   wins: number;
   totalSquares: number;
   
-  // Actions
-  setCurrentRoom: (room: string | null) => void;
+  // Actions - Connection Management
+  setConnectionStatus: (connected: boolean, error?: string) => void;
+  setConnecting: (connecting: boolean) => void;
+  
+  // Actions - Player Management
   setPlayerName: (name: string) => void;
+  setCurrentPlayer: (player: BingoPlayer | null) => void;
+  
+  // Actions - Room Management
+  setCurrentRoom: (room: BingoRoom | null) => void;
+  updateRoomPlayers: (players: BingoPlayer[]) => void;
+  addPlayerToRoom: (player: BingoPlayer) => void;
+  removePlayerFromRoom: (playerId: string) => void;
+  
+  // Actions - Game Management
+  setBoard: (board: string[]) => void;
+  markSquare: (squareIndex: number) => void;
+  setGameWon: (won: boolean, pattern?: number[]) => void;
+  resetGame: () => void;
+  
+  // Actions - WebSocket Management
+  connectWebSocket: () => Promise<void>;
+  disconnectWebSocket: () => void;
+  sendMessage: (type: string, payload?: any) => Promise<void>;
+  
+  // Actions - Room Operations
+  createRoom: (roomName: string) => Promise<{ success: boolean; error?: string }>;
+  joinRoom: (roomCode: string) => Promise<{ success: boolean; error?: string }>;
+  leaveRoom: () => void;
+  
+  // Actions - Stats
   incrementGamesPlayed: () => void;
   incrementWins: () => void;
   incrementTotalSquares: () => void;
 }
 
+// Create the store
 export const useBingoStore = create<BingoStore>()(
   devtools(
     persist(
-      (set) => ({
-        // Initial state
-        currentRoom: null,
+      (set, get) => ({
+        // Initial connection state
+        isConnected: false,
+        connectionError: null,
+        isConnecting: false,
+        
+        // Initial player state
+        currentPlayer: null,
         playerName: '',
+        
+        // Initial room state
+        currentRoom: null,
+        
+        // Initial game state
+        gameState: {
+          board: [],
+          markedSquares: new Array(25).fill(false),
+          hasWon: false,
+        },
+        
+        // WebSocket client
+        wsClient: null,
+        
+        // Initial stats
         gamesPlayed: 0,
         wins: 0,
         totalSquares: 0,
-
-        // Actions
-        setCurrentRoom: (room) => set({ currentRoom: room }),
-        setPlayerName: (name) => set({ playerName: name }),
-        incrementGamesPlayed: () => set((state) => ({ gamesPlayed: state.gamesPlayed + 1 })),
-        incrementWins: () => set((state) => ({ wins: state.wins + 1 })),
-        incrementTotalSquares: () => set((state) => ({ totalSquares: state.totalSquares + 1 }))
+        
+        // Connection Management
+        setConnectionStatus: (connected, error) => 
+          set({ isConnected: connected, connectionError: error || null }),
+          
+        setConnecting: (connecting) => 
+          set({ isConnecting: connecting }),
+        
+        // Player Management
+        setPlayerName: (name) => 
+          set({ playerName: name.trim() }),
+          
+        setCurrentPlayer: (player) => 
+          set({ currentPlayer: player }),
+        
+        // Room Management
+        setCurrentRoom: (room) => 
+          set({ currentRoom: room }),
+          
+        updateRoomPlayers: (players) => 
+          set((state) => ({
+            currentRoom: state.currentRoom ? {
+              ...state.currentRoom,
+              players
+            } : null
+          })),
+          
+        addPlayerToRoom: (player) => 
+          set((state) => ({
+            currentRoom: state.currentRoom ? {
+              ...state.currentRoom,
+              players: [...state.currentRoom.players, player]
+            } : null
+          })),
+          
+        removePlayerFromRoom: (playerId) => 
+          set((state) => ({
+            currentRoom: state.currentRoom ? {
+              ...state.currentRoom,
+              players: state.currentRoom.players.filter(p => p.id !== playerId)
+            } : null
+          })),
+        
+        // Game Management
+        setBoard: (board) => {
+          const squares: BingoSquare[] = board.map((text, index) => ({
+            id: `square-${index}`,
+            text,
+            isMarked: index === 12, // Center square (FREE SPACE) is pre-marked
+            isFree: index === 12
+          }));
+          
+          set({
+            gameState: {
+              board: squares,
+              markedSquares: new Array(25).fill(false).map((_, i) => i === 12),
+              hasWon: false,
+            }
+          });
+        },
+        
+        markSquare: (squareIndex) => {
+          const state = get();
+          if (squareIndex < 0 || squareIndex >= 25) return;
+          
+          const newBoard = [...state.gameState.board];
+          const newMarkedSquares = [...state.gameState.markedSquares];
+          
+          // Toggle the square
+          newBoard[squareIndex] = {
+            ...newBoard[squareIndex],
+            isMarked: !newBoard[squareIndex].isMarked
+          };
+          newMarkedSquares[squareIndex] = !newMarkedSquares[squareIndex];
+          
+          set({
+            gameState: {
+              ...state.gameState,
+              board: newBoard,
+              markedSquares: newMarkedSquares
+            }
+          });
+          
+          // Send to WebSocket if connected
+          if (state.wsClient?.isConnected()) {
+            state.wsClient.markSquare(squareIndex).catch(console.error);
+          }
+        },
+        
+        setGameWon: (won, pattern) => 
+          set((state) => ({
+            gameState: {
+              ...state.gameState,
+              hasWon: won,
+              winningPattern: pattern
+            }
+          })),
+        
+        resetGame: () => 
+          set((state) => ({
+            gameState: {
+              board: state.gameState.board.map(square => ({
+                ...square,
+                isMarked: square.isFree || false
+              })),
+              markedSquares: new Array(25).fill(false).map((_, i) => i === 12),
+              hasWon: false,
+              winningPattern: undefined
+            }
+          })),
+        
+        // WebSocket Management
+        connectWebSocket: async () => {
+          const state = get();
+          if (!state.currentRoom || !state.currentPlayer) {
+            throw new Error('Must be in a room with a player to connect WebSocket');
+          }
+          
+          if (state.wsClient) {
+            state.wsClient.disconnect();
+          }
+          
+          set({ isConnecting: true, connectionError: null });
+          
+          const wsClient = createWebSocketClient({
+            roomCode: state.currentRoom.code,
+            playerId: state.currentPlayer.id,
+            onMessage: (message) => {
+              const currentState = get();
+              
+              switch (message.type) {
+                case MESSAGE_TYPES.PLAYER_JOINED:
+                  if (message.payload?.player) {
+                    currentState.addPlayerToRoom(message.payload.player);
+                  }
+                  break;
+                  
+                case MESSAGE_TYPES.PLAYER_LEFT:
+                  if (message.payload?.playerId) {
+                    currentState.removePlayerFromRoom(message.payload.playerId);
+                  }
+                  break;
+                  
+                case MESSAGE_TYPES.SQUARE_MARKED:
+                  // Handle other players marking squares
+                  // This would be for verification requests or score updates
+                  console.log('Player marked square:', message.payload);
+                  break;
+                  
+                case MESSAGE_TYPES.GAME_STATE_UPDATE:
+                  // Handle game state synchronization
+                  if (message.payload?.playerCount) {
+                    set((state) => ({
+                      currentRoom: state.currentRoom ? {
+                        ...state.currentRoom,
+                        players: message.payload.players || state.currentRoom.players
+                      } : null
+                    }));
+                  }
+                  break;
+                  
+                case MESSAGE_TYPES.ERROR:
+                  console.error('WebSocket error:', message.payload);
+                  set({ connectionError: message.payload?.message || 'WebSocket error' });
+                  break;
+              }
+            },
+            onConnect: () => {
+              set({ isConnected: true, isConnecting: false, connectionError: null });
+            },
+            onDisconnect: () => {
+              set({ isConnected: false, isConnecting: false });
+            },
+            onError: (error) => {
+              set({ 
+                isConnected: false, 
+                isConnecting: false, 
+                connectionError: error.message 
+              });
+            }
+          });
+          
+          try {
+            await wsClient.connect();
+            set({ wsClient });
+          } catch (error) {
+            set({ 
+              isConnecting: false, 
+              connectionError: error instanceof Error ? error.message : 'Connection failed' 
+            });
+            throw error;
+          }
+        },
+        
+        disconnectWebSocket: () => {
+          const state = get();
+          if (state.wsClient) {
+            state.wsClient.disconnect();
+            set({ wsClient: null, isConnected: false });
+          }
+        },
+        
+        sendMessage: async (type, payload) => {
+          const state = get();
+          if (!state.wsClient?.isConnected()) {
+            throw new Error('WebSocket not connected');
+          }
+          await state.wsClient.send(type, payload);
+        },
+        
+        // Room Operations
+        createRoom: async (roomName) => {
+          const state = get();
+          if (!state.playerName) {
+            return { success: false, error: 'Player name is required' };
+          }
+          
+          try {
+            set({ isConnecting: true });
+            const response = await createBingoRoom(roomName, state.playerName);
+            
+            if (response.success && response.data) {
+              const player: BingoPlayer = {
+                id: response.data.playerId,
+                name: state.playerName,
+                isHost: response.data.isHost,
+                currentScore: 0,
+                totalScore: 0,
+                isConnected: true,
+                joinedAt: Date.now()
+              };
+              
+              const room: BingoRoom = {
+                id: response.data.playerId, // Use player ID as room ID for now
+                name: roomName,
+                code: response.data.roomCode,
+                players: [player],
+                isActive: true,
+                roundNumber: 1,
+                createdAt: new Date(),
+                maxPlayers: 10
+              };
+              
+              set({ 
+                currentPlayer: player,
+                currentRoom: room,
+                isConnecting: false
+              });
+              
+              // Set the board
+              get().setBoard(response.data.board);
+              
+              // Connect WebSocket
+              await get().connectWebSocket();
+              
+              return { success: true };
+            } else {
+              set({ isConnecting: false });
+              return { success: false, error: response.error || 'Failed to create room' };
+            }
+          } catch (error) {
+            set({ isConnecting: false });
+            return { 
+              success: false, 
+              error: error instanceof Error ? error.message : 'Failed to create room' 
+            };
+          }
+        },
+        
+        joinRoom: async (roomCode) => {
+          const state = get();
+          if (!state.playerName) {
+            return { success: false, error: 'Player name is required' };
+          }
+          
+          try {
+            set({ isConnecting: true });
+            const response = await joinBingoRoom(roomCode, state.playerName);
+            
+            if (response.success && response.data) {
+              const player: BingoPlayer = {
+                id: response.data.playerId,
+                name: state.playerName,
+                isHost: false,
+                currentScore: 0,
+                totalScore: 0,
+                isConnected: true,
+                joinedAt: Date.now()
+              };
+              
+              const room: BingoRoom = {
+                id: roomCode,
+                name: response.data.roomName,
+                code: roomCode,
+                players: [player], // Backend will send full player list via WebSocket
+                isActive: true,
+                roundNumber: response.data.roundNumber || 1,
+                createdAt: new Date(),
+                maxPlayers: 10
+              };
+              
+              set({ 
+                currentPlayer: player,
+                currentRoom: room,
+                isConnecting: false
+              });
+              
+              // Set the board
+              get().setBoard(response.data.board);
+              
+              // Connect WebSocket
+              await get().connectWebSocket();
+              
+              return { success: true };
+            } else {
+              set({ isConnecting: false });
+              return { success: false, error: response.error || 'Failed to join room' };
+            }
+          } catch (error) {
+            set({ isConnecting: false });
+            return { 
+              success: false, 
+              error: error instanceof Error ? error.message : 'Failed to join room' 
+            };
+          }
+        },
+        
+        leaveRoom: () => {
+          const state = get();
+          
+          // Disconnect WebSocket
+          state.disconnectWebSocket();
+          
+          // Clear room and player state
+          set({
+            currentRoom: null,
+            currentPlayer: null,
+            gameState: {
+              board: [],
+              markedSquares: new Array(25).fill(false),
+              hasWon: false,
+            },
+            isConnected: false,
+            connectionError: null
+          });
+        },
+        
+        // Stats Management
+        incrementGamesPlayed: () => 
+          set((state) => ({ gamesPlayed: state.gamesPlayed + 1 })),
+          
+        incrementWins: () => 
+          set((state) => ({ wins: state.wins + 1 })),
+          
+        incrementTotalSquares: () => 
+          set((state) => ({ totalSquares: state.totalSquares + 1 }))
       }),
       {
         name: 'corporate-bingo-store',
+        // Only persist stats and player name, not connection state
+        partialize: (state) => ({
+          playerName: state.playerName,
+          gamesPlayed: state.gamesPlayed,
+          wins: state.wins,
+          totalSquares: state.totalSquares
+        }),
       }
     ),
     { name: 'BingoStore' }

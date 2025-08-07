@@ -2,175 +2,97 @@ import { useState, useEffect } from 'react';
 import { BingoCard } from '../components/bingo/BingoCard';
 import { RoomManager } from '../components/bingo/RoomManager';
 import { BingoStats } from '../components/bingo/BingoStats';
-import type { BingoSquare, BingoRoom } from '../types';
-
-const BUZZWORDS = [
-  // Classic corporate buzzwords
-  'Synergy', 'Leverage', 'Deep Dive', 'Circle Back', 'Touch Base', 
-  'Low-hanging Fruit', 'Move the Needle', 'Paradigm Shift', 'Think Outside the Box',
-  'Best Practice', 'Core Competency', 'Value-add', 'Game Changer', 'Win-win',
-  
-  // Engineering specific
-  'Technical Debt', 'Scalability', 'Microservices', 'DevOps', 'Agile Transformation',
-  'Digital Transformation', 'AI/ML Integration', 'Cloud Migration', 'API Gateway',
-  'Containerization', 'Infrastructure as Code', 'CI/CD Pipeline', 'Kubernetes',
-  
-  // Meeting favorites  
-  'Actionable Items', 'Take it Offline', 'Ping Me', 'Loop In', 'Bandwidth',
-  'On My Radar', 'Ideate', 'Stakeholder Buy-in', 'Scope Creep', 'Timeline',
-  
-  // Management classics
-  'KPI', 'ROI', 'Optimization', 'Streamline', 'Right-size', 'Iterate',
-  'Pivot', 'Disrupt', 'Innovation', 'Growth Hacking', 'Metrics-driven',
-  
-  // Corporate culture
-  'Culture Fit', 'Team Player', 'Proactive', 'Own It', 'Drive Results',
-  'Customer-centric', 'Data-driven', 'Results-oriented', 'Solution-focused'
-];
+import { useBingoStore } from '../utils/store';
 
 export function BingoPage() {
-  const [currentCard, setCurrentCard] = useState<BingoSquare[]>([]);
-  const [currentRoom, setCurrentRoom] = useState<BingoRoom | null>(null);
-  const [gameStats, setGameStats] = useState({
-    gamesPlayed: 0,
-    wins: 0,
-    totalSquares: 0,
-    favoriteSquares: [] as string[]
-  });
   const [currentTab, setCurrentTab] = useState<'play' | 'rooms' | 'stats'>('play');
+  
+  const {
+    currentRoom,
+    gameState,
+    gamesPlayed,
+    wins,
+    totalSquares,
+    isConnected,
+    connectionError,
+    markSquare,
+    resetGame,
+    incrementGamesPlayed,
+    incrementWins,
+    incrementTotalSquares,
+    setGameWon
+  } = useBingoStore();
 
-  // Generate a new bingo card
-  const generateCard = (): BingoSquare[] => {
-    const shuffled = [...BUZZWORDS].sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, 24); // 24 + 1 free space = 25
-    
-    const card: BingoSquare[] = [];
-    
-    for (let i = 0; i < 25; i++) {
-      if (i === 12) { // Center square (free space)
-        card.push({
-          id: `square-${i}`,
-          text: 'FREE SPACE',
-          isMarked: true,
-          isFree: true
-        });
-      } else {
-        const textIndex = i < 12 ? i : i - 1;
-        card.push({
-          id: `square-${i}`,
-          text: selected[textIndex],
-          isMarked: false
-        });
-      }
-    }
-    
-    return card;
-  };
-
-  // Initialize card on component mount
-  useEffect(() => {
-    setCurrentCard(generateCard());
-    
-    // Load stats from localStorage
-    const savedStats = localStorage.getItem('bingoStats');
-    if (savedStats) {
-      setGameStats(JSON.parse(savedStats));
-    }
-  }, []);
-
-  const handleSquareClick = (squareId: string) => {
-    setCurrentCard(prev => prev.map(square => 
-      square.id === squareId 
-        ? { ...square, isMarked: !square.isMarked }
-        : square
-    ));
-
-    // Update stats
-    setGameStats(prev => {
-      const newStats = { ...prev, totalSquares: prev.totalSquares + 1 };
-      localStorage.setItem('bingoStats', JSON.stringify(newStats));
-      return newStats;
-    });
-  };
-
-  const checkBingo = (): boolean => {
+  // Check for bingo winning condition
+  const checkBingo = (markedSquares: boolean[]): { hasBingo: boolean; pattern?: number[] } => {
     // Check rows
     for (let row = 0; row < 5; row++) {
-      if (currentCard.slice(row * 5, row * 5 + 5).every(square => square.isMarked)) {
-        return true;
+      const start = row * 5;
+      const rowSquares = [start, start + 1, start + 2, start + 3, start + 4];
+      if (rowSquares.every(i => markedSquares[i])) {
+        return { hasBingo: true, pattern: rowSquares };
       }
     }
     
     // Check columns
     for (let col = 0; col < 5; col++) {
-      if (currentCard.filter((_, index) => index % 5 === col).every(square => square.isMarked)) {
-        return true;
+      const colSquares = [col, col + 5, col + 10, col + 15, col + 20];
+      if (colSquares.every(i => markedSquares[i])) {
+        return { hasBingo: true, pattern: colSquares };
       }
     }
     
     // Check diagonals
-    const diagonal1 = [0, 6, 12, 18, 24].map(i => currentCard[i]);
-    const diagonal2 = [4, 8, 12, 16, 20].map(i => currentCard[i]);
+    const diagonal1 = [0, 6, 12, 18, 24];
+    const diagonal2 = [4, 8, 12, 16, 20];
     
-    if (diagonal1.every(square => square.isMarked) || diagonal2.every(square => square.isMarked)) {
-      return true;
+    if (diagonal1.every(i => markedSquares[i])) {
+      return { hasBingo: true, pattern: diagonal1 };
     }
     
-    return false;
+    if (diagonal2.every(i => markedSquares[i])) {
+      return { hasBingo: true, pattern: diagonal2 };
+    }
+    
+    return { hasBingo: false };
+  };
+
+  // Watch for bingo condition
+  useEffect(() => {
+    const { hasBingo, pattern } = checkBingo(gameState.markedSquares);
+    if (hasBingo && !gameState.hasWon) {
+      setGameWon(true, pattern);
+    } else if (!hasBingo && gameState.hasWon) {
+      setGameWon(false);
+    }
+  }, [gameState.markedSquares, gameState.hasWon, setGameWon]);
+
+  const handleSquareClick = (squareId: string) => {
+    const squareIndex = parseInt(squareId.split('-')[1]);
+    markSquare(squareIndex);
+    incrementTotalSquares();
   };
 
   const handleNewGame = () => {
-    setCurrentCard(generateCard());
-    setGameStats(prev => {
-      const newStats = { ...prev, gamesPlayed: prev.gamesPlayed + 1 };
-      localStorage.setItem('bingoStats', JSON.stringify(newStats));
-      return newStats;
-    });
+    resetGame();
+    incrementGamesPlayed();
   };
 
   const handleBingo = () => {
-    setGameStats(prev => {
-      const newStats = { ...prev, wins: prev.wins + 1 };
-      localStorage.setItem('bingoStats', JSON.stringify(newStats));
-      return newStats;
-    });
+    incrementWins();
     
     // Show celebration
     alert('🎉 BINGO! You survived another corporate meeting!');
     handleNewGame();
   };
 
-  const createRoom = (roomName: string): string => {
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const newRoom: BingoRoom = {
-      id: Date.now().toString(),
-      name: roomName,
-      code,
-      players: 1,
-      isActive: true
-    };
-    setCurrentRoom(newRoom);
-    return code;
+  // Game stats for compatibility with BingoStats component
+  const gameStats = {
+    gamesPlayed,
+    wins,
+    totalSquares,
+    favoriteSquares: [] as string[]
   };
-
-  const joinRoom = (code: string): boolean => {
-    // Simulate joining room
-    const mockRoom: BingoRoom = {
-      id: Date.now().toString(),
-      name: `Meeting Room ${code}`,
-      code: code.toUpperCase(),
-      players: Math.floor(Math.random() * 8) + 2,
-      isActive: true
-    };
-    setCurrentRoom(mockRoom);
-    return true;
-  };
-
-  const leaveRoom = () => {
-    setCurrentRoom(null);
-  };
-
-  const hasBingo = checkBingo();
 
   return (
     <div className="min-h-screen">
@@ -204,6 +126,16 @@ export function BingoPage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         {currentTab === 'play' && (
           <div className="space-y-6">
+            {/* Connection Status */}
+            {connectionError && (
+              <div className="glass-panel rounded-lg p-4 bg-red-900/20 border border-red-500/30">
+                <div className="flex items-center space-x-2">
+                  <div className="text-red-400">⚠️</div>
+                  <p className="text-red-300">Connection Error: {connectionError}</p>
+                </div>
+              </div>
+            )}
+            
             {/* Game Header */}
             <div className="glass-panel rounded-lg p-6">
               <div className="flex items-center justify-between">
@@ -218,18 +150,26 @@ export function BingoPage() {
                   {currentRoom && (
                     <div className="text-right">
                       <div className="text-sm text-gray-300">Room: {currentRoom.code}</div>
-                      <div className="text-xs text-gray-400">{currentRoom.players} players</div>
+                      <div className="text-xs text-gray-400">
+                        {currentRoom.players.length} players
+                        {isConnected ? (
+                          <span className="text-green-400 ml-2">🟢 Connected</span>
+                        ) : (
+                          <span className="text-red-400 ml-2">🔴 Disconnected</span>
+                        )}
+                      </div>
                     </div>
                   )}
                   
                   <button
                     onClick={handleNewGame}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                    disabled={gameState.board.length === 0}
+                    className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors"
                   >
                     New Game
                   </button>
                   
-                  {hasBingo && (
+                  {gameState.hasWon && (
                     <button
                       onClick={handleBingo}
                       className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-lg font-bold animate-pulse"
@@ -242,33 +182,47 @@ export function BingoPage() {
             </div>
 
             {/* Bingo Card */}
-            <BingoCard 
-              squares={currentCard}
-              onSquareClick={handleSquareClick}
-              hasBingo={hasBingo}
-            />
+            {gameState.board.length > 0 ? (
+              <BingoCard 
+                squares={gameState.board}
+                onSquareClick={handleSquareClick}
+                hasBingo={gameState.hasWon}
+              />
+            ) : (
+              <div className="glass-panel rounded-lg p-12 text-center">
+                <div className="text-4xl mb-4">🎯</div>
+                <h3 className="text-xl font-bold text-white mb-2">No Game Board</h3>
+                <p className="text-gray-400 mb-6">Create or join a room to start playing multiplayer bingo!</p>
+                <button
+                  onClick={() => setCurrentTab('rooms')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                >
+                  Go to Rooms
+                </button>
+              </div>
+            )}
 
             {/* Game Instructions */}
             <div className="glass-panel rounded-lg p-6">
               <h3 className="text-lg font-semibold text-white mb-4">
-                <span className="terminal-accent">&gt;</span> How to Play
+                <span className="terminal-accent">&gt;</span> How to Play Multiplayer
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-300">
                 <div>
-                  <h4 className="font-medium text-white mb-2">🎯 Objective</h4>
-                  <p className="text-sm">Mark off buzzwords as they're mentioned in meetings. Get 5 in a row to win!</p>
+                  <h4 className="font-medium text-white mb-2">🎯 Unique Boards</h4>
+                  <p className="text-sm">Each player gets a different board with different buzzwords for fair competition.</p>
                 </div>
                 <div>
                   <h4 className="font-medium text-white mb-2">🏢 Room Mode</h4>
                   <p className="text-sm">Create or join rooms to play with colleagues during the same meeting.</p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-white mb-2">📊 Patterns</h4>
-                  <p className="text-sm">Win with any row, column, or diagonal. Center space is always free!</p>
+                  <h4 className="font-medium text-white mb-2">📊 Winning Patterns</h4>
+                  <p className="text-sm">Win with any row, column, or diagonal. Center space (FREE SPACE) is always marked.</p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-white mb-2">🎉 Winning</h4>
-                  <p className="text-sm">Click "BINGO!" when you get 5 in a row. Try not to celebrate too loudly!</p>
+                  <h4 className="font-medium text-white mb-2">⚡ Real-time Sync</h4>
+                  <p className="text-sm">See other players' actions instantly and compete in real-time.</p>
                 </div>
               </div>
             </div>
@@ -276,12 +230,7 @@ export function BingoPage() {
         )}
 
         {currentTab === 'rooms' && (
-          <RoomManager 
-            currentRoom={currentRoom}
-            onCreateRoom={createRoom}
-            onJoinRoom={joinRoom}
-            onLeaveRoom={leaveRoom}
-          />
+          <RoomManager />
         )}
 
         {currentTab === 'stats' && (
