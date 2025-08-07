@@ -333,7 +333,8 @@
                         <div class="text-sm text-gray-300">
                             <span class="terminal-accent" id="currentUser">Guest</span> | 
                             Games: <span id="gamesPlayed">0</span> | 
-                            Wins: <span id="wins">0</span>
+                            Solo: <span id="soloWins">0</span> | 
+                            Group: <span id="groupWins">0</span>
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">
@@ -1098,12 +1099,14 @@
         let storageMode = 'persistent'; // 'persistent' or 'session'
         let bingoStats = {
             gamesPlayed: 0,
-            wins: 0,
+            soloWins: 0,        // Verified solo wins
+            groupWins: 0,       // Verified group wins  
             totalSquares: 0,
             winStreak: 0,
             bestTime: 0,
             averageTime: 0,
-            favoritePatterns: {}
+            favoritePatterns: {},
+            pendingGroupWins: 0 // Group wins awaiting verification
         };
 
         // Corporate buzzwords library
@@ -1145,6 +1148,16 @@
             const savedStats = loadData('bingoStats');
             if (savedStats) {
                 bingoStats = { ...bingoStats, ...savedStats };
+                
+                // Backwards compatibility: migrate old 'wins' to 'soloWins'
+                if (savedStats.wins && !savedStats.soloWins && !savedStats.groupWins) {
+                    console.log('🔄 Migrating legacy wins data to soloWins...');
+                    bingoStats.soloWins = savedStats.wins;
+                    bingoStats.groupWins = 0;
+                    delete bingoStats.wins; // Remove old property
+                    saveBingoStats(); // Save migrated data
+                    console.log('✅ Legacy data migrated:', savedStats.wins, 'wins -> soloWins');
+                }
             }
             
             // Load current room if exists
@@ -1357,25 +1370,174 @@
             const gameTime = Math.round((Date.now() - gameStartTime) / 1000);
             const timeString = `${Math.floor(gameTime / 60)}:${(gameTime % 60).toString().padStart(2, '0')}`;
             
-            // Update stats
-            bingoStats.wins++;
-            bingoStats.winStreak++;
-            if (bingoStats.bestTime === 0 || gameTime < bingoStats.bestTime) {
-                bingoStats.bestTime = gameTime;
+            // Determine win type and update stats accordingly
+            const isSoloWin = !currentRoom || currentRoom === null;
+            
+            if (isSoloWin) {
+                // Solo win - immediate verification
+                bingoStats.soloWins++;
+                bingoStats.winStreak++;
+                console.log('✅ Solo win verified instantly');
+                
+                // Update timing stats
+                if (bingoStats.bestTime === 0 || gameTime < bingoStats.bestTime) {
+                    bingoStats.bestTime = gameTime;
+                }
+                const totalWins = bingoStats.soloWins + bingoStats.groupWins;
+                bingoStats.averageTime = Math.round((bingoStats.averageTime * (totalWins - 1) + gameTime) / totalWins);
+                
+                // Update pattern stats
+                bingoStats.favoritePatterns[winResult.type] = (bingoStats.favoritePatterns[winResult.type] || 0) + 1;
+                
+                saveBingoStats();
+                
+                // Show solo win celebration modal
+                showBingoModal(winResult, timeString, 'solo');
+                
+            } else {
+                // Group win - needs verification
+                bingoStats.pendingGroupWins++;
+                console.log('⏳ Group win pending verification from:', currentRoom.participants.filter(p => p !== currentUser));
+                
+                saveBingoStats();
+                
+                // Show group win modal with verification pending
+                showBingoModal(winResult, timeString, 'group');
+                
+                // Simulate verification process after delay
+                setTimeout(() => {
+                    simulateGroupVerification(winResult, timeString, gameTime);
+                }, 3000);
             }
-            bingoStats.averageTime = Math.round((bingoStats.averageTime * (bingoStats.wins - 1) + gameTime) / bingoStats.wins);
-            bingoStats.favoritePatterns[winResult.type] = (bingoStats.favoritePatterns[winResult.type] || 0) + 1;
+        }
+        
+        function showBingoModal(winResult, timeString, winType) {
+            const modal = document.getElementById('bingoModal');
+            const modalContent = modal.querySelector('.bingo-modal-content');
             
-            saveBingoStats();
+            if (winType === 'solo') {
+                // Solo win - immediate celebration
+                modalContent.innerHTML = `
+                    <div class="text-6xl mb-4">🎉</div>
+                    <h2 class="text-3xl font-bold text-green-400 mb-2 terminal-accent">SOLO BINGO!</h2>
+                    <p class="text-xl text-white mb-4">Nice work! You survived the corporate jargon!</p>
+                    <div class="text-gray-300 mb-6">
+                        <p>Winning pattern: <span class="terminal-accent">${winResult.pattern}</span></p>
+                        <p>Time: <span class="terminal-accent">${timeString}</span></p>
+                        <p class="text-sm text-green-400 mt-2">✅ Instantly verified (solo play)</p>
+                    </div>
+                    <button onclick="closeBingoModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
+                        🎯 Play Again
+                    </button>
+                `;
+            } else {
+                // Group win - awaiting verification
+                const otherParticipants = currentRoom.participants.filter(p => p !== currentUser);
+                modalContent.innerHTML = `
+                    <div class="text-6xl mb-4">⏳</div>
+                    <h2 class="text-3xl font-bold text-yellow-400 mb-2 terminal-accent">GROUP BINGO!</h2>
+                    <p class="text-xl text-white mb-4">Waiting for verification from teammates...</p>
+                    <div class="text-gray-300 mb-6">
+                        <p>Winning pattern: <span class="terminal-accent">${winResult.pattern}</span></p>
+                        <p>Time: <span class="terminal-accent">${timeString}</span></p>
+                        <div class="text-sm text-yellow-400 mt-2">
+                            <p>⏳ Verification pending from:</p>
+                            <div class="mt-1">${otherParticipants.map(p => `<span class="terminal-accent">${p}</span>`).join(', ')}</div>
+                        </div>
+                    </div>
+                    <div id="verificationStatus" class="mb-4">
+                        <div class="animate-pulse text-gray-400 text-sm">Checking with teammates...</div>
+                    </div>
+                    <button onclick="closeBingoModal()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
+                        ⏸️ Close for Now
+                    </button>
+                `;
+            }
             
-            // Show celebration modal
-            document.getElementById('winPattern').textContent = winResult.pattern;
-            document.getElementById('gameTime').textContent = timeString;
-            document.getElementById('bingoModal').style.display = 'flex';
+            modal.style.display = 'flex';
+        }
+        
+        function simulateGroupVerification(winResult, timeString, gameTime) {
+            console.log('🔄 Simulating group verification process...');
             
-            // Notify room if in multiplayer
-            if (currentRoom) {
-                broadcastBingo(winResult, timeString);
+            const modal = document.getElementById('bingoModal');
+            const verificationStatus = document.getElementById('verificationStatus');
+            const otherParticipants = currentRoom.participants.filter(p => p !== currentUser);
+            
+            if (!verificationStatus) return; // Modal might be closed
+            
+            // Simulate random verification responses
+            const verifiers = [];
+            otherParticipants.forEach(participant => {
+                if (Math.random() > 0.2) { // 80% chance of verification
+                    verifiers.push(participant);
+                }
+            });
+            
+            if (verifiers.length > 0) {
+                // Verification successful
+                bingoStats.groupWins++;
+                bingoStats.pendingGroupWins = Math.max(0, bingoStats.pendingGroupWins - 1);
+                bingoStats.winStreak++;
+                
+                // Update timing stats
+                if (bingoStats.bestTime === 0 || gameTime < bingoStats.bestTime) {
+                    bingoStats.bestTime = gameTime;
+                }
+                const totalWins = bingoStats.soloWins + bingoStats.groupWins;
+                bingoStats.averageTime = Math.round((bingoStats.averageTime * (totalWins - 1) + gameTime) / totalWins);
+                
+                // Update pattern stats
+                bingoStats.favoritePatterns[winResult.type] = (bingoStats.favoritePatterns[winResult.type] || 0) + 1;
+                
+                saveBingoStats();
+                updateBingoUI();
+                
+                // Update modal to show verification success
+                const modalContent = modal.querySelector('.bingo-modal-content');
+                modalContent.innerHTML = `
+                    <div class="text-6xl mb-4">🎉</div>
+                    <h2 class="text-3xl font-bold text-green-400 mb-2 terminal-accent">VERIFIED BINGO!</h2>
+                    <p class="text-xl text-white mb-4">Your teammates confirmed your win!</p>
+                    <div class="text-gray-300 mb-6">
+                        <p>Winning pattern: <span class="terminal-accent">${winResult.pattern}</span></p>
+                        <p>Time: <span class="terminal-accent">${timeString}</span></p>
+                        <div class="text-sm text-green-400 mt-2">
+                            <p>✅ Verified by: ${verifiers.map(v => `<span class="terminal-accent">${v}</span>`).join(', ')}</p>
+                        </div>
+                    </div>
+                    <button onclick="closeBingoModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
+                        🎯 Play Again
+                    </button>
+                `;
+                
+                console.log('✅ Group win verified by:', verifiers);
+            } else {
+                // Verification failed
+                bingoStats.pendingGroupWins = Math.max(0, bingoStats.pendingGroupWins - 1);
+                saveBingoStats();
+                updateBingoUI();
+                
+                // Update modal to show verification failure
+                const modalContent = modal.querySelector('.bingo-modal-content');
+                modalContent.innerHTML = `
+                    <div class="text-6xl mb-4">😔</div>
+                    <h2 class="text-3xl font-bold text-red-400 mb-2 terminal-accent">BINGO DENIED</h2>
+                    <p class="text-xl text-white mb-4">Your teammates couldn't verify this win...</p>
+                    <div class="text-gray-300 mb-6">
+                        <p>Winning pattern: <span class="terminal-accent">${winResult.pattern}</span></p>
+                        <p>Time: <span class="terminal-accent">${timeString}</span></p>
+                        <div class="text-sm text-red-400 mt-2">
+                            <p>❌ No verification received</p>
+                            <p class="text-xs mt-1">Maybe they weren't paying attention? 🤷‍♀️</p>
+                        </div>
+                    </div>
+                    <button onclick="closeBingoModal()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
+                        😤 Try Again
+                    </button>
+                `;
+                
+                console.log('❌ Group win verification failed - teammates were not responsive');
             }
         }
         
@@ -1416,13 +1578,23 @@
                 markedElement.textContent = `${markedCount}/${totalSquares}`;
             }
             
-            // Update stats
+            // Update stats with separate solo/group wins
             const gamesElement = document.getElementById('gamesPlayed');
-            const winsElement = document.getElementById('wins');
+            const soloWinsElement = document.getElementById('soloWins');
+            const groupWinsElement = document.getElementById('groupWins');
             const userElement = document.getElementById('currentUser');
             
             if (gamesElement) gamesElement.textContent = bingoStats.gamesPlayed;
-            if (winsElement) winsElement.textContent = bingoStats.wins;
+            if (soloWinsElement) soloWinsElement.textContent = bingoStats.soloWins;
+            if (groupWinsElement) {
+                const groupDisplayText = bingoStats.pendingGroupWins > 0 
+                    ? `${bingoStats.groupWins}+${bingoStats.pendingGroupWins}` 
+                    : bingoStats.groupWins;
+                groupWinsElement.textContent = groupDisplayText;
+                groupWinsElement.title = bingoStats.pendingGroupWins > 0 
+                    ? `${bingoStats.groupWins} verified + ${bingoStats.pendingGroupWins} pending verification` 
+                    : `${bingoStats.groupWins} verified group wins`;
+            }
             if (userElement) userElement.textContent = currentUser;
         }
 
@@ -1520,6 +1692,16 @@
             const savedStats = loadData('bingoStats');
             if (savedStats) {
                 bingoStats = { ...bingoStats, ...savedStats };
+                
+                // Backwards compatibility: migrate old 'wins' to 'soloWins'
+                if (savedStats.wins && !savedStats.soloWins && !savedStats.groupWins) {
+                    console.log('🔄 Migrating legacy wins data to soloWins...');
+                    bingoStats.soloWins = savedStats.wins;
+                    bingoStats.groupWins = 0;
+                    delete bingoStats.wins; // Remove old property
+                    saveBingoStats(); // Save migrated data
+                    console.log('✅ Legacy data migrated:', savedStats.wins, 'wins -> soloWins');
+                }
             }
             
             generateBingoCard();
