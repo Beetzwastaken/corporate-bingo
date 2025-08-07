@@ -3,1307 +3,451 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buzzword Bingo - Corporate Meeting Survival Game</title>
+    <title>EngineerMemes.AI - Professional Engineering Humor</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        blue: {
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8'
-                        }
-                    },
-                    fontFamily: {
-                        'sans': ['Inter', 'system-ui', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-        
-        body { 
-            font-family: 'Inter', 'system-ui', sans-serif; 
-            background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #1f2937 100%);
-            min-height: 100vh;
-            color: #f9fafb;
-        }
-        
-        
-        .control-input {
-            transition: all 0.2s ease;
-            background: rgba(31, 41, 55, 0.9);
-            border-color: #4b5563;
-            color: #f9fafb;
-        }
-        
-        .control-input:focus {
-            border-color: #3b82f6;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-            background: rgba(31, 41, 55, 1);
-        }
-
-        .control-input::placeholder {
-            color: #9ca3af;
-        }
-
-        .glass-panel {
-            background: rgba(31, 41, 55, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(75, 85, 99, 0.3);
-        }
-
-        .terminal-accent {
-            font-family: 'JetBrains Mono', monospace;
-            color: #10b981;
-        }
-
-        .engineering-grid {
-            background-image: 
-                linear-gradient(rgba(75, 85, 99, 0.3) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(75, 85, 99, 0.3) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-
-        .tool-content {
-            transition: all 0.3s ease;
-        }
-
-        .bingo-square {
-            aspect-ratio: 1;
-            background: rgba(55, 65, 81, 0.8);
-            border: 1px solid #4b5563;
-            color: #f9fafb;
-            font-size: 0.65rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 3px;
-            border-radius: 0.25rem;
-            position: relative;
-            min-height: 50px;
-            line-height: 1.1;
-            overflow: hidden;
-            word-break: break-word;
-            hyphens: auto;
-        }
-        .bingo-square span {
-            display: block;
-            width: 100%;
-            font-size: inherit;
-            line-height: inherit;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-        .bingo-square.compact {
-            font-size: 0.55rem;
-            padding: 2px;
-            min-height: 40px;
-            line-height: 1.05;
-        }
-        
-        /* Mobile responsive improvements */
-        @media (max-width: 768px) {
-            .bingo-square {
-                font-size: 0.6rem;
-                padding: 2px;
-                min-height: 45px;
-                line-height: 1.05;
-            }
-            .bingo-square.compact {
-                font-size: 0.5rem;
-                padding: 1px;
-                min-height: 35px;
-                line-height: 1.0;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .bingo-square {
-                font-size: 0.55rem;
-                padding: 1px;
-                min-height: 40px;
-                line-height: 1.0;
-            }
-            .bingo-square.compact {
-                font-size: 0.45rem;
-                padding: 1px;
-                min-height: 30px;
-                line-height: 0.95;
-            }
-        }
-        .bingo-square.winning {
-            animation: winFlash 1s ease-in-out 3;
-            background: rgba(16, 185, 129, 0.4) !important;
-            border-color: #10b981 !important;
-        }
-        @keyframes winFlash {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); }
-        }
-
-        .bingo-square:hover {
-            border-color: #3b82f6;
-            background: rgba(59, 130, 246, 0.1);
-        }
-
-        .bingo-square.marked {
-            background: rgba(59, 130, 246, 0.3);
-            border-color: #3b82f6;
-            color: #3b82f6;
-        }
-
-        .bingo-square.free {
-            background: rgba(16, 185, 129, 0.3);
-            border-color: #10b981;
-            color: #10b981;
-            cursor: not-allowed;
-        }
-        
-        /* BINGO Modal */
-        .bingo-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            animation: modalFadeIn 0.3s ease-out;
-        }
-        .bingo-modal-content {
-            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-            border: 2px solid #10b981;
-            border-radius: 1rem;
-            padding: 2rem;
-            text-align: center;
-            max-width: 400px;
-            animation: modalSlideIn 0.5s ease-out;
-        }
-        @keyframes modalFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes modalSlideIn {
-            from { transform: translateY(-50px) scale(0.8); }
-            to { transform: translateY(0) scale(1); }
-        }
-        
-        /* Username Modal */
-        .username-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1001;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .pain-meter { background: linear-gradient(to right, #10b981 0%, #f59e0b 50%, #ef4444 100%); }
     </style>
 </head>
-<body>
-    <!-- Navigation Header -->
-    <header class="glass-panel border-b border-gray-600 engineering-grid">
-        <div class="max-w-7xl mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-8">
-                    <div>
-                        <h1 class="text-2xl font-bold text-white">
-                            <span class="terminal-accent">&gt;</span> Buzzword Bingo
-                        </h1>
-                        <p class="text-sm text-gray-300 terminal-accent">// Corporate Meeting Survival Game</p>
-                    </div>
-                </div>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold mb-2">🤖 EngineerMemes.AI</h1>
+                <p class="text-blue-100">Because crying is unprofessional — Professional Engineering Humor Generator</p>
+                <p class="text-sm text-blue-200 mt-1">Powered by MCP Servers & Autonomous AI Agents</p>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 py-8">
-
-        <!-- Buzzword Bingo Tool -->
-        <div id="bingoTool" class="tool-content">
-            <!-- Compact Header with Controls -->
-            <div class="glass-panel rounded-lg p-4 mb-4">
-                <div class="flex items-center justify-between flex-wrap gap-4">
-                    <div class="flex items-center space-x-4">
-                        <div>
-                            <h1 class="text-xl font-bold text-white">
-                                <span class="terminal-accent">&gt;</span> Buzzword Bingo
-                            </h1>
-                        </div>
-                        <div class="text-sm text-gray-300">
-                            <span class="terminal-accent" id="currentUser">Guest</span> | 
-                            Games: <span id="gamesPlayed">0</span> | 
-                            Solo: <span id="soloWins">0</span> | 
-                            Group: <span id="groupWins">0</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <select onchange="changeStorageMode(this.value)" id="storageModeSelect" class="control-input px-2 py-1 rounded text-xs">
-                            <option value="persistent">💾 Keep Stats</option>
-                            <option value="session">🏢 Meeting Only</option>
-                        </select>
-                        <select onchange="changeCardSize(this.value)" id="cardSizeSelect" class="control-input px-2 py-1 rounded text-xs">
-                            <option value="5x5">5×5</option>
-                            <option value="3x3">3×3</option>
-                        </select>
-                        <button onclick="regenerateCard()" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors">
-                            🔄
-                        </button>
-                        <button onclick="generateBingoCard()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded text-xs transition-colors">
-                            New Game
-                        </button>
-                    </div>
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Pain Input Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <span class="mr-2">😤</span>
+                What's Your Engineering Pain?
+            </h2>
+            <textarea 
+                id="painInput" 
+                class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                rows="3" 
+                placeholder="e.g., 'Client wants to change the spec after we finished fabrication and testing...'"
+                oninput="analyzePain(this.value)"
+            ></textarea>
+            
+            <!-- Pain Meter -->
+            <div class="mt-4">
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="font-medium text-gray-700">Engineering Pain Level</span>
+                    <span class="font-bold text-gray-800" id="painScore">5/10</span>
                 </div>
-            </div>
-
-            <!-- Main Game Area -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                <!-- Bingo Card (Left Side) -->
-                <div class="lg:col-span-2">
-                    <div class="glass-panel rounded-lg p-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="text-sm text-gray-400">
-                                Marked: <span id="markedCount" class="terminal-accent">1/25</span>
-                            </div>
-                            <div class="text-xs text-gray-500">Click squares when mentioned</div>
-                        </div>
-
-                        <!-- BINGO Header (Compact) -->
-                        <div class="grid grid-cols-5 gap-1 mb-3" id="bingoHeader">
-                            <div class="text-center py-1 bg-blue-600/20 border border-blue-500/30 rounded text-sm">
-                                <span class="font-bold text-blue-300 terminal-accent">B</span>
-                            </div>
-                            <div class="text-center py-1 bg-blue-600/20 border border-blue-500/30 rounded text-sm">
-                                <span class="font-bold text-blue-300 terminal-accent">I</span>
-                            </div>
-                            <div class="text-center py-1 bg-blue-600/20 border border-blue-500/30 rounded text-sm">
-                                <span class="font-bold text-blue-300 terminal-accent">N</span>
-                            </div>
-                            <div class="text-center py-1 bg-blue-600/20 border border-blue-500/30 rounded text-sm">
-                                <span class="font-bold text-blue-300 terminal-accent">G</span>
-                            </div>
-                            <div class="text-center py-1 bg-blue-600/20 border border-blue-500/30 rounded text-sm">
-                                <span class="font-bold text-blue-300 terminal-accent">O</span>
-                            </div>
-                        </div>
-
-                        <!-- Bingo Grid (Compact) -->
-                        <div class="grid gap-1" id="bingoGrid">
-                            <!-- Grid will be populated by JavaScript -->
-                        </div>
-                    </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div id="painBar" class="h-3 rounded-full pain-meter transition-all duration-500" style="width: 50%"></div>
                 </div>
-
-                <!-- Room Management (Right Side) -->
-                <div class="lg:col-span-2 space-y-4">
-                    <!-- Current Room Status (Compact) -->
-                    <div class="glass-panel rounded-lg p-4">
-                        <h3 class="text-sm font-semibold text-white mb-2 flex items-center">
-                            <span class="terminal-accent">&gt;</span>
-                            <span class="ml-1">Room Status</span>
-                        </h3>
-                        <div id="roomStatus" class="text-sm">
-                            <div class="text-gray-400">
-                                <p>🏠 <span class="terminal-accent">Solo Play</span></p>
-                            </div>
-                        </div>
-                        <div id="roomParticipants" style="display: none;">
-                            <div class="text-xs text-gray-300 mt-2">Participants:</div>
-                            <div id="participantsList" class="text-xs space-y-1 mt-1">
-                                <!-- Populated by JavaScript -->
-                            </div>
-                            <button onclick="leaveRoom()" class="w-full mt-2 bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors">
-                                Leave Room
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Room Actions (Compact) -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <!-- Create Room -->
-                        <div class="glass-panel rounded-lg p-3">
-                            <h4 class="text-xs font-semibold text-white mb-2">Create Room</h4>
-                            <input type="text" id="roomName" placeholder="Meeting name" class="control-input w-full p-2 border border-gray-600 rounded text-xs mb-2" maxlength="30">
-                            <button onclick="createRoom()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded text-xs transition-colors">
-                                Create
-                            </button>
-                        </div>
-
-                        <!-- Join Room -->
-                        <div class="glass-panel rounded-lg p-3">
-                            <h4 class="text-xs font-semibold text-white mb-2">Join Room</h4>
-                            <input type="text" id="roomCode" placeholder="Room code" class="control-input w-full p-2 border border-gray-600 rounded text-xs mb-2 font-mono" maxlength="6">
-                            <button onclick="joinRoom()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors">
-                                Join
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Quick Tips (Compact) -->
-                    <div class="glass-panel rounded-lg p-3">
-                        <h4 class="text-xs font-semibold text-white mb-2">Quick Tips</h4>
-                        <div class="text-xs text-gray-400 space-y-1">
-                            <p>• Get 5 in a row (any direction) to win</p>
-                            <p>• Create/join rooms for group play</p>
-                            <p>• 3×3 cards for quick meetings</p>
-                        </div>
-                    </div>
+                <div class="mt-2 text-sm text-gray-600" id="painMessage">Standard engineering suffering</div>
+                <div class="flex justify-between text-xs text-gray-500 mt-2">
+                    <span>😊 Zen</span>
+                    <span>😐 Normal</span>
+                    <span>😤 Stressed</span>
+                    <span>😫 Crisis</span>
+                    <span>🤯 Meltdown</span>
                 </div>
             </div>
         </div>
-    </main>
 
-    <!-- Username Setup Modal -->
-    <div id="usernameModal" class="username-modal" style="display: none;">
-        <div class="bingo-modal-content">
-            <h2 class="text-xl font-bold text-white mb-4">👋 Welcome to Buzzword Bingo!</h2>
-            <p class="text-gray-300 mb-6">Enter your name to get started:</p>
-            <input type="text" id="usernameInput" placeholder="Your name (e.g., John)" class="control-input w-full p-3 border border-gray-600 rounded-lg text-sm mb-4" maxlength="20">
-            <button onclick="setUsername()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
-Start Playing
-            </button>
+        <!-- Meme Templates -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <span class="mr-2">🎭</span>
+                Choose Your Weapon
+            </h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="templates">
+                <!-- Templates will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Meme Generator -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Text Input -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="mr-2">✏️</span>
+                    Meme Text Editor
+                </h2>
+                
+                <div id="textInputs">
+                    <!-- Text inputs will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Meme Canvas -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="mr-2">🎨</span>
+                    Your Suffering, Visualized
+                </h2>
+                
+                <canvas id="memeCanvas" width="400" height="400" class="w-full border-2 border-gray-300 rounded-lg shadow-md mb-4"></canvas>
+                
+                <div class="flex space-x-2">
+                    <button onclick="generateMeme()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        Generate Meme
+                    </button>
+                    <button onclick="downloadMeme()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium">
+                        💾 Download
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="text-4xl mb-3">🤖</div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">AI-Powered</h3>
+                <p class="text-gray-600 text-sm">Advanced pain analysis with engineering-specific keyword detection</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="text-4xl mb-3">⚙️</div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Engineering Focused</h3>
+                <p class="text-gray-600 text-sm">Templates and humor tailored for engineering professionals</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="text-4xl mb-3">🚀</div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">MCP Enhanced</h3>
+                <p class="text-gray-600 text-sm">Powered by Model Context Protocol servers and autonomous agents</p>
+            </div>
         </div>
     </div>
 
-    <!-- BINGO Celebration Modal -->
-    <div id="bingoModal" class="bingo-modal" style="display: none;">
-        <div class="bingo-modal-content">
-            <div class="text-6xl mb-4">🎉</div>
-            <h2 class="text-3xl font-bold text-green-400 mb-2 terminal-accent">BINGO!</h2>
-            <p class="text-xl text-white mb-4">You survived another corporate meeting!</p>
-            <div class="text-gray-300 mb-6" id="winDetails">
-                <p>Winning pattern: <span class="terminal-accent" id="winPattern">Row</span></p>
-                <p>Time: <span class="terminal-accent" id="gameTime">2:45</span></p>
-            </div>
-            <button onclick="closeBingoModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
-                🎯 Play Again
-            </button>
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-lg mb-2">Made with 😅 by engineers, for engineers</p>
+            <p class="text-gray-400 text-sm">
+                Autonomous Agents: Template Generator • Pain Analyzer • Quality Controller • Analytics • Deployment
+            </p>
+            <p class="text-gray-400 text-xs mt-2">
+                Professional Suffering Solutions Since 2025 • MCP-Powered • Claude Code Optimized
+            </p>
         </div>
-    </div>
+    </footer>
 
     <script>
+        // Engineering Meme Generator - Professional JavaScript Implementation
+        
+        let currentTemplate = null;
+        let currentPainScore = 5;
+        let generatedMemes = [];
 
-        // ===== ENHANCED BINGO GAME FUNCTIONALITY =====
-
-        let bingoInitialized = false;
-        let bingoCard = [];
-        let currentCardSize = '5x5';
-        let gameStartTime = null;
-        let currentRoom = null;
-        let currentUser = 'Guest';
-        let storageMode = 'persistent'; // 'persistent' or 'session'
-        let bingoStats = {
-            gamesPlayed: 0,
-            soloWins: 0,        // Verified solo wins
-            groupWins: 0,       // Verified group wins  
-            totalSquares: 0,
-            winStreak: 0,
-            bestTime: 0,
-            averageTime: 0,
-            favoritePatterns: {},
-            pendingGroupWins: 0 // Group wins awaiting verification
+        // Engineering-specific pain keywords and scoring
+        const painKeywords = {
+            high: ['deadline', 'urgent', 'asap', 'broken', 'failed', 'disaster', 'emergency', 'critical'],
+            medium: ['change', 'modify', 'meeting', 'review', 'delay', 'client', 'scope'],
+            low: ['working', 'progress', 'complete', 'success', 'fixed', 'approved']
         };
 
-        // Corporate buzzwords library - focused on humor and meeting comedy
-        const BUZZWORDS = [
-            // Classic Corporate Speak (The Absolute Worst)
-            'Synergy', 'Leverage', 'Deep Dive', 'Circle Back', 'Touch Base',
-            'Low-hanging Fruit', 'Move the Needle', 'Paradigm Shift', 'Think Outside the Box',
-            'Best Practice', 'Core Competency', 'Value-add', 'Game Changer', 'Win-win',
-            'Right-size', 'Optimize', 'Streamline', 'Ideate', 'Impactful',
-            
-            // Meeting & Communication Gems  
-            'Take it Offline', 'Ping Me', 'Loop In', 'Bandwidth', 'On My Radar',
-            'Align on This', 'Sync Up', 'Park That', 'Table This', 'Double Click',
-            'Drill Down', 'Level Set', 'Socialize', 'Evangelize', 'Champion',
-            'Cascade Down', 'Run it Up', 'Put a Pin In', 'Peel the Onion', 'Boil the Ocean',
-            'Circle Back Later', 'Take That Offline', 'Sync Up Tomorrow', 'Revisit This',
-            'Follow Up Separately', 'Schedule a Follow-up', 'Set Up Time', 'Grab Time',
-            'Quick Sync', 'Brain Dump', 'Download You', 'Get You Up to Speed',
-            'Bring Everyone Along', 'Get Buy-in', 'Surface This Up', 'Bubble Up',
-            
-            // Meeting Theater & Corporate Comedy
-            'Let\'s Take This Offline', 'We Need to Socialize This', 'Run it by Legal',
-            'Get Finance Involved', 'Check with Compliance', 'Validate with Leadership',
-            'Vet This Through', 'Pressure Test the Idea', 'Stress Test Assumptions',
-            'Sanity Check Numbers', 'Gut Check the Plan', 'Reality Check Timeline',
-            'Can You Speak to That?', 'What\'s Your Take?', 'How Do You See This?',
-            'Where Do You Land?', 'What\'s Your Comfort Level?', 'Any Concerns?',
-            'Red Flags?', 'Deal Breakers?', 'Showstoppers?', 'Blockers?',
-            'Circle Back on Monday', 'Let\'s Unpack This', 'Thoughts?', 'Does That Resonate?',
-            
-            // Virtual Meeting Comedy Gold
-            'You\'re Muted', 'Can You Hear Me?', 'Are You There?', 'Hello? Hello?',
-            'Can Everyone See My Screen?', 'Are You Presenting?', 'Who\'s Presenting?',
-            'Let Me Share My Screen', 'Can You See This?', 'Is This Visible?',
-            'Sorry, I Was Muted', 'You Cut Out There', 'Your Audio is Breaking Up',
-            'Can You Repeat That?', 'Sorry, Can You Say That Again?', 'I Didn\'t Catch That',
-            'Let Me Stop Sharing', 'I Think You\'re Still Muted', 'We Can\'t Hear You',
-            'Your Video is Frozen', 'You\'re Breaking Up', 'Bad Connection',
-            'Can Someone Else Drive?', 'Who Has the Deck?', 'Next Slide Please',
-            'Sorry, I\'m Having Technical Issues', 'Let Me Try Again', 'Can You Try Now?',
-            'I\'ll Send the Link in Chat', 'Check the Chat', 'Posted in Chat',
-            'Sorry, I\'m Late', 'Traffic Was Terrible', 'Had Back-to-Back Meetings',
-            'Can We Get Started?', 'Let\'s Give It Two More Minutes', 'Waiting for Everyone',
-            'Someone Else Just Joined', 'I Think We\'re All Here', 'Let\'s Begin',
-            'Can You Make Me Presenter?', 'I Need Presenter Rights', 'Who\'s the Organizer?',
-            'Let Me Make You Presenter', 'I\'ll Give You Control', 'Taking Control Back',
-            'Echo on the Line', 'Hearing an Echo', 'Someone\'s Not Muted',
-            'Feedback Loop', 'Can Everyone Mute?', 'Please Mute When Not Speaking',
-            'Dog is Barking', 'Kids in Background', 'Sorry About the Noise',
-            'Construction Outside', 'Leaf Blower', 'Lawnmower Outside',
-            'I Have a Hard Stop', 'Need to Drop in 10 Minutes', 'Another Meeting Starting',
-            'Double Booked', 'Conflict with Another Meeting', 'Need to Jump to Another Call',
-            'Can We Record This?', 'Is This Being Recorded?', 'I\'ll Start Recording',
-            'Meeting Notes', 'Action Items', 'Who\'s Taking Notes?',
-            'I\'ll Send a Recap', 'Follow-up Email', 'Meeting Summary',
-            'Can You Put That in Chat?', 'Link in the Chat', 'I Shared in Chat',
-            'Private Chat', 'Sidebar Conversation', 'Offline Discussion',
-            'Breakout Rooms', 'Let\'s Split into Groups', 'Back to Main Room',
-            
-            // Corporate Speak Poetry & Fluff
-            'At the End of the Day', 'When All is Said and Done', 'Bottom Line',
-            'Net-Net', 'Long Story Short', 'To Be Completely Transparent',
-            'If I\'m Being Honest', 'To Level Set', 'For Context', 'Background Info',
-            'Quick Backstory', 'History Lesson', 'Let Me Paint a Picture',
-            'Here\'s the Situation', 'Here\'s Where We Are', 'Current State',
-            'Moving Forward', 'Going Forward', 'Path Forward', 'Next Steps',
-            
-            // Absurd Corporate Priorities  
-            'Client-centric Solutions', 'Customer Success Journey', 'Stakeholder Alignment',
-            'Cross-functional Collaboration', 'Omnichannel Experience', 'End-to-end Solutions',
-            'Holistic Approach', 'Strategic Roadmap', 'Digital-first Mindset', 'Data-driven Decisions',
-            'Growth Mindset', 'Innovation Pipeline', 'Transformation Journey', 'Change Management',
-            'Process Optimization', 'Operational Excellence', 'Best-in-class', 'World-class',
-            'Industry-leading', 'Market-leading', 'Award-winning', 'Cutting-edge',
-            
-            // Hilarious Consultant Word Salad
-            'Value Creation', 'Competitive Advantage', 'Thought Leadership', 'Subject Matter Expert',
-            'Industry Best Practices', 'Benchmarking Studies', 'Gap Analysis', 'SWOT Analysis',
-            'Root Cause Analysis', 'Impact Assessment', 'Business Case Development', 'ROI Analysis',
-            'Cost-benefit Analysis', 'Risk Mitigation', 'Strategic Planning', 'Implementation Roadmap',
-            'Phase Gate Reviews', 'Milestone Tracking', 'Performance Metrics', 'Success Criteria',
-            'Key Performance Indicators', 'Return on Investment', 'Total Cost of Ownership',
-            
-            // Meeting Types & Corporate Events
-            'All Hands Meeting', 'Town Hall', 'Skip Level', 'One-on-One', 'Check-in',
-            'Stand-up', 'Scrum', 'Sprint Planning', 'Retrospective', 'Post-mortem',
-            'Brainstorming Session', 'Ideation Workshop', 'Design Thinking', 'Innovation Lab',
-            'Hackathon', 'Deep Dive Session', 'Working Session', 'Strategic Offsite',
-            'Leadership Retreat', 'Team Building', 'Culture Session', 'Values Workshop',
-            'Kick-off Meeting', 'Status Update', 'Checkpoint Review', 'Quarterly Business Review',
-            
-            // Startup & Business Development Nonsense
-            'Product-Market Fit', 'Go-to-Market Strategy', 'Minimum Viable Product', 'User Feedback',
-            'Iteration Cycle', 'Pivot Strategy', 'Scale Operations', 'Market Penetration',
-            'Customer Acquisition', 'Revenue Streams', 'Business Model', 'Value Proposition',
-            'Competitive Landscape', 'Market Opportunity', 'Total Addressable Market', 'Monetization Strategy',
-            'Customer Lifecycle', 'User Experience', 'Customer Experience', 'Brand Experience',
-            
-            // People & Culture Comedy
-            'Culture Fit', 'Team Player', 'Self-starter', 'Go-getter', 'Problem Solver',
-            'Strategic Thinker', 'Detail-oriented', 'Results-driven', 'Customer-focused',
-            'Collaborative Leader', 'Change Agent', 'Innovation Champion', 'Brand Ambassador',
-            'Cross-functional Partner', 'Stakeholder Manager', 'Relationship Builder',
-            'Culture Carrier', 'People Person', 'Servant Leader', 'Thought Partner',
-            'Executive Presence', 'Leadership Potential', 'High Performer', 'Top Talent',
-            
-            // Modern Business Buzzwords  
-            'Digital Transformation', 'Cloud-first', 'AI-powered', 'Machine Learning',
-            'Data Analytics', 'Business Intelligence', 'Predictive Analytics', 'Automation',
-            'Scalable Solutions', 'Agile Methodology', 'DevOps', 'Continuous Improvement',
-            'Innovation Culture', 'Disruptive Technology', 'Emerging Technologies', 'Future-ready',
-            'Next-generation', 'State-of-the-art', 'Revolutionary', 'Groundbreaking',
-            
-            // Sales & Marketing Theater
-            'Customer Journey', 'Buyer Persona', 'Lead Generation', 'Sales Funnel',
-            'Conversion Rate', 'Customer Acquisition Cost', 'Lifetime Value', 'Retention Strategy',
-            'Churn Analysis', 'Upselling', 'Cross-selling', 'Market Segmentation',
-            'Target Audience', 'Brand Positioning', 'Content Marketing', 'Inbound Strategy',
-            'Outbound Campaigns', 'Multi-touch Attribution', 'Lead Nurturing', 'Sales Enablement',
-            
-            // Project Management Comedy
-            'Scope Creep', 'Requirements Change', 'Budget Overrun', 'Schedule Slip',
-            'Resource Constraint', 'Dependencies', 'Critical Path', 'Milestone',
-            'Deliverable', 'Work Package', 'Action Item', 'Follow-up Item',
-            'Risk Register', 'Issue Log', 'Change Request', 'Status Report',
-            'Project Charter', 'Statement of Work', 'Work Breakdown Structure', 'Gantt Chart',
-            
-            // Executive & Leadership Speak
-            'Strategic Vision', 'Mission Critical', 'Core Values', 'Company Culture',
-            'Organizational Excellence', 'Leadership Development', 'Succession Planning', 'Talent Management',
-            'Performance Management', 'Engagement Survey', 'Employee Experience', 'Workplace Culture',
-            'Diversity & Inclusion', 'Corporate Social Responsibility', 'Sustainability Initiative', 'ESG Compliance',
-            'Governance Framework', 'Risk Management', 'Compliance Program', 'Audit Trail',
-            
-            // Finance & Operations Fluff
-            'Financial Planning', 'Budget Cycle', 'Cost Center', 'Profit Center',
-            'Revenue Recognition', 'Cash Flow', 'Working Capital', 'EBITDA',
-            'Gross Margin', 'Operating Margin', 'Capital Expenditure', 'Operating Expenditure',
-            'Accounts Receivable', 'Accounts Payable', 'Invoice Processing', 'Purchase Order',
-            'Vendor Management', 'Supplier Relations', 'Procurement Process', 'Supply Chain Management',
-            
-            // Light Engineering Humor (Relatable but Not Technical)
-            'Technical Debt', 'Legacy System', 'System Upgrade', 'Maintenance Window',
-            'Code Review', 'Quality Control', 'Testing Phase', 'User Acceptance Testing',
-            'Hot Fix', 'Patch Release', 'Version Control', 'Change Management',
-            'Documentation', 'Knowledge Transfer', 'Training Program', 'Best Practices Guide'
+        // Meme templates with engineering themes
+        const memeTemplates = [
+            {
+                id: 'drake',
+                name: 'Drake Choice',
+                category: 'general',
+                textAreas: [
+                    { id: 'reject', placeholder: 'Following the spec', x: 50, y: 25 },
+                    { id: 'accept', placeholder: 'Client changes everything', x: 50, y: 75 }
+                ]
+            },
+            {
+                id: 'this-is-fine',
+                name: 'This is Fine',
+                category: 'general',
+                textAreas: [
+                    { id: 'top', placeholder: 'Production is down', x: 50, y: 20 },
+                    { id: 'bottom', placeholder: 'This is fine', x: 50, y: 80 }
+                ]
+            },
+            {
+                id: 'two-buttons',
+                name: 'Two Buttons',
+                category: 'general',
+                textAreas: [
+                    { id: 'button1', placeholder: 'Fix the bug properly', x: 25, y: 30 },
+                    { id: 'button2', placeholder: 'Quick hotfix to prod', x: 75, y: 30 }
+                ]
+            },
+            {
+                id: 'distracted',
+                name: 'Distracted Engineer',
+                category: 'software',
+                textAreas: [
+                    { id: 'girlfriend', placeholder: 'Current project', x: 25, y: 70 },
+                    { id: 'boyfriend', placeholder: 'Me', x: 50, y: 80 },
+                    { id: 'other_woman', placeholder: 'New shiny framework', x: 75, y: 60 }
+                ]
+            }
         ];
 
-        function initializeBingo() {
-            console.log('🎯 Initializing Enhanced Bingo Game...');
-            
-            // Load storage mode preference (always from localStorage)
-            const savedStorageMode = localStorage.getItem('storageMode');
-            if (savedStorageMode) {
-                storageMode = savedStorageMode;
-                document.getElementById('storageModeSelect').value = storageMode;
-            }
-            
-            // Check for existing username using appropriate storage
-            const savedUser = getStorageMethod().getItem('bingoUsername');
-            if (!savedUser) {
-                showUsernameModal();
+        // Initialize the app
+        function initApp() {
+            renderTemplates();
+            selectTemplate(memeTemplates[0]);
+            updateCanvas();
+        }
+
+        // Analyze engineering pain level
+        function analyzePain(input) {
+            if (!input.trim()) {
+                updatePainScore(5);
                 return;
-            } else {
-                currentUser = savedUser;
-                document.getElementById('currentUser').textContent = currentUser;
             }
-            
-            // Load stats from appropriate storage
-            const savedStats = loadData('bingoStats');
-            if (savedStats) {
-                bingoStats = { ...bingoStats, ...savedStats };
-                
-                // Backwards compatibility: migrate old 'wins' to 'soloWins'
-                if (savedStats.wins && !savedStats.soloWins && !savedStats.groupWins) {
-                    console.log('🔄 Migrating legacy wins data to soloWins...');
-                    bingoStats.soloWins = savedStats.wins;
-                    bingoStats.groupWins = 0;
-                    delete bingoStats.wins; // Remove old property
-                    saveBingoStats(); // Save migrated data
-                    console.log('✅ Legacy data migrated:', savedStats.wins, 'wins -> soloWins');
-                }
-            }
-            
-            // Load current room if exists
-            const savedRoom = loadData('currentRoom');
-            if (savedRoom) {
-                currentRoom = savedRoom;
-                updateRoomUI();
-            }
-            
-            // Load card size preference
-            const savedCardSize = loadData('cardSize');
-            if (savedCardSize) {
-                currentCardSize = savedCardSize;
-                document.getElementById('cardSizeSelect').value = currentCardSize;
-            }
-            
-            generateBingoCard();
-            updateBingoUI();
-            bingoInitialized = true;
-            
-            console.log('✅ Enhanced Bingo game initialized with', storageMode, 'storage');
-        }
 
-        function generateBingoCard() {
-            console.log('🔄 Generating new bingo card...', currentCardSize);
-            gameStartTime = Date.now();
-            
-            const gridSize = currentCardSize === '3x3' ? 9 : 25;
-            const freeSpaceIndex = currentCardSize === '3x3' ? 4 : 12;
-            const numBuzzwords = currentCardSize === '3x3' ? 8 : 24;
-            
-            // Shuffle and select buzzwords 
-            const shuffled = [...BUZZWORDS].sort(() => Math.random() - 0.5);
-            const selected = shuffled.slice(0, numBuzzwords);
-            
-            bingoCard = [];
-            
-            // Generate squares
-            for (let i = 0; i < gridSize; i++) {
-                if (i === freeSpaceIndex) { // Center square (free space)
-                    bingoCard.push({
-                        id: i,
-                        text: 'FREE SPACE',
-                        isMarked: true,
-                        isFree: true
-                    });
-                } else {
-                    const textIndex = i < freeSpaceIndex ? i : i - 1;
-                    bingoCard.push({
-                        id: i,
-                        text: selected[textIndex],
-                        isMarked: false,
-                        isFree: false
-                    });
-                }
-            }
-            
-            renderBingoGrid();
-            updateBingoUI();
-            
-            // Update game stats
-            bingoStats.gamesPlayed++;
-            saveBingoStats();
-        }
+            const lower = input.toLowerCase();
+            let score = 5;
 
-        function renderBingoGrid() {
-            const grid = document.getElementById('bingoGrid');
-            const header = document.getElementById('bingoHeader');
-            if (!grid) return;
-            
-            // Set grid layout based on card size
-            const cols = currentCardSize === '3x3' ? 3 : 5;
-            grid.className = `grid grid-cols-${cols} gap-1`;
-            
-            // Update BINGO header for card size
-            if (header) {
-                if (currentCardSize === '3x3') {
-                    header.className = 'grid grid-cols-3 gap-1 mb-3';
-                    header.innerHTML = `
-                        <div class="text-center py-1 bg-blue-600/20 border border-blue-500/30 rounded text-sm">
-                            <span class="font-bold text-blue-300 terminal-accent">B</span>
-                        </div>
-                        <div class="text-center py-1 bg-blue-600/20 border border-blue-500/30 rounded text-sm">
-                            <span class="font-bold text-blue-300 terminal-accent">I</span>
-                        </div>
-                        <div class="text-center py-1 bg-blue-600/20 border border-blue-500/30 rounded text-sm">
-                            <span class="font-bold text-blue-300 terminal-accent">G</span>
-                        </div>
-                    `;
-                } else {
-                    header.className = 'grid grid-cols-5 gap-1 mb-3';
-                    header.innerHTML = `
-                        <div class="text-center py-1 bg-blue-600/20 border border-blue-500/30 rounded text-sm">
-                            <span class="font-bold text-blue-300 terminal-accent">B</span>
-                        </div>
-                        <div class="text-center py-1 bg-blue-600/20 border border-blue-500/30 rounded text-sm">
-                            <span class="font-bold text-blue-300 terminal-accent">I</span>
-                        </div>
-                        <div class="text-center py-1 bg-blue-600/20 border border-blue-500/30 rounded text-sm">
-                            <span class="font-bold text-blue-300 terminal-accent">N</span>
-                        </div>
-                        <div class="text-center py-1 bg-blue-600/20 border border-blue-500/30 rounded text-sm">
-                            <span class="font-bold text-blue-300 terminal-accent">G</span>
-                        </div>
-                        <div class="text-center py-1 bg-blue-600/20 border border-blue-500/30 rounded text-sm">
-                            <span class="font-bold text-blue-300 terminal-accent">O</span>
-                        </div>
-                    `;
-                }
-            }
-            
-            grid.innerHTML = bingoCard.map(square => `
-                <div class="bingo-square ${square.isMarked ? 'marked' : ''} ${square.isFree ? 'free' : ''} ${currentCardSize === '3x3' ? 'compact' : ''}" 
-                     onclick="${square.isFree ? '' : `toggleBingoSquare(${square.id})`}">
-                    <span class="${getTextSizeClass(square.text, currentCardSize)}">${square.text}</span>
-                    ${square.isMarked && !square.isFree ? '<div class="absolute top-1 right-1 text-xs">✓</div>' : ''}
-                    ${square.isFree ? '<div class="absolute top-1 right-1 text-xs">★</div>' : ''}
-                </div>
-            `).join('');
-        }
-        
-        // Dynamic text sizing based on content length
-        function getTextSizeClass(text, cardSize) {
-            const baseSize = cardSize === '3x3' ? 'compact' : 'normal';
-            const textLength = text.length;
-            
-            // For very long phrases, make text smaller
-            if (textLength > 25) {
-                return baseSize === 'compact' ? 'text-xs' : 'text-sm';
-            } else if (textLength > 18) {
-                return baseSize === 'compact' ? 'text-sm' : 'text-base';
-            } else if (textLength > 12) {
-                return baseSize === 'compact' ? 'text-sm' : 'text-base';
-            } else {
-                return baseSize === 'compact' ? 'text-base' : 'text-lg';
-            }
-        }
-
-        function toggleBingoSquare(squareId) {
-            const square = bingoCard.find(s => s.id === squareId);
-            if (!square || square.isFree) return;
-            
-            square.isMarked = !square.isMarked;
-            bingoStats.totalSquares++;
-            
-            renderBingoGrid();
-            updateBingoUI();
-            saveBingoStats();
-            
-            // Check for automatic bingo
-            const winResult = checkBingo();
-            if (winResult) {
-                triggerAutoBingo(winResult);
-            }
-        }
-
-        function checkBingo() {
-            const gridSize = currentCardSize === '3x3' ? 3 : 5;
-            
-            // Check rows
-            for (let row = 0; row < gridSize; row++) {
-                const rowStart = row * gridSize;
-                const rowSquares = bingoCard.slice(rowStart, rowStart + gridSize);
-                if (rowSquares.every(square => square.isMarked)) {
-                    return {
-                        type: 'row',
-                        pattern: `Row ${row + 1}`,
-                        winningSquares: rowSquares.map(s => s.id)
-                    };
-                }
-            }
-            
-            // Check columns
-            for (let col = 0; col < gridSize; col++) {
-                const colSquares = bingoCard.filter((_, index) => index % gridSize === col);
-                if (colSquares.every(square => square.isMarked)) {
-                    return {
-                        type: 'column',
-                        pattern: `Column ${col + 1}`,
-                        winningSquares: colSquares.map(s => s.id)
-                    };
-                }
-            }
-            
-            // Check diagonals
-            const diagonal1 = [];
-            const diagonal2 = [];
-            
-            for (let i = 0; i < gridSize; i++) {
-                diagonal1.push(bingoCard[i * gridSize + i]);
-                diagonal2.push(bingoCard[i * gridSize + (gridSize - 1 - i)]);
-            }
-            
-            if (diagonal1.every(square => square.isMarked)) {
-                return {
-                    type: 'diagonal',
-                    pattern: 'Main Diagonal',
-                    winningSquares: diagonal1.map(s => s.id)
-                };
-            }
-            
-            if (diagonal2.every(square => square.isMarked)) {
-                return {
-                    type: 'diagonal',
-                    pattern: 'Anti Diagonal',
-                    winningSquares: diagonal2.map(s => s.id)
-                };
-            }
-            
-            return null;
-        }
-
-        // Enhanced Bingo Functions
-        
-        function triggerAutoBingo(winResult) {
-            console.log('🎉 AUTO-BINGO triggered!', winResult);
-            
-            // Highlight winning squares
-            winResult.winningSquares.forEach(squareId => {
-                const square = document.querySelector(`[onclick="toggleBingoSquare(${squareId})"]`);
-                if (square) {
-                    square.classList.add('winning');
-                }
+            painKeywords.high.forEach(keyword => {
+                if (lower.includes(keyword)) score += 2;
             });
             
-            // Calculate game time
-            const gameTime = Math.round((Date.now() - gameStartTime) / 1000);
-            const timeString = `${Math.floor(gameTime / 60)}:${(gameTime % 60).toString().padStart(2, '0')}`;
-            
-            // Determine win type and update stats accordingly
-            const isSoloWin = !currentRoom || currentRoom === null;
-            
-            if (isSoloWin) {
-                // Solo win - immediate verification
-                bingoStats.soloWins++;
-                bingoStats.winStreak++;
-                console.log('✅ Solo win verified instantly');
-                
-                // Update timing stats
-                if (bingoStats.bestTime === 0 || gameTime < bingoStats.bestTime) {
-                    bingoStats.bestTime = gameTime;
-                }
-                const totalWins = bingoStats.soloWins + bingoStats.groupWins;
-                bingoStats.averageTime = Math.round((bingoStats.averageTime * (totalWins - 1) + gameTime) / totalWins);
-                
-                // Update pattern stats
-                bingoStats.favoritePatterns[winResult.type] = (bingoStats.favoritePatterns[winResult.type] || 0) + 1;
-                
-                saveBingoStats();
-                
-                // Show solo win celebration modal
-                showBingoModal(winResult, timeString, 'solo');
-                
-            } else {
-                // Group win - needs verification
-                bingoStats.pendingGroupWins++;
-                console.log('⏳ Group win pending verification from:', currentRoom.participants.filter(p => p !== currentUser));
-                
-                saveBingoStats();
-                
-                // Show group win modal with verification pending
-                showBingoModal(winResult, timeString, 'group');
-                
-                // Simulate verification process after delay
-                setTimeout(() => {
-                    simulateGroupVerification(winResult, timeString, gameTime);
-                }, 3000);
-            }
-        }
-        
-        function showBingoModal(winResult, timeString, winType) {
-            const modal = document.getElementById('bingoModal');
-            const modalContent = modal.querySelector('.bingo-modal-content');
-            
-            if (winType === 'solo') {
-                // Solo win - immediate celebration
-                modalContent.innerHTML = `
-                    <div class="text-6xl mb-4">🎉</div>
-                    <h2 class="text-3xl font-bold text-green-400 mb-2 terminal-accent">SOLO BINGO!</h2>
-                    <p class="text-xl text-white mb-4">Nice work! You survived the corporate jargon!</p>
-                    <div class="text-gray-300 mb-6">
-                        <p>Winning pattern: <span class="terminal-accent">${winResult.pattern}</span></p>
-                        <p>Time: <span class="terminal-accent">${timeString}</span></p>
-                        <p class="text-sm text-green-400 mt-2">✅ Instantly verified (solo play)</p>
-                    </div>
-                    <button onclick="closeBingoModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
-                        🎯 Play Again
-                    </button>
-                `;
-            } else {
-                // Group win - awaiting verification
-                const otherParticipants = currentRoom.participants.filter(p => p !== currentUser);
-                modalContent.innerHTML = `
-                    <div class="text-6xl mb-4">⏳</div>
-                    <h2 class="text-3xl font-bold text-yellow-400 mb-2 terminal-accent">GROUP BINGO!</h2>
-                    <p class="text-xl text-white mb-4">Waiting for verification from teammates...</p>
-                    <div class="text-gray-300 mb-6">
-                        <p>Winning pattern: <span class="terminal-accent">${winResult.pattern}</span></p>
-                        <p>Time: <span class="terminal-accent">${timeString}</span></p>
-                        <div class="text-sm text-yellow-400 mt-2">
-                            <p>⏳ Verification pending from:</p>
-                            <div class="mt-1">${otherParticipants.map(p => `<span class="terminal-accent">${p}</span>`).join(', ')}</div>
-                        </div>
-                    </div>
-                    <div id="verificationStatus" class="mb-4">
-                        <div class="animate-pulse text-gray-400 text-sm">Checking with teammates...</div>
-                    </div>
-                    <button onclick="closeBingoModal()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
-                        ⏸️ Close for Now
-                    </button>
-                `;
-            }
-            
-            modal.style.display = 'flex';
-        }
-        
-        function simulateGroupVerification(winResult, timeString, gameTime) {
-            console.log('🔄 Simulating group verification process...');
-            
-            const modal = document.getElementById('bingoModal');
-            const verificationStatus = document.getElementById('verificationStatus');
-            const otherParticipants = currentRoom.participants.filter(p => p !== currentUser);
-            
-            if (!verificationStatus) return; // Modal might be closed
-            
-            // Simulate random verification responses
-            const verifiers = [];
-            otherParticipants.forEach(participant => {
-                if (Math.random() > 0.2) { // 80% chance of verification
-                    verifiers.push(participant);
-                }
+            painKeywords.medium.forEach(keyword => {
+                if (lower.includes(keyword)) score += 1;
             });
             
-            if (verifiers.length > 0) {
-                // Verification successful
-                bingoStats.groupWins++;
-                bingoStats.pendingGroupWins = Math.max(0, bingoStats.pendingGroupWins - 1);
-                bingoStats.winStreak++;
-                
-                // Update timing stats
-                if (bingoStats.bestTime === 0 || gameTime < bingoStats.bestTime) {
-                    bingoStats.bestTime = gameTime;
-                }
-                const totalWins = bingoStats.soloWins + bingoStats.groupWins;
-                bingoStats.averageTime = Math.round((bingoStats.averageTime * (totalWins - 1) + gameTime) / totalWins);
-                
-                // Update pattern stats
-                bingoStats.favoritePatterns[winResult.type] = (bingoStats.favoritePatterns[winResult.type] || 0) + 1;
-                
-                saveBingoStats();
-                updateBingoUI();
-                
-                // Update modal to show verification success
-                const modalContent = modal.querySelector('.bingo-modal-content');
-                modalContent.innerHTML = `
-                    <div class="text-6xl mb-4">🎉</div>
-                    <h2 class="text-3xl font-bold text-green-400 mb-2 terminal-accent">VERIFIED BINGO!</h2>
-                    <p class="text-xl text-white mb-4">Your teammates confirmed your win!</p>
-                    <div class="text-gray-300 mb-6">
-                        <p>Winning pattern: <span class="terminal-accent">${winResult.pattern}</span></p>
-                        <p>Time: <span class="terminal-accent">${timeString}</span></p>
-                        <div class="text-sm text-green-400 mt-2">
-                            <p>✅ Verified by: ${verifiers.map(v => `<span class="terminal-accent">${v}</span>`).join(', ')}</p>
-                        </div>
-                    </div>
-                    <button onclick="closeBingoModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
-                        🎯 Play Again
-                    </button>
-                `;
-                
-                console.log('✅ Group win verified by:', verifiers);
-            } else {
-                // Verification failed
-                bingoStats.pendingGroupWins = Math.max(0, bingoStats.pendingGroupWins - 1);
-                saveBingoStats();
-                updateBingoUI();
-                
-                // Update modal to show verification failure
-                const modalContent = modal.querySelector('.bingo-modal-content');
-                modalContent.innerHTML = `
-                    <div class="text-6xl mb-4">😔</div>
-                    <h2 class="text-3xl font-bold text-red-400 mb-2 terminal-accent">BINGO DENIED</h2>
-                    <p class="text-xl text-white mb-4">Your teammates couldn't verify this win...</p>
-                    <div class="text-gray-300 mb-6">
-                        <p>Winning pattern: <span class="terminal-accent">${winResult.pattern}</span></p>
-                        <p>Time: <span class="terminal-accent">${timeString}</span></p>
-                        <div class="text-sm text-red-400 mt-2">
-                            <p>❌ No verification received</p>
-                            <p class="text-xs mt-1">Maybe they weren't paying attention? 🤷‍♀️</p>
-                        </div>
-                    </div>
-                    <button onclick="closeBingoModal()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
-                        😤 Try Again
-                    </button>
-                `;
-                
-                console.log('❌ Group win verification failed - teammates were not responsive');
-            }
-        }
-        
-        function closeBingoModal() {
-            document.getElementById('bingoModal').style.display = 'none';
-            // Remove winning highlights
-            document.querySelectorAll('.bingo-square.winning').forEach(square => {
-                square.classList.remove('winning');
+            painKeywords.low.forEach(keyword => {
+                if (lower.includes(keyword)) score -= 1;
             });
-            // Generate new card after short delay
+
+            score = Math.max(1, Math.min(10, Math.round(score)));
+            updatePainScore(score);
+        }
+
+        // Update pain score display
+        function updatePainScore(score) {
+            currentPainScore = score;
+            const scoreElement = document.getElementById('painScore');
+            const barElement = document.getElementById('painBar');
+            const messageElement = document.getElementById('painMessage');
+
+            scoreElement.textContent = score + '/10';
+            barElement.style.width = (score * 10) + '%';
+
+            const messages = {
+                1: 'Mild engineering annoyance',
+                2: 'Slight project turbulence',
+                3: 'Minor technical hiccup', 
+                4: 'Standard development friction',
+                5: 'Typical engineering suffering',
+                6: 'Elevated stress protocols',
+                7: 'Approaching critical pain levels',
+                8: 'High-stress engineering zone',
+                9: 'MAXIMUM SUFFERING DETECTED',
+                10: 'ENGINEERING EMERGENCY STATE'
+            };
+
+            messageElement.textContent = messages[score] || 'Unknown pain level';
+        }
+
+        // Render meme templates
+        function renderTemplates() {
+            const container = document.getElementById('templates');
+            container.innerHTML = memeTemplates.map(template => 
+                `<div onclick="selectTemplate(${JSON.stringify(template).replace(/"/g, '&quot;')})" 
+                      class="border-2 border-gray-300 rounded-lg p-3 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all template-card">
+                    <div class="w-full h-20 bg-gray-100 rounded-md mb-2 flex items-center justify-center text-2xl">
+                        ${getTemplateIcon(template.category)}
+                    </div>
+                    <h4 class="text-sm font-medium text-center">${template.name}</h4>
+                    <p class="text-xs text-gray-500 text-center capitalize">${template.category}</p>
+                </div>`
+            ).join('');
+        }
+
+        // Get template icon
+        function getTemplateIcon(category) {
+            const icons = {
+                general: '🎭',
+                software: '💻', 
+                mechanical: '⚙️',
+                electrical: '⚡',
+                civil: '🏗️',
+                chemical: '🧪'
+            };
+            return icons[category] || '🎯';
+        }
+
+        // Select a template
+        function selectTemplate(template) {
+            currentTemplate = template;
+            
+            // Update active template styling
+            document.querySelectorAll('.template-card').forEach(el => {
+                el.classList.remove('border-blue-500', 'shadow-md');
+                el.classList.add('border-gray-300');
+            });
+            
+            // Render text inputs
+            renderTextInputs();
+            updateCanvas();
+        }
+
+        // Render text input fields
+        function renderTextInputs() {
+            const container = document.getElementById('textInputs');
+            if (!currentTemplate) return;
+
+            container.innerHTML = currentTemplate.textAreas.map(area => 
+                `<div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        ${getAreaLabel(area.id)}
+                    </label>
+                    <input 
+                        type="text" 
+                        id="text_${area.id}"
+                        placeholder="${area.placeholder}"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        oninput="updateCanvas()"
+                        maxlength="100"
+                    />
+                </div>`
+            ).join('');
+        }
+
+        // Get area label
+        function getAreaLabel(areaId) {
+            const labels = {
+                top: 'Top Text',
+                bottom: 'Bottom Text', 
+                reject: 'Reject/No',
+                accept: 'Accept/Yes',
+                button1: 'Button 1',
+                button2: 'Button 2',
+                girlfriend: 'Current Thing',
+                boyfriend: 'Person',
+                other_woman: 'New Thing'
+            };
+            return labels[areaId] || 'Text';
+        }
+
+        // Update canvas
+        function updateCanvas() {
+            const canvas = document.getElementById('memeCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw border
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+            if (!currentTemplate) return;
+
+            // Draw template background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+            // Draw template indicator
+            ctx.fillStyle = '#3b82f6';
+            ctx.font = 'bold 16px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText(currentTemplate.name.toUpperCase(), canvas.width / 2, 30);
+
+            // Draw text areas
+            currentTemplate.textAreas.forEach(area => {
+                const input = document.getElementById('text_' + area.id);
+                const text = input ? input.value || area.placeholder : area.placeholder;
+                
+                const x = (area.x / 100) * canvas.width;
+                const y = (area.y / 100) * canvas.height;
+                
+                // Set text style
+                ctx.font = 'bold 24px Impact, Arial Black';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Draw text stroke
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 3;
+                ctx.strokeText(text, x, y);
+                
+                // Draw text fill
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(text, x, y);
+            });
+
+            // Add pain level indicator
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '12px Inter';
+            ctx.textAlign = 'right';
+            ctx.fillText(`Pain Level: ${currentPainScore}/10`, canvas.width - 10, canvas.height - 10);
+        }
+
+        // Generate meme (just update canvas for now)
+        function generateMeme() {
+            updateCanvas();
+            
+            // Add generation timestamp
+            const canvas = document.getElementById('memeCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = '#10b981';
+            ctx.font = '10px Inter';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Generated: ${new Date().toLocaleTimeString()}`, 10, canvas.height - 10);
+            
+            // Store in memory
+            const texts = {};
+            if (currentTemplate) {
+                currentTemplate.textAreas.forEach(area => {
+                    const input = document.getElementById('text_' + area.id);
+                    texts[area.id] = input ? input.value : area.placeholder;
+                });
+            }
+            
+            generatedMemes.push({
+                id: Date.now(),
+                template: currentTemplate?.name || 'Unknown',
+                texts: texts,
+                painScore: currentPainScore,
+                timestamp: new Date(),
+                dataUrl: canvas.toDataURL('image/png')
+            });
+
+            // Show success feedback
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '✅ Generated!';
+            button.classList.add('bg-green-600');
             setTimeout(() => {
-                generateBingoCard();
-            }, 500);
-        }
-        
-        function regenerateCard() {
-            console.log('🔄 Regenerating card (keeping stats)...');
-            generateBingoCard(false); // Don't increment game count
-            bingoStats.gamesPlayed--; // Adjust since generateBingoCard increments
-            saveBingoStats();
-        }
-        
-        function changeCardSize(newSize) {
-            console.log('📏 Changing card size to:', newSize);
-            currentCardSize = newSize;
-            saveData('cardSize', currentCardSize);
-            generateBingoCard(false); // Don't increment game count
-            bingoStats.gamesPlayed--; // Adjust since generateBingoCard increments
-            saveBingoStats();
+                button.textContent = originalText;
+                button.classList.remove('bg-green-600');
+            }, 2000);
         }
 
-        function updateBingoUI() {
-            // Update marked count
-            const markedCount = bingoCard.filter(s => s.isMarked).length;
-            const totalSquares = bingoCard.length;
-            const markedElement = document.getElementById('markedCount');
-            if (markedElement) {
-                markedElement.textContent = `${markedCount}/${totalSquares}`;
-            }
-            
-            // Update stats with separate solo/group wins
-            const gamesElement = document.getElementById('gamesPlayed');
-            const soloWinsElement = document.getElementById('soloWins');
-            const groupWinsElement = document.getElementById('groupWins');
-            const userElement = document.getElementById('currentUser');
-            
-            if (gamesElement) gamesElement.textContent = bingoStats.gamesPlayed;
-            if (soloWinsElement) soloWinsElement.textContent = bingoStats.soloWins;
-            if (groupWinsElement) {
-                const groupDisplayText = bingoStats.pendingGroupWins > 0 
-                    ? `${bingoStats.groupWins}+${bingoStats.pendingGroupWins}` 
-                    : bingoStats.groupWins;
-                groupWinsElement.textContent = groupDisplayText;
-                groupWinsElement.title = bingoStats.pendingGroupWins > 0 
-                    ? `${bingoStats.groupWins} verified + ${bingoStats.pendingGroupWins} pending verification` 
-                    : `${bingoStats.groupWins} verified group wins`;
-            }
-            if (userElement) userElement.textContent = currentUser;
+        // Download meme
+        function downloadMeme() {
+            const canvas = document.getElementById('memeCanvas');
+            const link = document.createElement('a');
+            link.download = `engineering-meme-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
         }
 
-        // Storage Utilities
-        function getStorageMethod() {
-            return storageMode === 'persistent' ? localStorage : sessionStorage;
-        }
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initApp);
         
-        function saveData(key, data) {
-            const storage = getStorageMethod();
-            storage.setItem(key, JSON.stringify(data));
-        }
-        
-        function loadData(key) {
-            const storage = getStorageMethod();
-            const data = storage.getItem(key);
-            return data ? JSON.parse(data) : null;
-        }
-        
-        function removeData(key) {
-            const storage = getStorageMethod();
-            storage.removeItem(key);
-        }
-
-        function saveBingoStats() {
-            saveData('bingoStats', bingoStats);
-        }
-
-        function getBingoStats() {
-            return bingoStats;
-        }
-        
-        function changeStorageMode(newMode) {
-            console.log('📊 Changing storage mode to:', newMode);
-            
-            if (storageMode === newMode) return;
-            
-            const oldMode = storageMode;
-            storageMode = newMode;
-            
-            // Always save storage mode preference to localStorage (persistent)
-            localStorage.setItem('storageMode', storageMode);
-            
-            // Migrate data if switching modes
-            if (oldMode === 'persistent' && newMode === 'session') {
-                // Moving from persistent to session - copy data to sessionStorage
-                const persistentStats = localStorage.getItem('bingoStats');
-                const persistentUser = localStorage.getItem('bingoUsername');
-                const persistentRoom = localStorage.getItem('currentRoom');
-                const persistentCardSize = localStorage.getItem('cardSize');
-                
-                if (persistentStats) sessionStorage.setItem('bingoStats', persistentStats);
-                if (persistentUser) sessionStorage.setItem('bingoUsername', persistentUser);
-                if (persistentRoom) sessionStorage.setItem('currentRoom', persistentRoom);
-                if (persistentCardSize) sessionStorage.setItem('cardSize', persistentCardSize);
-                
-                alert('🏢 Switched to Meeting Only mode. Your stats will clear when you close the browser.');
-                
-            } else if (oldMode === 'session' && newMode === 'persistent') {
-                // Moving from session to persistent - copy data to localStorage
-                const sessionStats = sessionStorage.getItem('bingoStats');
-                const sessionUser = sessionStorage.getItem('bingoUsername');
-                const sessionRoom = sessionStorage.getItem('currentRoom');
-                const sessionCardSize = sessionStorage.getItem('cardSize');
-                
-                if (sessionStats) localStorage.setItem('bingoStats', sessionStats);
-                if (sessionUser) localStorage.setItem('bingoUsername', sessionUser);
-                if (sessionRoom) localStorage.setItem('currentRoom', sessionRoom);
-                if (sessionCardSize) localStorage.setItem('cardSize', sessionCardSize);
-                
-                alert('💾 Switched to Keep Stats mode. Your progress will be saved permanently.');
-            }
-            
-            console.log('✅ Storage mode changed successfully');
-        }
-        
-        // Username Management
-        function showUsernameModal() {
-            document.getElementById('usernameModal').style.display = 'flex';
-        }
-        
-        function setUsername() {
-            const username = document.getElementById('usernameInput').value.trim();
-            if (!username) {
-                alert('Please enter a username');
-                return;
-            }
-            
-            currentUser = username;
-            saveData('bingoUsername', currentUser);
-            document.getElementById('currentUser').textContent = currentUser;
-            document.getElementById('usernameModal').style.display = 'none';
-            
-            // Now initialize the game
-            const savedStats = loadData('bingoStats');
-            if (savedStats) {
-                bingoStats = { ...bingoStats, ...savedStats };
-                
-                // Backwards compatibility: migrate old 'wins' to 'soloWins'
-                if (savedStats.wins && !savedStats.soloWins && !savedStats.groupWins) {
-                    console.log('🔄 Migrating legacy wins data to soloWins...');
-                    bingoStats.soloWins = savedStats.wins;
-                    bingoStats.groupWins = 0;
-                    delete bingoStats.wins; // Remove old property
-                    saveBingoStats(); // Save migrated data
-                    console.log('✅ Legacy data migrated:', savedStats.wins, 'wins -> soloWins');
-                }
-            }
-            
-            generateBingoCard();
-            updateBingoUI();
-            bingoInitialized = true;
-        }
-        
-        // Room Management Functions
-        function createRoom() {
-            const roomNameInput = document.getElementById('roomName');
-            const roomName = roomNameInput.value.trim();
-            
-            if (!roomName) {
-                alert('Please enter a room name');
-                return;
-            }
-            
-            const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-            
-            currentRoom = {
-                code: roomCode,
-                name: roomName,
-                host: currentUser,
-                participants: [currentUser],
-                created: Date.now()
-            };
-            
-            saveData('currentRoom', currentRoom);
-            updateRoomUI();
-            roomNameInput.value = '';
-            
-            alert(`Room "${roomName}" created!\nRoom Code: ${roomCode}\nShare this code with colleagues.`);
-            
-            console.log('🏢 Room created:', roomName, roomCode);
-        }
-
-        function joinRoom() {
-            const roomCodeInput = document.getElementById('roomCode');
-            const roomCode = roomCodeInput.value.trim().toUpperCase();
-            
-            if (!roomCode) {
-                alert('Please enter a room code');
-                return;
-            }
-            
-            if (roomCode.length !== 6) {
-                alert('Room code must be 6 characters');
-                return;
-            }
-            
-            // Simulate joining room (in real app, this would check server)
-            const roomName = `Meeting Room ${roomCode}`;
-            currentRoom = {
-                code: roomCode,
-                name: roomName,
-                host: 'Unknown',
-                participants: [currentUser, 'Alice', 'Bob'], // Simulated participants
-                joined: Date.now()
-            };
-            
-            saveData('currentRoom', currentRoom);
-            updateRoomUI();
-            roomCodeInput.value = '';
-            
-            alert(`Joined room "${roomName}"! 🎯 Good luck in your meeting!`);
-            
-            console.log('🚪 Joined room:', roomCode);
-        }
-        
-        function leaveRoom() {
-            if (!currentRoom) return;
-            
-            const roomName = currentRoom.name;
-            currentRoom = null;
-            removeData('currentRoom');
-            updateRoomUI();
-            
-            alert(`Left room "${roomName}"`);
-            console.log('🚪 Left room');
-        }
-        
-        function updateRoomUI() {
-            const roomStatusElement = document.getElementById('roomStatus');
-            const roomParticipantsElement = document.getElementById('roomParticipants');
-            const participantsListElement = document.getElementById('participantsList');
-            
-            if (currentRoom) {
-                // Show room status (compact)
-                roomStatusElement.innerHTML = `
-                    <div class="text-gray-300 text-sm">
-                        <p class="mb-1">🏠 <span class="terminal-accent">${currentRoom.name}</span></p>
-                        <p class="text-xs">Code: <span class="terminal-accent font-mono">${currentRoom.code}</span></p>
-                        <p class="text-xs">${currentRoom.participants.length} participants</p>
-                    </div>
-                `;
-                
-                // Show participants list (compact)
-                if (participantsListElement) {
-                    participantsListElement.innerHTML = currentRoom.participants.map(participant => `
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="text-gray-300">${participant}</span>
-                            ${participant === currentRoom.host ? '<span class="text-yellow-400">👑</span>' : ''}
-                            ${participant === currentUser ? '<span class="text-green-400">You</span>' : ''}
-                        </div>
-                    `).join('');
-                }
-                
-                if (roomParticipantsElement) {
-                    roomParticipantsElement.style.display = 'block';
-                }
-            } else {
-                // Show solo play status
-                roomStatusElement.innerHTML = `
-                    <div class="text-gray-400 text-sm">
-                        <p>🏠 <span class="terminal-accent">Solo Play</span></p>
-                    </div>
-                `;
-                if (roomParticipantsElement) {
-                    roomParticipantsElement.style.display = 'none';
-                }
-            }
-        }
-        
-        function broadcastBingo(winResult, timeString) {
-            // Simulate broadcasting bingo win to room participants
-            console.log('📢 Broadcasting BINGO to room:', currentRoom.code, winResult);
-            // In a real implementation, this would send to server/other players
-        }
-        
-        // Initialize the bingo game when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎯 Initializing Buzzword Bingo Game...');
-            initializeBingo();
-            console.log('✅ Buzzword Bingo initialized successfully');
-        });
-        
-        // Console info
-        console.log('🎯 Buzzword Bingo - Engineering Meeting Survival Game');
+        // Console easter egg for engineers
+        console.log('🤖 EngineerMemes.AI v1.0.0');
+        console.log('Professional Engineering Humor Generator');
+        console.log('Powered by: MCP Servers + Autonomous AI Agents');
+        console.log('Pain Analysis: ✅ | Template Generation: ✅ | Quality Control: ✅');
         console.log('Made with 😅 by engineers, for engineers');
-        console.log('Now with 250+ terms: Corporate, Oil & Gas, Mechanical Engineering!');
     </script>
 </body>
 </html>

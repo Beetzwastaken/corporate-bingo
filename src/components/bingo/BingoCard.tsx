@@ -1,4 +1,4 @@
-import { BingoSquare } from '../../pages/BingoPage';
+import type { BingoSquare } from '../../types';
 
 interface BingoCardProps {
   squares: BingoSquare[];
@@ -22,7 +22,7 @@ export function BingoCard({ squares, onSquareClick, hasBingo }: BingoCardProps) 
 
       {/* BINGO Header */}
       <div className="grid grid-cols-5 gap-2 mb-4">
-        {['B', 'I', 'N', 'G', 'O'].map((letter, index) => (
+        {['B', 'I', 'N', 'G', 'O'].map((letter) => (
           <div key={letter} className="text-center py-3 bg-blue-600/30 border border-blue-500/50 rounded-lg">
             <span className="text-xl font-bold text-blue-300 terminal-accent">{letter}</span>
           </div>
@@ -31,7 +31,7 @@ export function BingoCard({ squares, onSquareClick, hasBingo }: BingoCardProps) 
 
       {/* Bingo Grid */}
       <div className="grid grid-cols-5 gap-2">
-        {squares.map((square, index) => (
+        {squares.map((square) => (
           <button
             key={square.id}
             onClick={() => !square.isFree && onSquareClick(square.id)}

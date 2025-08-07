@@ -2,21 +2,7 @@ import { useState, useEffect } from 'react';
 import { BingoCard } from '../components/bingo/BingoCard';
 import { RoomManager } from '../components/bingo/RoomManager';
 import { BingoStats } from '../components/bingo/BingoStats';
-
-export interface BingoSquare {
-  id: string;
-  text: string;
-  isMarked: boolean;
-  isFree?: boolean;
-}
-
-export interface BingoRoom {
-  id: string;
-  name: string;
-  code: string;
-  players: number;
-  isActive: boolean;
-}
+import type { BingoSquare, BingoRoom } from '../types';
 
 const BUZZWORDS = [
   // Classic corporate buzzwords

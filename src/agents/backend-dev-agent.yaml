@@ -1,0 +1,642 @@
+name: "corporate-bingo-backend-dev"
+version: "1.0.0"
+role: "Cloudflare Workers + Durable Objects multiplayer system optimization"
+
+description: |
+  Specializes in serverless backend architecture using Cloudflare Workers and
+  Durable Objects for real-time multiplayer buzzword bingo. Focuses on WebSocket
+  management, distributed systems, security, and global edge performance.
+
+responsibilities:
+  - Cloudflare Workers serverless API development and optimization
+  - Durable Objects state management for multiplayer room persistence
+  - WebSocket connection handling and real-time synchronization
+  - Anti-cheat systems and democratic verification implementation
+  - Security hardening (CORS, input validation, rate limiting)
+  - Performance optimization for global edge deployment
+
+capabilities:
+  primary_tools:
+    - Read: "Analyze Cloudflare Workers code and Durable Objects patterns"
+    - Write: "Create serverless functions and Durable Object classes"
+    - MultiEdit: "Implement multiple related backend components"
+    - Bash: "Run wrangler dev/deploy and testing commands"
+    - Edit: "Optimize existing Workers and WebSocket handling"
+
+  secondary_tools:
+    - mcp__excel__create_workbook: "Performance tracking and analytics storage"
+    - mcp__excel__write_excel_data: "Log performance metrics and user analytics"
+    - mcp__excel__read_excel_data: "Analyze usage patterns and optimization targets"
+    - Grep: "Search through backend code for optimization opportunities"
+
+specializations:
+  cloudflare_workers:
+    serverless_architecture: |
+      // Professional Cloudflare Workers main handler
+      export default {
+        async fetch(request, env, ctx) {
+          const url = new URL(request.url);
+          const origin = request.headers.get('Origin');
+
+          // Professional CORS handling with security
+          if (request.method === 'OPTIONS') {
+            return new Response(null, { 
+              status: 200, 
+              headers: corsHeaders(origin) 
+            });
+          }
+
+          try {
+            // Route-based request handling
+            if (url.pathname === '/api/room/create' && request.method === 'POST') {
+              return await handleRoomCreation(request, env, origin);
+            }
+            
+            if (url.pathname === '/api/room/join' && request.method === 'POST') {
+              return await handleRoomJoin(request, env, origin);
+            }
+            
+            if (url.pathname.startsWith('/api/room/') && url.pathname.endsWith('/ws')) {
+              return await handleWebSocketUpgrade(request, env);
+            }
+
+            return new Response('Not Found', { 
+              status: 404, 
+              headers: corsHeaders(origin) 
+            });
+
+          } catch (error) {
+            console.error('Worker error:', error);
+            return new Response(JSON.stringify({ 
+              error: 'Internal server error',
+              timestamp: Date.now(),
+              requestId: crypto.randomUUID()
+            }), {
+              status: 500,
+              headers: { 
+                'Content-Type': 'application/json', 
+                ...corsHeaders(origin) 
+              }
+            });
+          }
+        }
+      };
+
+    security_implementation: |
+      // Professional security with comprehensive validation
+      function corsHeaders(origin) {
+        const allowedOrigins = [
+          'https://corporate-bingo-ai.netlify.app',
+          'http://localhost:5175',
+          'http://localhost:3000'
+        ];
+        
+        const validOrigin = allowedOrigins.includes(origin) ? origin : null;
+        
+        return {
+          'Access-Control-Allow-Origin': validOrigin || 'null',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          'Access-Control-Max-Age': '86400',
+          'X-Content-Type-Options': 'nosniff',
+          'X-Frame-Options': 'DENY',
+          'X-XSS-Protection': '1; mode=block'
+        };
+      }
+
+      function validateRoomInput(body) {
+        if (!body || typeof body !== 'object') return null;
+        
+        const roomName = typeof body.roomName === 'string' ? body.roomName.trim() : '';
+        const playerName = typeof body.playerName === 'string' ? body.playerName.trim() : '';
+        
+        // Comprehensive sanitization
+        const sanitizedRoomName = roomName
+          .replace(/[<>'"&]/g, '')
+          .slice(0, 50);
+          
+        const sanitizedPlayerName = playerName
+          .replace(/[<>'"&]/g, '')
+          .slice(0, 30);
+        
+        // Validation rules
+        if (sanitizedRoomName.length < 1 || sanitizedRoomName.length > 50) return null;
+        if (sanitizedPlayerName.length < 1 || sanitizedPlayerName.length > 30) return null;
+        if (!/^[a-zA-Z0-9\s\-_]+$/.test(sanitizedRoomName)) return null;
+        if (!/^[a-zA-Z0-9\s\-_]+$/.test(sanitizedPlayerName)) return null;
+        
+        return {
+          roomName: sanitizedRoomName,
+          playerName: sanitizedPlayerName
+        };
+      }
+
+  durable_objects:
+    room_management: |
+      // Professional Durable Object for room state management
+      export class BingoRoom {
+        constructor(state, env) {
+          this.state = state;
+          this.env = env;
+          this.sessions = new Map(); // WebSocket connections
+          this.players = new Map();  // Player data with unique boards
+          this.playerRateLimits = new Map();
+          this.gameState = {
+            roomCode: '',
+            roomName: '',
+            hostId: '',
+            roundNumber: 1,
+            isActive: true,
+            created: Date.now(),
+            lastActivity: Date.now(),
+            pendingVerifications: new Map()
+          };
+          
+          // Professional configuration
+          this.MAX_PLAYERS = 10;
+          this.MAX_MESSAGES_PER_MINUTE = 30;
+          this.VERIFICATION_TIMEOUT = 30000;
+          this.MAX_PENDING_VERIFICATIONS = 3;
+        }
+
+        async fetch(request) {
+          const url = new URL(request.url);
+
+          try {
+            // WebSocket upgrade handling
+            if (request.headers.get('Upgrade') === 'websocket') {
+              return await this.handleWebSocketUpgrade(request);
+            }
+
+            // Room creation
+            if (url.pathname === '/create' && request.method === 'POST') {
+              return await this.handleRoomCreation(request);
+            }
+
+            // Player joining
+            if (url.pathname === '/join' && request.method === 'POST') {
+              return await this.handlePlayerJoin(request);
+            }
+
+            return new Response('Not found', { status: 404 });
+
+          } catch (error) {
+            console.error('Durable Object error:', error);
+            return new Response(JSON.stringify({
+              error: 'Room operation failed',
+              details: error.message,
+              timestamp: Date.now()
+            }), {
+              status: 500,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+        }
+
+        // Generate cryptographically secure unique board for each player
+        generateUniqueBoard() {
+          const shuffled = this.fisherYatesShuffle([...BUZZWORDS]);
+          const selected = shuffled.slice(0, 24);
+          
+          const board = [];
+          for (let i = 0; i < 25; i++) {
+            if (i === 12) {
+              board.push('FREE SPACE');
+            } else {
+              const termIndex = i < 12 ? i : i - 1;
+              board.push(selected[termIndex]);
+            }
+          }
+          
+          return board;
+        }
+
+        // Cryptographically secure Fisher-Yates shuffle
+        fisherYatesShuffle(array) {
+          const shuffled = [...array];
+          const randomValues = new Uint32Array(shuffled.length);
+          crypto.getRandomValues(randomValues);
+          
+          for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = randomValues[i] % (i + 1);
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+          }
+          
+          return shuffled;
+        }
+      }
+
+    anti_cheat_system: |
+      // Professional anti-cheat implementation with democratic verification
+      async handleVerificationVote(playerId, verificationId, vote, speaker) {
+        const verification = this.gameState.pendingVerifications.get(verificationId);
+        if (!verification || verification.resolved) return;
+        
+        // Record vote with timestamp for audit
+        verification.votes.set(playerId, {
+          vote,
+          speaker,
+          timestamp: Date.now(),
+          voterIp: this.getPlayerIP(playerId) // For additional validation
+        });
+        
+        // Check if we have sufficient votes for resolution
+        const requiredVotes = Math.max(1, Math.floor(this.sessions.size / 2));
+        if (verification.votes.size >= requiredVotes) {
+          await this.resolveVerificationWithAudit(verificationId);
+        }
+      }
+
+      async resolveVerificationWithAudit(verificationId) {
+        const verification = this.gameState.pendingVerifications.get(verificationId);
+        if (!verification || verification.resolved) return;
+        
+        verification.resolved = true;
+        verification.resolvedAt = Date.now();
+        
+        const claimingPlayer = this.players.get(verification.claimedBy);
+        if (!claimingPlayer) {
+          this.gameState.pendingVerifications.delete(verificationId);
+          return;
+        }
+
+        // Analyze votes for anti-cheat detection
+        const voteAnalysis = this.analyzeVotes(verification.votes);
+        
+        // CRITICAL: Anti-cheat logic - prevent self-claims
+        if (voteAnalysis.selfClaimDetected) {
+          claimingPlayer.currentScore = Math.max(0, claimingPlayer.currentScore - 50);
+          claimingPlayer.violations = (claimingPlayer.violations || 0) + 1;
+          
+          this.broadcast({
+            type: 'CLAIM_REJECTED',
+            reason: 'SELF_CLAIM_DETECTED',
+            claimerName: claimingPlayer.name,
+            buzzword: verification.buzzword,
+            penalty: -50,
+            message: `${claimingPlayer.name} cannot claim words they said themselves! (-50 points)`
+          });
+          
+          // Log violation for monitoring
+          await this.logSecurityEvent('SELF_CLAIM_ATTEMPT', {
+            playerId: verification.claimedBy,
+            playerName: claimingPlayer.name,
+            buzzword: verification.buzzword,
+            voteAnalysis
+          });
+          
+        } else if (voteAnalysis.approved) {
+          // Legitimate claim approved
+          claimingPlayer.markedSquares[verification.squareIndex] = true;
+          claimingPlayer.currentScore += 10;
+          claimingPlayer.legitimateClaims = (claimingPlayer.legitimateClaims || 0) + 1;
+          
+          this.broadcast({
+            type: 'CLAIM_APPROVED',
+            claimerName: claimingPlayer.name,
+            buzzword: verification.buzzword,
+            points: 10,
+            confidence: voteAnalysis.confidence
+          });
+          
+          // Check for bingo after legitimate claim
+          this.checkForBingo(verification.claimedBy);
+          
+        } else {
+          // Claim rejected by community
+          this.broadcast({
+            type: 'CLAIM_REJECTED',
+            reason: 'INSUFFICIENT_COMMUNITY_SUPPORT',
+            claimerName: claimingPlayer.name,
+            buzzword: verification.buzzword,
+            confidence: voteAnalysis.confidence,
+            message: `Community didn't hear "${verification.buzzword}"`
+          });
+        }
+        
+        // Clean up resolved verification
+        this.gameState.pendingVerifications.delete(verificationId);
+      }
+
+  websocket_management:
+    connection_handling: |
+      // Professional WebSocket management with comprehensive error handling
+      async handleWebSocketUpgrade(request) {
+        const url = new URL(request.url);
+        const playerId = url.searchParams.get('playerId');
+        
+        if (!playerId || !this.players.has(playerId)) {
+          return new Response('Invalid player ID', { 
+            status: 400,
+            headers: { 'X-Error-Code': 'INVALID_PLAYER_ID' }
+          });
+        }
+        
+        const player = this.players.get(playerId);
+        const pair = new WebSocketPair();
+        const [client, server] = Object.values(pair);
+        
+        server.accept();
+        
+        // Store connection with metadata
+        this.sessions.set(playerId, {
+          socket: server,
+          player: player,
+          connectedAt: Date.now(),
+          lastActivity: Date.now(),
+          messageCount: 0
+        });
+        
+        // Comprehensive event handling
+        server.addEventListener('message', async (event) => {
+          await this.handleWebSocketMessage(playerId, event);
+        });
+        
+        server.addEventListener('close', (event) => {
+          this.handleWebSocketClose(playerId, event);
+        });
+        
+        server.addEventListener('error', (error) => {
+          this.handleWebSocketError(playerId, error);
+        });
+        
+        // Send initial game state
+        await this.sendGameState(playerId);
+        
+        // Log connection for analytics
+        await this.logPlayerEvent('WEBSOCKET_CONNECTED', playerId, {
+          userAgent: request.headers.get('User-Agent'),
+          timestamp: Date.now()
+        });
+        
+        return new Response(null, { 
+          status: 101, 
+          webSocket: client,
+          headers: {
+            'X-Connection-ID': crypto.randomUUID(),
+            'X-Room-Code': this.gameState.roomCode
+          }
+        });
+      }
+
+      async handleWebSocketMessage(playerId, event) {
+        const session = this.sessions.get(playerId);
+        if (!session) return;
+        
+        // Update activity tracking
+        session.lastActivity = Date.now();
+        session.messageCount++;
+        
+        // Rate limiting check
+        if (!this.checkRateLimit(playerId)) {
+          await this.sendRateLimitWarning(playerId);
+          return;
+        }
+        
+        try {
+          const data = JSON.parse(event.data);
+          
+          // Message validation
+          if (!this.validateMessage(data)) {
+            await this.sendError(playerId, 'INVALID_MESSAGE_FORMAT');
+            return;
+          }
+          
+          // Update game activity timestamp
+          this.gameState.lastActivity = Date.now();
+          
+          // Route message to appropriate handler
+          switch (data.type) {
+            case 'CLAIM_BUZZWORD':
+              await this.handleBuzzwordClaim(playerId, data);
+              break;
+              
+            case 'VERIFY_VOTE':
+              await this.handleVerificationVote(playerId, data.verificationId, data.vote, data.speaker);
+              break;
+              
+            case 'PING':
+              await this.handlePing(playerId);
+              break;
+              
+            case 'REQUEST_ROOM_STATE':
+              await this.sendGameState(playerId);
+              break;
+              
+            default:
+              await this.sendError(playerId, 'UNKNOWN_MESSAGE_TYPE', { type: data.type });
+          }
+          
+        } catch (error) {
+          console.error('WebSocket message error:', error);
+          await this.sendError(playerId, 'MESSAGE_PROCESSING_ERROR');
+        }
+      }
+
+mcp_integration:
+  excel_vba:
+    usage: "Performance analytics, user behavior tracking, and system monitoring"
+    implementations:
+      performance_tracking: |
+        // Comprehensive performance and analytics tracking
+        async logPerformanceMetrics(operation, duration, metadata = {}) {
+          const metricsPath = "F:/CC/Projects/corporate-bingo/analytics/performance_metrics.xlsx";
+          
+          const performanceData = [{
+            timestamp: new Date().toISOString(),
+            operation: operation,
+            duration_ms: duration,
+            room_code: this.gameState.roomCode,
+            player_count: this.players.size,
+            concurrent_verifications: this.gameState.pendingVerifications.size,
+            memory_usage: this.estimateMemoryUsage(),
+            success: metadata.success || true,
+            error_code: metadata.errorCode || null,
+            user_agent: metadata.userAgent || null,
+            region: metadata.cfRegion || 'unknown'
+          }];
+          
+          try {
+            await this.env.MCP_EXCEL.writeExcelData(metricsPath, "PerformanceMetrics", performanceData, "A1");
+          } catch (error) {
+            console.error('Failed to log performance metrics:', error);
+          }
+        }
+
+      user_analytics: |
+        // User behavior and engagement analytics
+        async logUserEngagement(playerId, eventType, eventData = {}) {
+          const analyticsPath = "F:/CC/Projects/corporate-bingo/analytics/user_engagement.xlsx";
+          const player = this.players.get(playerId);
+          
+          const engagementData = [{
+            timestamp: new Date().toISOString(),
+            player_id: playerId,
+            player_name: player?.name || 'unknown',
+            room_code: this.gameState.roomCode,
+            event_type: eventType,
+            event_data: JSON.stringify(eventData),
+            session_duration: Date.now() - (player?.joinedAt || Date.now()),
+            total_score: player?.totalScore || 0,
+            current_score: player?.currentScore || 0,
+            claims_made: player?.claimsMade || 0,
+            successful_claims: player?.successfulClaims || 0,
+            round_number: this.gameState.roundNumber
+          }];
+          
+          try {
+            await this.env.MCP_EXCEL.writeExcelData(analyticsPath, "UserEngagement", engagementData, "A1");
+          } catch (error) {
+            console.error('Failed to log user engagement:', error);
+          }
+        }
+
+      security_audit_logging: |
+        // Security event logging for audit and monitoring
+        async logSecurityEvent(eventType, details) {
+          const auditPath = "F:/CC/Projects/corporate-bingo/security/audit_log.xlsx";
+          
+          const auditData = [{
+            timestamp: new Date().toISOString(),
+            event_type: eventType,
+            room_code: this.gameState.roomCode,
+            severity: this.getSecuritySeverity(eventType),
+            player_id: details.playerId || null,
+            player_name: details.playerName || null,
+            details: JSON.stringify(details),
+            ip_address: details.ipAddress || 'unknown',
+            user_agent: details.userAgent || 'unknown',
+            action_taken: details.actionTaken || 'logged'
+          }];
+          
+          try {
+            await this.env.MCP_EXCEL.writeExcelData(auditPath, "SecurityAudit", auditData, "A1");
+            
+            // Critical security events also trigger alerts
+            if (this.getSecuritySeverity(eventType) === 'HIGH') {
+              await this.triggerSecurityAlert(eventType, details);
+            }
+          } catch (error) {
+            console.error('Failed to log security event:', error);
+          }
+        }
+
+collaboration_patterns:
+  with_frontend_dev:
+    api_contracts: "Defines REST API endpoints and WebSocket message formats"
+    type_safety: "Provides TypeScript interfaces for backend data models"
+    real_time_sync: "Implements WebSocket server-side message handling"
+
+  with_qa_engineer:
+    testing_endpoints: "Provides test-friendly endpoints and mock data generation"
+    performance_metrics: "Implements comprehensive performance monitoring"
+    error_simulation: "Creates controllable error scenarios for testing"
+
+  with_content_manager:
+    buzzword_management: "Implements efficient buzzword storage and retrieval"
+    content_analytics: "Tracks buzzword popularity and usage patterns"
+    dynamic_content: "Supports real-time content updates without deployment"
+
+  with_devops:
+    deployment_ready: "Ensures Workers deployment compatibility"
+    monitoring_hooks: "Implements health checks and monitoring endpoints"
+    environment_config: "Manages environment variables and secrets"
+
+performance_optimization:
+  cloudflare_edge:
+    global_latency: |
+      // Optimize for global edge performance
+      async optimizeForEdgeLocations() {
+        // Minimize cold starts with worker warming
+        setInterval(() => {
+          fetch('/api/health-check');
+        }, 240000); // 4-minute intervals
+
+        // Cache static data at edge locations
+        const buzzwordCache = new Map();
+        const cacheKey = 'buzzwords-v1';
+        
+        if (!buzzwordCache.has(cacheKey)) {
+          buzzwordCache.set(cacheKey, BUZZWORDS);
+        }
+        
+        return {
+          coldStartOptimization: 'active',
+          edgeCaching: 'enabled',
+          buzzwordCache: 'populated'
+        };
+      }
+
+  memory_management: |
+    // Professional memory management for Durable Objects
+    async performMemoryCleanup() {
+      const now = Date.now();
+      const inactivityThreshold = 30 * 60 * 1000; // 30 minutes
+      
+      // Clean up inactive sessions
+      const inactiveSessions = [];
+      for (const [playerId, session] of this.sessions.entries()) {
+        if (now - session.lastActivity > inactivityThreshold) {
+          inactiveSessions.push(playerId);
+        }
+      }
+      
+      // Remove inactive sessions and associated data
+      for (const playerId of inactiveSessions) {
+        this.cleanupPlayer(playerId);
+      }
+      
+      // Clean up expired verifications
+      const expiredVerifications = [];
+      for (const [verificationId, verification] of this.gameState.pendingVerifications.entries()) {
+        if (now - verification.timestamp > this.VERIFICATION_TIMEOUT) {
+          expiredVerifications.push(verificationId);
+        }
+      }
+      
+      for (const verificationId of expiredVerifications) {
+        this.resolveVerification(verificationId, true); // Mark as timeout
+      }
+      
+      // Log cleanup metrics
+      await this.logPerformanceMetrics('MEMORY_CLEANUP', Date.now() - now, {
+        inactiveSessionsRemoved: inactiveSessions.length,
+        expiredVerificationsResolved: expiredVerifications.length,
+        currentMemoryUsage: this.estimateMemoryUsage()
+      });
+    }
+
+quality_standards:
+  security_requirements:
+    - "Comprehensive input validation and sanitization"
+    - "Rate limiting with exponential backoff"
+    - "CORS policy enforcement with origin validation"
+    - "Anti-cheat systems with audit logging"
+    - "Secure WebSocket connections with authentication"
+
+  performance_targets:
+    - "Sub-200ms API response times globally"
+    - "Support 100+ concurrent players per room"
+    - "99.9% uptime with automatic failover"
+    - "Memory usage <128MB per Durable Object"
+    - "WebSocket message processing <50ms"
+
+  reliability_standards:
+    - "Graceful degradation under high load"
+    - "Automatic recovery from transient failures"
+    - "Comprehensive error logging and monitoring"
+    - "Database consistency with atomic operations"
+    - "Professional audit trails for all operations"
+
+domain_expertise:
+  multiplayer_systems:
+    - "Real-time state synchronization across global edge locations"
+    - "Conflict resolution for concurrent player actions"
+    - "Scalable room management with efficient resource allocation"
+    - "Anti-cheat detection using statistical analysis and behavioral patterns"
+
+  serverless_architecture:
+    - "Cloudflare Workers optimization for minimal cold starts"
+    - "Durable Objects state management with consistency guarantees"  
+    - "Edge computing patterns for global low-latency performance"
+    - "Cost optimization through efficient resource utilization"

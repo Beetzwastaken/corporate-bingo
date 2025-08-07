@@ -7,7 +7,7 @@ export interface ApiResponse<T> {
 }
 
 // Meme generation API
-export async function generateMemeText(pain: string, template: string): Promise<ApiResponse<{ topText: string; bottomText: string }>> {
+export async function generateMemeText(pain: string): Promise<ApiResponse<{ topText: string; bottomText: string }>> {
   try {
     // TODO: Replace with actual API call to AI service
     // For now, simulate API response
@@ -32,7 +32,7 @@ export async function generateMemeText(pain: string, template: string): Promise<
         bottomText: 'Professional Suffering'
       }
     };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: 'Failed to generate meme text'
@@ -41,7 +41,7 @@ export async function generateMemeText(pain: string, template: string): Promise<
 }
 
 // Bingo room management API
-export async function createBingoRoom(roomName: string): Promise<ApiResponse<{ roomId: string; roomCode: string }>> {
+export async function createBingoRoom(): Promise<ApiResponse<{ roomId: string; roomCode: string }>> {
   try {
     await new Promise(resolve => setTimeout(resolve, 500));
     
@@ -53,7 +53,7 @@ export async function createBingoRoom(roomName: string): Promise<ApiResponse<{ r
         roomCode
       }
     };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: 'Failed to create room'
@@ -74,7 +74,7 @@ export async function joinBingoRoom(roomCode: string): Promise<ApiResponse<{ roo
         players: Math.floor(Math.random() * 10) + 2
       }
     };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: 'Failed to join room'
@@ -92,7 +92,7 @@ export async function trackMemeGeneration(memeData: {
     // TODO: Send to analytics service
     console.log('Tracking meme generation:', memeData);
     return { success: true };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: 'Failed to track analytics'
@@ -109,7 +109,7 @@ export async function trackBingoPlay(gameData: {
     // TODO: Send to analytics service
     console.log('Tracking bingo play:', gameData);
     return { success: true };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: 'Failed to track analytics'

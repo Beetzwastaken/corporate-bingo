@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BingoRoom } from '../../pages/BingoPage';
+import type { BingoRoom } from '../../types';
 
 interface RoomManagerProps {
   currentRoom: BingoRoom | null;
@@ -19,7 +19,7 @@ export function RoomManager({ currentRoom, onCreateRoom, onJoinRoom, onLeaveRoom
     
     setIsCreating(true);
     setTimeout(() => {
-      const code = onCreateRoom(roomName);
+      onCreateRoom(roomName);
       setRoomName('');
       setIsCreating(false);
     }, 1000);

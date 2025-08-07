@@ -19,6 +19,12 @@ export function Navigation({ totalMemes }: NavigationProps) {
       name: 'Buzzword Bingo',
       icon: '🎯',
       description: 'Corporate survival game'
+    },
+    {
+      path: '/dashboard',
+      name: 'Dashboard',
+      icon: '📊',
+      description: 'Performance analytics'
     }
   ];
 

@@ -2,7 +2,7 @@
 // Shows real-time status of MCP-powered autonomous agents
 
 import React, { useState } from 'react';
-import { AgentConfig } from '../types';
+import type { AgentConfig } from '../types';
 
 interface AgentStatusProps {
   agents: AgentConfig[];

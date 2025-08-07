@@ -118,8 +118,8 @@ export interface AgentTask {
   agentId: string;
   type: string;
   status: 'pending' | 'running' | 'completed' | 'failed';
-  input: any;
-  output?: any;
+  input: unknown;
+  output?: unknown;
   startTime?: Date;
   endTime?: Date;
   error?: string;
@@ -149,6 +149,9 @@ export interface MemeStore {
   agents: AgentConfig[];
   activeTasks: AgentTask[];
   
+  // Dashboard state
+  dashboard: DashboardState;
+  
   // Actions
   setSelectedTemplate: (template: MemeTemplate) => void;
   updateText: (areaId: string, text: string) => void;
@@ -165,6 +168,16 @@ export interface MemeStore {
   updateTask: (taskId: string, updates: Partial<AgentTask>) => void;
   updateAnalyticsFromMeme: (meme: GeneratedMeme) => void;
   initializeDefaultTemplates: () => Promise<void>;
+  
+  // Dashboard actions
+  updateDashboardMetrics: (metrics: DashboardMetrics) => void;
+  updatePlayerAnalytics: (analytics: PlayerAnalyticsData) => void;
+  updateSystemHealth: (health: SystemHealthData) => void;
+  updateBuzzwordEffectiveness: (effectiveness: BuzzwordEffectivenessData) => void;
+  setDashboardConnected: (connected: boolean) => void;
+  setMetricsPeriod: (period: '1h' | '24h' | '7d' | '30d') => void;
+  toggleAutoRefresh: () => void;
+  toggleAdvancedMetrics: () => void;
 }
 
 // Utility Types
@@ -172,7 +185,7 @@ export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
 };
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -183,6 +196,169 @@ export interface ApiResponse<T = any> {
 export interface AgentEvent {
   type: 'template-generated' | 'pain-analyzed' | 'quality-checked' | 'analytics-updated' | 'deployment-completed';
   agentId: string;
-  data: any;
+  data: unknown;
   timestamp: Date;
+}
+
+// Real-Time Dashboard Types
+export interface DashboardMetrics {
+  // Performance Metrics
+  responseTime: number; // Average response time in ms
+  throughput: number; // Requests per second
+  errorRate: number; // Error percentage
+  uptime: number; // Uptime percentage
+  activeUsers: number; // Current active users
+  peakConcurrentUsers: number; // Peak concurrent users today
+  
+  // Buzzword & Content Metrics
+  totalBuzzwordsTriggered: number; // Total buzzwords triggered across all games
+  buzzwordVelocity: number; // Buzzwords triggered per minute
+  averageMeetingSurvivalRate: number; // Percentage of completed bingo games
+  topBuzzwords: Array<{
+    word: string;
+    count: number;
+    trend: 'up' | 'down' | 'stable';
+    effectiveness: number; // 0-100 score
+  }>;
+  
+  // Game Performance
+  activeRooms: number; // Current active bingo rooms
+  averageGameDuration: number; // Average game duration in minutes
+  completionRate: number; // Percentage of games completed
+  cheatingAttempts: number; // Anti-cheat detections
+  
+  timestamp: Date;
+}
+
+export interface PlayerAnalyticsData {
+  totalPlayers: number;
+  newPlayersToday: number;
+  returningPlayers: number;
+  averageSessionDuration: number; // in minutes
+  playerEngagement: {
+    highly_engaged: number; // 80%+ session completion
+    moderately_engaged: number; // 40-80% session completion  
+    low_engagement: number; // <40% session completion
+  };
+  geographicDistribution: Array<{
+    region: string;
+    playerCount: number;
+    percentage: number;
+  }>;
+  deviceBreakdown: {
+    mobile: number;
+    desktop: number;
+    tablet: number;
+  };
+  topPlayerActions: Array<{
+    action: string;
+    count: number;
+    trend: 'up' | 'down' | 'stable';
+  }>;
+}
+
+export interface SystemHealthData {
+  // Infrastructure Health
+  serverStatus: 'healthy' | 'warning' | 'critical';
+  cloudflareStatus: 'operational' | 'degraded' | 'major_outage';
+  netlifyStatus: 'operational' | 'degraded' | 'major_outage';
+  
+  // Performance Indicators
+  cpuUsage: number; // 0-100 percentage
+  memoryUsage: number; // 0-100 percentage
+  networkLatency: number; // in milliseconds
+  
+  // WebSocket Health
+  activeConnections: number;
+  connectionSuccess: number; // 0-100 percentage
+  messageDeliveryRate: number; // 0-100 percentage
+  
+  // Recent Incidents
+  recentIncidents: Array<{
+    id: string;
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    title: string;
+    description: string;
+    timestamp: Date;
+    resolved: boolean;
+  }>;
+  
+  timestamp: Date;
+}
+
+export interface BuzzwordEffectivenessData {
+  overallEffectiveness: number; // 0-100 score
+  categoryPerformance: Array<{
+    category: string;
+    effectiveness: number;
+    usage: number;
+    trend: 'up' | 'down' | 'stable';
+  }>;
+  topPerformers: Array<{
+    buzzword: string;
+    effectiveness: number;
+    usage: number;
+    corporateRelevance: number; // How well it fits corporate culture
+    humourRating: number; // Community humor rating
+  }>;
+  underperformers: Array<{
+    buzzword: string;
+    effectiveness: number;
+    reasons: string[];
+    suggestions: string[];
+  }>;
+  emergingTrends: Array<{
+    buzzword: string;
+    growthRate: number;
+    potential: number;
+  }>;
+}
+
+// WebSocket Message Types
+export interface DashboardWebSocketMessage {
+  type: 'metrics_update' | 'player_analytics_update' | 'system_health_update' | 'buzzword_effectiveness_update';
+  payload: DashboardMetrics | PlayerAnalyticsData | SystemHealthData | BuzzwordEffectivenessData;
+  timestamp: Date;
+}
+
+// Dashboard Store Extension
+export interface DashboardState {
+  // Real-time data
+  metrics: DashboardMetrics | null;
+  playerAnalytics: PlayerAnalyticsData | null;
+  systemHealth: SystemHealthData | null;
+  buzzwordEffectiveness: BuzzwordEffectivenessData | null;
+  
+  // Connection state
+  wsConnected: boolean;
+  lastUpdate: Date | null;
+  
+  // UI state
+  selectedMetricsPeriod: '1h' | '24h' | '7d' | '30d';
+  autoRefresh: boolean;
+  showAdvancedMetrics: boolean;
+}
+
+// Bingo Game Types
+export interface BingoSquare {
+  id: string;
+  text: string;
+  isMarked: boolean;
+  isFree?: boolean;
+}
+
+export interface BingoRoom {
+  id: string;
+  name: string;
+  code: string;
+  players: number;
+  isActive: boolean;
+}
+
+export interface BingoPlayer {
+  id: string;
+  name: string;
+  board: BingoSquare[];
+  score: number;
+  isHost?: boolean;
 }

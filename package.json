@@ -1,5 +1,5 @@
 {
-  "name": "engineer-memes",
+  "name": "corporate-bingo",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,9 +7,22 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:dashboard": "vitest tests/dashboard",
+    "test:api": "vitest tests/api",
+    "test:websocket": "vitest tests/websocket",
+    "test:mcp": "vitest tests/mcp",
+    "test:security": "vitest tests/security",
+    "test:e2e": "vitest tests/e2e",
+    "test:runner": "vitest tests/test-runner.ts",
+    "test:qa-full": "npm run test:runner && npm run test:coverage",
+    "validate": "npm run lint && npm run test:qa-full && npm run build"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
     "@types/react-router-dom": "^5.3.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -18,18 +31,25 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",
+    "@testing-library/jest-dom": "^6.4.8",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
+    "@vitest/coverage-v8": "^2.1.8",
+    "@vitest/ui": "^2.1.8",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.30.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
+    "jsdom": "^25.0.1",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.11",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
-    "vite": "^7.0.4"
+    "vite": "^7.0.4",
+    "vitest": "^2.1.8"
   }
 }
