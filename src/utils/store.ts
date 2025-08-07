@@ -5,6 +5,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { BingoWebSocketClient, createWebSocketClient, MESSAGE_TYPES } from '../lib/websocket';
 import { createBingoRoom, joinBingoRoom } from '../lib/api';
+import { APP_VERSION, needsStateMigration, logVersionInfo } from './version';
 
 // Player interface
 export interface BingoPlayer {
@@ -70,6 +71,9 @@ interface BingoStore {
   wins: number;
   totalSquares: number;
   
+  // Version tracking for cache-busting
+  appVersion: string;
+  
   // Actions - Connection Management
   setConnectionStatus: (connected: boolean, error?: string) => void;
   setConnecting: (connecting: boolean) => void;
@@ -104,6 +108,9 @@ interface BingoStore {
   incrementGamesPlayed: () => void;
   incrementWins: () => void;
   incrementTotalSquares: () => void;
+  
+  // Actions - Version Management
+  emergencyReset: () => void;
 }
 
 // Create the store
@@ -137,6 +144,9 @@ export const useBingoStore = create<BingoStore>()(
         gamesPlayed: 0,
         wins: 0,
         totalSquares: 0,
+        
+        // Version tracking
+        appVersion: APP_VERSION,
         
         // Connection Management
         setConnectionStatus: (connected, error) => 
@@ -503,17 +513,77 @@ export const useBingoStore = create<BingoStore>()(
           set((state) => ({ wins: state.wins + 1 })),
           
         incrementTotalSquares: () => 
-          set((state) => ({ totalSquares: state.totalSquares + 1 }))
+          set((state) => ({ totalSquares: state.totalSquares + 1 })),
+        
+        // Version Management - Emergency Reset
+        emergencyReset: () => {
+          try {
+            // Clear localStorage directly
+            localStorage.removeItem('corporate-bingo-store');
+            console.log('[Corporate Bingo] Emergency reset completed - reloading page...');
+            
+            // Force hard reload
+            window.location.reload();
+          } catch (error) {
+            console.error('[Corporate Bingo] Emergency reset failed:', error);
+            // Fallback: Reset store state to defaults
+            set({
+              isConnected: false,
+              connectionError: null,
+              isConnecting: false,
+              currentPlayer: null,
+              playerName: '',
+              currentRoom: null,
+              gameState: {
+                board: [],
+                markedSquares: new Array(25).fill(false),
+                hasWon: false,
+              },
+              wsClient: null,
+              gamesPlayed: 0,
+              wins: 0,
+              totalSquares: 0,
+              appVersion: APP_VERSION
+            });
+          }
+        }
       }),
       {
         name: 'corporate-bingo-store',
-        // Only persist stats and player name, not connection state
+        // Only persist stats, player name, and version for cache-busting
         partialize: (state) => ({
           playerName: state.playerName,
           gamesPlayed: state.gamesPlayed,
           wins: state.wins,
-          totalSquares: state.totalSquares
+          totalSquares: state.totalSquares,
+          appVersion: state.appVersion
         }),
+        // Migration function to handle version changes
+        migrate: (persistedState: any) => {
+          const storedVersion = persistedState?.appVersion;
+          
+          logVersionInfo(storedVersion);
+          
+          // If we need migration (version changed), clear state and start fresh
+          if (needsStateMigration(storedVersion)) {
+            console.log('[Corporate Bingo] App version changed - clearing persisted state for fresh start');
+            
+            // Return only the app version, clearing all other persisted data
+            return {
+              playerName: '',
+              gamesPlayed: 0,
+              wins: 0,
+              totalSquares: 0,
+              appVersion: APP_VERSION
+            };
+          }
+          
+          // No migration needed, return state as-is with updated version
+          return {
+            ...persistedState,
+            appVersion: APP_VERSION
+          };
+        },
       }
     ),
     { name: 'BingoStore' }

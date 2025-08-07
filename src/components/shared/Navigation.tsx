@@ -1,4 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useBingoStore } from '../../utils/store';
+import { APP_VERSION } from '../../utils/version';
 
 interface NavigationProps {
   activeRooms?: number;
@@ -6,6 +8,7 @@ interface NavigationProps {
 
 export function Navigation({ activeRooms = 0 }: NavigationProps) {
   const location = useLocation();
+  const emergencyReset = useBingoStore(state => state.emergencyReset);
 
   const navItems = [
     {
@@ -62,9 +65,25 @@ export function Navigation({ activeRooms = 0 }: NavigationProps) {
           </div>
 
           <div className="flex items-center space-x-4">
+            <button
+              onClick={() => {
+                if (confirm('⚠️ Clear all app data and refresh?\n\nThis will:\n• Clear your saved player name\n• Reset game statistics\n• Fix any caching issues\n• Reload the page\n\nClick OK to proceed.')) {
+                  emergencyReset();
+                }
+              }}
+              className="px-3 py-1 text-xs bg-red-600/20 text-red-400 border border-red-500/30 rounded hover:bg-red-600/30 transition-colors"
+              title="Clear app cache and data (fixes stuck content issues)"
+            >
+              🔧 Reset
+            </button>
+            
             <div className="text-right text-sm">
               <div className="text-blue-400 font-mono">{activeRooms}</div>
               <div className="text-gray-400 text-xs">Active Rooms</div>
+            </div>
+            
+            <div className="text-right text-xs text-gray-500">
+              <div className="font-mono">v{APP_VERSION}</div>
             </div>
           </div>
         </div>
