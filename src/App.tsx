@@ -1,5 +1,6 @@
-// Corporate Bingo - Real-time multiplayer buzzword bingo game
+// Corporate Bingo - Real-time multiplayer buzzword bingo game  
 // Version: 1.2.1 - Force correct deployment activation
+// Cache-busting commit: Force Netlify to rebuild instead of using cached files
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Navigation } from './components/shared/Navigation';
