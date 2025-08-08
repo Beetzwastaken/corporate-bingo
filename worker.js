@@ -21,7 +21,7 @@ function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': validOrigin || 'null',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Player-ID',
     'Access-Control-Max-Age': '86400',
   };
 }
@@ -125,6 +125,119 @@ export default {
         const roomObj = env.ROOMS.get(roomId);
         
         return roomObj.fetch(request);
+      }
+
+      // HTTP Polling Endpoints for multiplayer sync when WebSocket fails
+      
+      // Get Room State - GET /api/room/:code/state
+      if (url.pathname.match(/^\/api\/room\/[A-Z0-9]{6}\/state$/) && request.method === 'GET') {
+        const roomCode = url.pathname.split('/')[3];
+        const playerId = request.headers.get('X-Player-ID');
+        
+        // Get room Durable Object
+        const roomId = env.ROOMS.idFromName(roomCode);
+        const roomObj = env.ROOMS.get(roomId);
+        
+        const response = await roomObj.fetch(new Request('https://dummy/state', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json', 'X-Player-ID': playerId || '' }
+        }));
+        
+        if (response.status === 404) {
+          return new Response(JSON.stringify({ error: 'Room not found' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) }
+          });
+        }
+        
+        const result = await response.json();
+        return new Response(JSON.stringify(result), {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) }
+        });
+      }
+
+      // Get Room Players - GET /api/room/:code/players  
+      if (url.pathname.match(/^\/api\/room\/[A-Z0-9]{6}\/players$/) && request.method === 'GET') {
+        const roomCode = url.pathname.split('/')[3];
+        const playerId = request.headers.get('X-Player-ID');
+        
+        // Get room Durable Object
+        const roomId = env.ROOMS.idFromName(roomCode);
+        const roomObj = env.ROOMS.get(roomId);
+        
+        const response = await roomObj.fetch(new Request('https://dummy/players', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json', 'X-Player-ID': playerId || '' }
+        }));
+        
+        if (response.status === 404) {
+          return new Response(JSON.stringify({ error: 'Room not found' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) }
+          });
+        }
+        
+        const result = await response.json();
+        return new Response(JSON.stringify(result), {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) }
+        });
+      }
+
+      // Send Player Action - POST /api/room/:code/action
+      if (url.pathname.match(/^\/api\/room\/[A-Z0-9]{6}\/action$/) && request.method === 'POST') {
+        const roomCode = url.pathname.split('/')[3];
+        const playerId = request.headers.get('X-Player-ID');
+        const body = await request.json();
+        
+        // Get room Durable Object
+        const roomId = env.ROOMS.idFromName(roomCode);
+        const roomObj = env.ROOMS.get(roomId);
+        
+        const response = await roomObj.fetch(new Request('https://dummy/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Player-ID': playerId || '' },
+          body: JSON.stringify(body)
+        }));
+        
+        const result = await response.json();
+        return new Response(JSON.stringify(result), {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) }
+        });
+      }
+
+      // Room Info for Polling - POST /api/room/info
+      if (url.pathname === '/api/room/info' && request.method === 'POST') {
+        const body = await request.json();
+        const { roomCode, playerId } = body;
+        
+        if (!roomCode) {
+          return new Response(JSON.stringify({ error: 'Room code required' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) }
+          });
+        }
+        
+        // Get room Durable Object
+        const roomId = env.ROOMS.idFromName(roomCode);
+        const roomObj = env.ROOMS.get(roomId);
+        
+        const response = await roomObj.fetch(new Request('https://dummy/info', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ playerId, checkOnly: body.checkOnly || false })
+        }));
+        
+        if (response.status === 404) {
+          return new Response(JSON.stringify({ error: 'Room not found' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) }
+          });
+        }
+        
+        const result = await response.json();
+        return new Response(JSON.stringify(result), {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) }
+        });
       }
 
       // Analytics Dashboard Endpoints with Performance Monitoring
@@ -818,6 +931,112 @@ export class BingoRoom {
         roomName: this.gameState.roomName,
         playerCount: this.players.size,
         roundNumber: this.gameState.roundNumber
+      }));
+    }
+
+    // HTTP Polling endpoints (for when WebSocket SSL fails)
+    
+    // Get Room State for polling - GET /state
+    if (url.pathname === '/state' && request.method === 'GET') {
+      const playerId = request.headers.get('X-Player-ID');
+      
+      if (!this.gameState.isActive) {
+        return new Response(JSON.stringify({ error: 'Room not found' }), { status: 404 });
+      }
+      
+      return new Response(JSON.stringify({
+        roomCode: this.gameState.roomCode,
+        roomName: this.gameState.roomName,
+        players: Array.from(this.players.values()).map(p => ({
+          id: p.id,
+          name: p.name,
+          isHost: p.isHost,
+          currentScore: p.currentScore,
+          totalScore: p.totalScore,
+          isConnected: this.sessions.has(p.id)
+        })),
+        roundNumber: this.gameState.roundNumber,
+        playerCount: this.players.size,
+        isActive: this.gameState.isActive
+      }));
+    }
+
+    // Get Room Players for polling - GET /players
+    if (url.pathname === '/players' && request.method === 'GET') {
+      const playerId = request.headers.get('X-Player-ID');
+      
+      if (!this.gameState.isActive) {
+        return new Response(JSON.stringify({ error: 'Room not found' }), { status: 404 });
+      }
+      
+      return new Response(JSON.stringify({
+        players: Array.from(this.players.values()).map(p => ({
+          id: p.id,
+          name: p.name,
+          isHost: p.isHost,
+          currentScore: p.currentScore,
+          isConnected: this.sessions.has(p.id)
+        })),
+        playerCount: this.players.size,
+        lastActivity: this.gameState.lastActivity
+      }));
+    }
+
+    // Handle Player Actions via HTTP - POST /action
+    if (url.pathname === '/action' && request.method === 'POST') {
+      const playerId = request.headers.get('X-Player-ID');
+      const body = await request.json();
+      
+      if (!playerId || !this.players.has(playerId)) {
+        return new Response(JSON.stringify({ error: 'Invalid player ID' }), { status: 400 });
+      }
+      
+      if (!this.gameState.isActive) {
+        return new Response(JSON.stringify({ error: 'Room not found' }), { status: 404 });
+      }
+      
+      // Handle the action based on type
+      if (body.action === 'MARK_SQUARE' && body.payload && typeof body.payload.squareIndex === 'number') {
+        const player = this.players.get(playerId);
+        const squareIndex = body.payload.squareIndex;
+        
+        // Simple square marking (simplified for HTTP polling)
+        if (squareIndex >= 0 && squareIndex < 25 && !player.markedSquares[squareIndex]) {
+          player.markedSquares[squareIndex] = true;
+          player.currentScore += (squareIndex === 12 ? 5 : 10); // 5 for FREE SPACE, 10 for others
+          
+          this.gameState.lastActivity = Date.now();
+          
+          // Check for bingo
+          this.checkForBingo(playerId);
+          
+          return new Response(JSON.stringify({ success: true, score: player.currentScore }));
+        }
+      }
+      
+      return new Response(JSON.stringify({ success: false, error: 'Invalid action' }), { status: 400 });
+    }
+
+    // Room Info for Polling - POST /info
+    if (url.pathname === '/info' && request.method === 'POST') {
+      const body = await request.json();
+      
+      if (!this.gameState.isActive) {
+        return new Response(JSON.stringify({ error: 'Room not found' }), { status: 404 });
+      }
+      
+      return new Response(JSON.stringify({
+        roomCode: this.gameState.roomCode,
+        roomName: this.gameState.roomName,
+        playerCount: this.players.size,
+        isActive: this.gameState.isActive,
+        lastActivity: this.gameState.lastActivity,
+        players: Array.from(this.players.values()).map(p => ({
+          id: p.id,
+          name: p.name,
+          isHost: p.isHost,
+          isConnected: this.sessions.has(p.id)
+        }))
       }));
     }
 
