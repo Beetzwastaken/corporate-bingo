@@ -25,14 +25,8 @@ export default defineConfig({
         }
       }
     },
-    // Enable minification
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      }
-    },
+    // Use default minification for better compatibility
+    minify: true,
     // Optimize CSS
     cssMinify: true,
     // Target modern browsers for better compression

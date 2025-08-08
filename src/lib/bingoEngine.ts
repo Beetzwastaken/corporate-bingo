@@ -1,4 +1,5 @@
 // Bingo game engine for corporate buzzword bingo
+import { CORPORATE_BUZZWORDS } from '../data/buzzwords';
 
 export interface BingoSquare {
   id: string;
@@ -12,61 +13,6 @@ export interface BingoResult {
   winningPattern?: 'row' | 'column' | 'diagonal';
   winningCells?: number[];
 }
-
-// Comprehensive corporate buzzword library
-export const CORPORATE_BUZZWORDS = [
-  // Strategy & Vision
-  'Synergy', 'Paradigm Shift', 'Game Changer', 'Win-win', 'Best Practice',
-  'Core Competency', 'Value Proposition', 'Strategic Alignment', 'Vision Statement',
-  'Mission Critical', 'Key Performance Indicator', 'Return on Investment',
-  
-  // Project Management
-  'Deep Dive', 'Circle Back', 'Touch Base', 'Take it Offline', 'Loop In',
-  'Actionable Items', 'Deliverables', 'Milestones', 'Timeline', 'Scope Creep',
-  'Resource Allocation', 'Risk Mitigation', 'Stakeholder Buy-in',
-  
-  // Technology & Innovation
-  'Digital Transformation', 'Cloud Migration', 'AI/ML Integration', 'DevOps',
-  'Microservices', 'API Gateway', 'Containerization', 'Kubernetes',
-  'Infrastructure as Code', 'CI/CD Pipeline', 'Serverless', 'Edge Computing',
-  'Technical Debt', 'Scalability', 'Automation', 'Legacy System',
-  
-  // Agile & Development
-  'Agile Transformation', 'Sprint Planning', 'Retrospective', 'Stand-up',
-  'User Stories', 'Acceptance Criteria', 'Definition of Done', 'Velocity',
-  'Backlog Grooming', 'Cross-functional Team', 'Scrum Master', 'Product Owner',
-  
-  // Business & Operations
-  'Low-hanging Fruit', 'Move the Needle', 'Think Outside the Box', 'Leverage',
-  'Optimize', 'Streamline', 'Right-size', 'Scale Up', 'Pivot', 'Disrupt',
-  'Innovation', 'Growth Hacking', 'Market Penetration', 'Competitive Advantage',
-  
-  // Communication & Collaboration
-  'Ping Me', 'Reach Out', 'Follow Up', 'Keep in Mind', 'FYI', 'Heads Up',
-  'On My Radar', 'Bandwidth', 'Capacity', 'Ideate', 'Brainstorm', 'Workshop',
-  'Knowledge Share', 'Best Practices', 'Lessons Learned', 'Post-mortem',
-  
-  // Performance & Quality
-  'Metrics-driven', 'Data-driven', 'KPI', 'SLA', 'Quality Assurance',
-  'Continuous Improvement', 'Excellence', 'Standard Operating Procedure',
-  'Benchmarking', 'Performance Optimization', 'Efficiency Gains',
-  
-  // Culture & HR
-  'Culture Fit', 'Team Player', 'Proactive', 'Own It', 'Drive Results',
-  'Customer-centric', 'Solution-focused', 'Results-oriented', 'Self-starter',
-  'Detail-oriented', 'Fast-paced Environment', 'Wear Many Hats', 'Hit the Ground Running',
-  
-  // Finance & Business
-  'Cost Center', 'Profit Center', 'Budget Allocation', 'Cost Optimization',
-  'Revenue Stream', 'Business Model', 'Market Share', 'Customer Acquisition',
-  'Retention Rate', 'Conversion Funnel', 'Unit Economics', 'Burn Rate',
-  
-  // Meeting Classics
-  'Let\'s Take This Offline', 'Can Everyone See My Screen?', 'You\'re on Mute',
-  'Can You Repeat That?', 'Let\'s Circle Back', 'I Have a Hard Stop',
-  'Thanks for Your Time', 'Action Items', 'Next Steps', 'Moving Forward',
-  'At the End of the Day', 'It Is What It Is', 'Think Out Loud'
-];
 
 export class BingoEngine {
   /**

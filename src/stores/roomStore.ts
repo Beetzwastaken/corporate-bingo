@@ -40,6 +40,7 @@ interface RoomStore {
   joinRoom: (roomCode: string, playerName: string) => Promise<{ success: boolean; error?: string }>;
   leaveRoom: () => void;
   updatePlayerStatus: (playerId: string, isConnected: boolean) => void;
+  syncRoomState: (roomCode: string, playerId: string) => Promise<void>;
 }
 
 export const useRoomStore = create<RoomStore>()(
@@ -138,11 +139,12 @@ export const useRoomStore = create<RoomStore>()(
               joinedAt: Date.now()
             };
             
+            // Initialize with minimal room data - real-time sync will populate other players
             const room: BingoRoom = {
               id: roomCode,
               name: response.data.roomName,
               code: roomCode,
-              players: [player], // Initialize with the joining player 
+              players: [player], // Start with joining player, sync will update this
               isActive: true
             };
             
@@ -150,6 +152,15 @@ export const useRoomStore = create<RoomStore>()(
               currentRoom: room,
               currentPlayer: player
             });
+            
+            // Request immediate room state sync to get other players
+            setTimeout(async () => {
+              try {
+                await get().syncRoomState(roomCode, response.data!.playerId);
+              } catch (error) {
+                console.warn('Failed to sync room state after joining:', error);
+              }
+            }, 100); // Small delay to ensure connection is established
             
             return { success: true };
           } catch (error) {
@@ -185,6 +196,61 @@ export const useRoomStore = create<RoomStore>()(
                 players: updatedPlayers
               }
             });
+          }
+        },
+        
+        // Sync room state to get current players list
+        syncRoomState: async (roomCode: string, playerId: string) => {
+          try {
+            console.log(`🔄 Syncing room state for ${roomCode} with player ${playerId}`);
+            
+            // Use polling client's method to get room state
+            const response = await fetch(`/api/room/${roomCode}/players`, {
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Player-ID': playerId
+              }
+            });
+
+            console.log(`🔄 Players endpoint response: ${response.status} ${response.statusText}`);
+
+            if (response.ok) {
+              const gameState = await response.json();
+              console.log('🔄 Players endpoint returned:', gameState);
+              
+              if (gameState.players && Array.isArray(gameState.players)) {
+                console.log(`🔄 Room sync: Found ${gameState.players.length} players:`, gameState.players.map((p: BingoPlayer) => p.name));
+                get().updateRoomPlayers(gameState.players);
+              }
+            } else {
+              console.log('🔄 Players endpoint failed, trying info endpoint...');
+              // If dedicated endpoint doesn't exist, try alternative approach
+              const infoResponse = await fetch('/api/room/info', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  roomCode,
+                  playerId,
+                  checkOnly: true
+                })
+              });
+              
+              console.log(`🔄 Info endpoint response: ${infoResponse.status} ${infoResponse.statusText}`);
+              
+              if (infoResponse.ok) {
+                const roomInfo = await infoResponse.json();
+                console.log('🔄 Info endpoint returned:', roomInfo);
+                if (roomInfo.players && Array.isArray(roomInfo.players)) {
+                  console.log(`🔄 Room sync (alt): Found ${roomInfo.players.length} players:`, roomInfo.players.map((p: BingoPlayer) => p.name));
+                  get().updateRoomPlayers(roomInfo.players);
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Room state sync failed:', error);
+            // Don't throw - this is a non-critical enhancement
           }
         }
       }),
