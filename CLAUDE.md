@@ -163,6 +163,88 @@ Based on successful implementation experience:
 4. **Cloudflare Workers** for backend (manual via `npx wrangler deploy`)
 5. **Live validation** at https://corporate-bingo-ai.netlify.app
 
+## CI/CD Configuration & Troubleshooting
+
+### GitHub Actions Build Requirements
+
+**CRITICAL**: The following configuration is required for successful GitHub Actions builds:
+
+#### TypeScript Configuration
+- **Compatible Version**: TypeScript ~5.8.3 (avoid experimental flags)
+- **Removed Flags** (incompatible with CI):
+  - `erasableSyntaxOnly` - TypeScript 5.8+ experimental feature
+  - `noUncheckedSideEffectImports` - TypeScript 5.8+ experimental feature
+- **Required tsconfig.app.json Settings**:
+  ```json
+  {
+    "include": ["src"]  // NOT ["src", "data"] - data is inside src/
+  }
+  ```
+
+#### ESLint Configuration
+- **Use Standard Flat Config**: ESLint 9+ format
+- **Correct Ignores Syntax**:
+  ```javascript
+  export default tseslint.config([
+    { ignores: ['dist', 'src/temp-disabled/**/*', 'tests/**/*'] },
+    // ... rest of config
+  ])
+  ```
+- **Invalid Import to Avoid**: `import { globalIgnores } from 'eslint/config'` - This doesn't exist
+
+#### Vite Configuration
+- **Use Default Minification**: `minify: true` instead of custom terser options
+- **Avoid Complex Terser Config**: Custom terser options can fail in CI environments
+- **Working Configuration**:
+  ```typescript
+  build: {
+    minify: true,  // Use defaults for CI compatibility
+    cssMinify: true,
+    target: 'esnext'
+  }
+  ```
+
+### Common Build Failures & Solutions
+
+#### Issue 1: Build Fails at "Build application" Step
+**Symptoms**: Local build works, GitHub Actions fails after lint/typecheck pass  
+**Cause**: TypeScript 5.8+ experimental flags or configuration mismatches  
+**Solution**: Remove experimental TypeScript flags, use standard configurations
+
+#### Issue 2: ESLint Import Errors
+**Symptoms**: Build fails with module resolution errors  
+**Cause**: Invalid ESLint imports or configuration syntax  
+**Solution**: Use standard ESLint flat config without experimental imports
+
+#### Issue 3: 403 Errors on Build Logs
+**Symptoms**: Cannot access GitHub Actions build logs  
+**Cause**: This is usually a red herring - the real issue is the build failure  
+**Solution**: Focus on fixing the build configuration, not the log access
+
+### Proven Working Configuration (January 8, 2025)
+
+Successfully fixed GitHub Actions by:
+1. Removing TypeScript 5.8+ experimental flags
+2. Fixing ESLint configuration to use standard syntax
+3. Correcting TypeScript include paths
+4. Simplifying Vite terser configuration to defaults
+
+**Key Principle**: Prioritize CI/CD compatibility over cutting-edge features. Use proven, stable configurations.
+
+### Testing Build Fixes
+
+Always test locally before pushing:
+```bash
+npm run lint        # Must pass
+npx tsc --noEmit    # Must pass  
+npm run build       # Must pass
+```
+
+If all pass locally but fail in CI, check for:
+- TypeScript version mismatches
+- Node.js version differences
+- Configuration flags not supported in CI environment
+
 ---
 
 *Corporate Bingo | Professional Corporate Entertainment | Real-time Multiplayer | Claude Code Optimized*
