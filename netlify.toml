@@ -5,8 +5,8 @@
 
 [build.environment]
   NODE_VERSION = "20"
-  VITE_API_URL = "https://corporate-bingo.workers.dev"
-  VITE_WS_URL = "wss://corporate-bingo.workers.dev"
+  VITE_API_URL = "https://corporatebingo.ryanwixon15.workers.dev"
+  VITE_WS_URL = "wss://corporatebingo.ryanwixon15.workers.dev"
 
 [[headers]]
   for = "/index.html"
@@ -32,7 +32,7 @@
 # Proxy API requests to avoid CORS/SSL issues
 [[redirects]]
   from = "/api/*"
-  to = "http://corporatebingo.ryanwixon15.workers.dev/api/:splat"
+  to = "https://corporatebingo.ryanwixon15.workers.dev/api/:splat"
   status = 200
   force = true
 
