@@ -1,6 +1,6 @@
-name = "corporate-bingo"
+name = "corporatebingo"
 main = "worker.js"
-compatibility_date = "2024-01-15"
+compatibility_date = "2024-12-01"
 
 [[migrations]]
 tag = "v1"

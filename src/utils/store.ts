@@ -4,6 +4,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { BingoWebSocketClient, createWebSocketClient, MESSAGE_TYPES } from '../lib/websocket';
+import { BingoPollingClient, createPollingClient } from '../lib/polling';
 import { createBingoRoom, joinBingoRoom } from '../lib/api';
 import { APP_VERSION, needsStateMigration, logVersionInfo } from './version';
 import { BingoEngine } from '../lib/bingoEngine';
@@ -66,6 +67,9 @@ interface BingoStore {
   
   // WebSocket client
   wsClient: BingoWebSocketClient | null;
+  
+  // HTTP polling client (fallback for SSL issues)
+  pollingClient: BingoPollingClient | null;
   
   // Stats (persisted)
   gamesPlayed: number;
@@ -140,6 +144,9 @@ export const useBingoStore = create<BingoStore>()(
         
         // WebSocket client
         wsClient: null,
+        
+        // Polling client
+        pollingClient: null,
         
         // Initial stats
         gamesPlayed: 0,
@@ -266,7 +273,7 @@ export const useBingoStore = create<BingoStore>()(
             };
           }),
         
-        // WebSocket Management
+        // WebSocket Management (with polling fallback)
         connectWebSocket: async () => {
           const state = get();
           if (!state.currentRoom || !state.currentPlayer) {
@@ -352,28 +359,91 @@ export const useBingoStore = create<BingoStore>()(
             await wsClient.connect();
             set({ wsClient });
           } catch (error) {
-            set({ 
-              isConnecting: false, 
-              connectionError: error instanceof Error ? error.message : 'Connection failed' 
+            console.warn('WebSocket connection failed, falling back to HTTP polling:', error);
+            
+            // Fall back to HTTP polling for multiplayer synchronization
+            const pollingClient = createPollingClient({
+              roomCode: state.currentRoom.code,
+              playerId: state.currentPlayer.id,
+              onUpdate: (gameState) => {
+                // Handle polling updates - update room state
+                if (gameState && typeof gameState === 'object') {
+                  if ('players' in gameState && Array.isArray(gameState.players)) {
+                    get().updateRoomPlayers(gameState.players);
+                  }
+                  if ('playerCount' in gameState) {
+                    console.log('📊 Polling update - Player count:', gameState.playerCount);
+                  }
+                }
+              },
+              onError: (pollError) => {
+                console.error('Polling error:', pollError);
+                set({ connectionError: `Connection unstable: ${pollError.message}` });
+              },
+              pollInterval: 2000 // Poll every 2 seconds
             });
-            throw error;
+            
+            pollingClient.startPolling();
+            
+            set({ 
+              pollingClient,
+              isConnected: true, // Consider polling as "connected"
+              isConnecting: false,
+              connectionError: null
+            });
+            
+            console.log('🔄 HTTP polling active for multiplayer synchronization');
           }
         },
         
         disconnectWebSocket: () => {
           const state = get();
+          
+          // Disconnect WebSocket if present
           if (state.wsClient) {
             state.wsClient.disconnect();
-            set({ wsClient: null, isConnected: false });
           }
+          
+          // Stop polling if present
+          if (state.pollingClient) {
+            state.pollingClient.stopPolling();
+          }
+          
+          set({ 
+            wsClient: null, 
+            pollingClient: null,
+            isConnected: false 
+          });
         },
         
         sendMessage: async (type, payload) => {
           const state = get();
-          if (!state.wsClient?.isConnected()) {
-            throw new Error('WebSocket not connected');
+          
+          // Try WebSocket first
+          if (state.wsClient?.isConnected()) {
+            await state.wsClient.send(type, payload);
+            return;
           }
-          await state.wsClient.send(type, payload);
+          
+          // Fall back to HTTP polling for actions
+          if (state.pollingClient?.isPolling()) {
+            if (type === MESSAGE_TYPES.MARK_SQUARE && payload && 'squareIndex' in payload) {
+              const success = await state.pollingClient.markSquare(payload.squareIndex as number);
+              if (!success) {
+                throw new Error('Failed to send action via HTTP');
+              }
+              return;
+            }
+            
+            // For other actions, use the generic sendAction method
+            const success = await state.pollingClient.sendAction(type, payload);
+            if (!success) {
+              throw new Error('Failed to send action via HTTP');
+            }
+            return;
+          }
+          
+          throw new Error('No connection available (WebSocket or HTTP polling)');
         },
         
         // Room Operations
@@ -548,6 +618,7 @@ export const useBingoStore = create<BingoStore>()(
                 hasWon: false,
               },
               wsClient: null,
+              pollingClient: null,
               gamesPlayed: 0,
               wins: 0,
               totalSquares: 0,
