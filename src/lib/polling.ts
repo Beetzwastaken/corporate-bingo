@@ -2,11 +2,19 @@
 // Provides basic real-time functionality when WebSocket SSL fails
 
 import { getApiBaseUrl } from './config';
+import type { BingoPlayer } from '../utils/store';
+
+export interface GameStateUpdate {
+  players?: BingoPlayer[];
+  playerCount?: number;
+  roomName?: string;
+  isActive?: boolean;
+}
 
 export interface PollingOptions {
   roomCode: string;
   playerId: string;
-  onUpdate: (gameState: any) => void;
+  onUpdate: (gameState: GameStateUpdate) => void;
   onError?: (error: Error) => void;
   pollInterval?: number;
 }
@@ -133,7 +141,7 @@ export class BingoPollingClient {
   }
 
   // Send player action (marks, etc.)
-  async sendAction(action: string, payload: any): Promise<boolean> {
+  async sendAction(action: string, payload: Record<string, unknown>): Promise<boolean> {
     try {
       const baseUrl = getApiBaseUrl();
       const url = baseUrl ?

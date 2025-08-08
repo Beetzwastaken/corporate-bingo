@@ -4,7 +4,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { BingoWebSocketClient, createWebSocketClient, MESSAGE_TYPES } from '../lib/websocket';
-import { BingoPollingClient, createPollingClient } from '../lib/polling';
+import { BingoPollingClient, createPollingClient, type GameStateUpdate } from '../lib/polling';
 import { createBingoRoom, joinBingoRoom } from '../lib/api';
 import { APP_VERSION, needsStateMigration, logVersionInfo } from './version';
 import { BingoEngine } from '../lib/bingoEngine';
@@ -368,16 +368,14 @@ export const useBingoStore = create<BingoStore>()(
           const pollingClient = createPollingClient({
             roomCode: state.currentRoom.code,
             playerId: state.currentPlayer.id,
-            onUpdate: (gameState) => {
+            onUpdate: (gameState: GameStateUpdate) => {
               // Handle polling updates - update room state
-              if (gameState && typeof gameState === 'object') {
-                if ('players' in gameState && Array.isArray(gameState.players)) {
-                  console.log('📊 Polling update - Players:', gameState.players.map((p: BingoPlayer) => p.name));
-                  get().updateRoomPlayers(gameState.players);
-                }
-                if ('playerCount' in gameState) {
-                  console.log('📊 Polling update - Player count:', gameState.playerCount);
-                }
+              if (gameState.players && Array.isArray(gameState.players)) {
+                console.log('📊 Polling update - Players:', gameState.players.map((p: BingoPlayer) => p.name));
+                get().updateRoomPlayers(gameState.players);
+              }
+              if (gameState.playerCount) {
+                console.log('📊 Polling update - Player count:', gameState.playerCount);
               }
             },
             onError: (pollError) => {
@@ -439,7 +437,7 @@ export const useBingoStore = create<BingoStore>()(
             }
             
             // For other actions, use the generic sendAction method
-            const success = await state.pollingClient.sendAction(type, payload);
+            const success = await state.pollingClient.sendAction(type, payload || {});
             if (!success) {
               throw new Error('Failed to send action via HTTP');
             }
