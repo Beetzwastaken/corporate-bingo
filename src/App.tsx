@@ -119,6 +119,11 @@ function App() {
     }
   };
 
+  const closeSidebar = () => {
+    setActivePanel(null);
+    setSidebarOpen(false);
+  };
+
   return (
     <div className="h-screen bg-black text-white font-system flex flex-col overflow-hidden">
       {/* Apple-style Header */}
@@ -216,7 +221,18 @@ function App() {
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden min-h-0">
+      <div className="flex flex-1 overflow-hidden min-h-0 relative">
+        {/* Mobile Sidebar Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+            onClick={closeSidebar}
+            role="button"
+            tabIndex={0}
+            aria-label="Close sidebar"
+          />
+        )}
+
         {/* Main Content */}
         <main className="flex-1 overflow-hidden">
           <div className="h-full flex flex-col">
@@ -251,9 +267,29 @@ function App() {
           </div>
         </main>
 
-        {/* Sidebar - Fixed height to prevent viewport clipping */}
+        {/* Sidebar - Mobile overlay on small screens, side panel on larger */}
         {sidebarOpen && (
-          <aside className="w-80 bg-apple-sidebar border-l border-apple-border overflow-hidden h-full max-h-full">
+          <aside className={`
+            w-80 bg-apple-sidebar border-l border-apple-border overflow-hidden h-full max-h-full z-50
+            md:relative md:translate-x-0
+            fixed right-0 top-0 transform transition-transform duration-300 ease-in-out
+          `}>
+            {/* Mobile Close Button */}
+            <div className="md:hidden sticky top-0 z-10 bg-apple-sidebar border-b border-apple-border p-4 flex items-center justify-between">
+              <h3 className="text-lg font-medium text-apple-text">
+                {activePanel === 'rooms' ? 'Rooms' : 'Stats'}
+              </h3>
+              <button 
+                onClick={closeSidebar}
+                className="p-2 hover:bg-apple-hover rounded-lg transition-colors"
+                aria-label="Close sidebar"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
             <div className="h-full max-h-full overflow-auto">
               <Suspense fallback={<ComponentLoader />}>
                 {activePanel === 'rooms' && <RoomManager />}
