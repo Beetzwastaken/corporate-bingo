@@ -29,6 +29,13 @@
     Cache-Control = "no-cache, no-store, must-revalidate"
 
 
+# Proxy API requests to avoid CORS/SSL issues
+[[redirects]]
+  from = "/api/*"
+  to = "http://corporatebingo.ryanwixon15.workers.dev/api/:splat"
+  status = 200
+  force = true
+
 # Redirect for SPA-like behavior (though we're using a single HTML file)
 [[redirects]]
   from = "/*"

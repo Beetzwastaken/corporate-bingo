@@ -7,8 +7,8 @@ export const API_CONFIG = {
     wsUrl: 'ws://localhost:8787'
   },
   production: {
-    baseUrl: 'https://corporate-bingo.ryanwixon15.workers.dev', 
-    wsUrl: 'wss://corporate-bingo.ryanwixon15.workers.dev'
+    baseUrl: '', // Use relative URLs - Netlify will proxy to backend
+    wsUrl: 'wss://corporatebingo.ryanwixon15.workers.dev'
   }
 };
 
