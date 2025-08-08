@@ -7,6 +7,40 @@ import { MESSAGE_TYPES } from '../lib/messageTypes';
 import { useRoomStore } from './roomStore';
 import { useGameStore } from './gameStore';
 
+// Message type definitions - Compatible with WebSocketMessage
+interface BaseMessage {
+  type: string;
+  payload?: Record<string, unknown>;
+  timestamp?: number;
+  [key: string]: unknown;
+}
+
+interface PlayerMessage extends BaseMessage {
+  player?: {
+    id: string;
+    name: string;
+  };
+  playerId?: string;
+}
+
+interface RoomUpdateMessage extends BaseMessage {
+  players?: Array<{
+    id: string;
+    name: string;
+    isHost?: boolean;
+    isConnected?: boolean;
+    currentScore?: number;
+  }>;
+}
+
+interface GameMessage extends BaseMessage {
+  squareIndex?: number;
+  pattern?: number[];
+  error?: string;
+}
+
+type IncomingMessage = BaseMessage & PlayerMessage & RoomUpdateMessage & GameMessage;
+
 interface ConnectionStore {
   // State
   isConnected: boolean;
@@ -19,7 +53,7 @@ interface ConnectionStore {
   connect: () => Promise<void>;
   disconnect: () => void;
   sendMessage: (type: string, payload?: Record<string, unknown>) => Promise<void>;
-  handleMessage: (message: any) => void;
+  handleMessage: (message: IncomingMessage) => void;
   setConnectionError: (error: string | null) => void;
   clearConnection: () => void;
 }
@@ -54,8 +88,16 @@ export const useConnectionStore = create<ConnectionStore>()(
           gameStore.initializeGame();
         }
         
-        // Set up message handler
-        const handleMessage = (message: any) => {
+        // Set up message handler - flexible for both WebSocket and polling messages
+        const handleMessage = (incomingMessage: unknown) => {
+          // Convert to IncomingMessage format with proper type handling
+          const msgData = incomingMessage as Record<string, unknown>;
+          const message: IncomingMessage = {
+            type: (msgData.type as string) || 'unknown',
+            timestamp: (msgData.timestamp as number) || Date.now(),
+            payload: msgData.payload as Record<string, unknown>,
+            ...msgData // Spread all other properties
+          };
           get().handleMessage(message);
         };
         
@@ -176,7 +218,7 @@ export const useConnectionStore = create<ConnectionStore>()(
       },
       
       // Handle incoming messages
-      handleMessage: (message: any) => {
+      handleMessage: (message: IncomingMessage) => {
         const roomStore = useRoomStore.getState();
         const gameStore = useGameStore.getState();
         
