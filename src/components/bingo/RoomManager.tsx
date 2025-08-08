@@ -113,12 +113,12 @@ export function RoomManager() {
             Player Setup
           </h2>
           <p className="text-apple-secondary text-sm mb-4">Set your name to continue</p>
-          <div className="flex space-x-3">
+          <div className="space-y-3">
             <input
               type="text"
               value={playerName}
               onChange={(e) => setPlayerNameInput(e.target.value)}
-              className="apple-input flex-1"
+              className="apple-input w-full"
               placeholder="Your name"
               maxLength={30}
               onKeyPress={(e) => e.key === 'Enter' && handleSetPlayerName()}
@@ -126,7 +126,7 @@ export function RoomManager() {
             <button
               onClick={handleSetPlayerName}
               disabled={!playerName.trim() || isConnecting}
-              className="apple-button"
+              className="apple-button w-full justify-center"
             >
               Set Name
             </button>

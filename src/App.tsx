@@ -105,8 +105,29 @@ function App() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-apple-accent flex items-center justify-center">
-                <span className="text-white text-sm font-semibold">B</span>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 flex items-center justify-center shadow-lg border border-purple-400/30 relative overflow-hidden">
+                {/* Background grid pattern */}
+                <div className="absolute inset-0 opacity-20">
+                  <svg width="40" height="40" viewBox="0 0 40 40">
+                    <defs>
+                      <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
+                        <path d="M 8 0 L 0 0 0 8" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5"/>
+                      </pattern>
+                    </defs>
+                    <rect width="40" height="40" fill="url(#grid)" />
+                  </svg>
+                </div>
+                {/* Stylized B with bingo card elements */}
+                <svg className="w-6 h-6 text-white relative z-10" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M6 2h8c1.1 0 2 .9 2 2v3c0 .55-.22 1.05-.59 1.41.37.36.59.86.59 1.41v3c0 1.1-.9 2-2 2H6V2zm2 5h6V4H8v3zm0 5h6v-3H8v3z"/>
+                  {/* Small dots representing bingo markers */}
+                  <circle cx="9.5" cy="5.5" r="0.8" fill="rgba(255,255,255,0.8)"/>
+                  <circle cx="12.5" cy="5.5" r="0.8" fill="rgba(255,255,255,0.8)"/>
+                  <circle cx="9.5" cy="11.5" r="0.8" fill="rgba(255,255,255,0.8)"/>
+                  <circle cx="12.5" cy="11.5" r="0.8" fill="rgba(255,255,255,0.8)"/>
+                </svg>
+                {/* Subtle highlight */}
+                <div className="absolute top-1 left-1 right-1 h-3 bg-gradient-to-b from-white/20 to-transparent rounded-lg"></div>
               </div>
               <div>
                 <h1 className="text-lg font-medium text-apple-text">Corporate Bingo</h1>
