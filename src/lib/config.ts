@@ -7,9 +7,8 @@ export const API_CONFIG = {
     wsUrl: 'ws://localhost:8787'
   },
   production: {
-    // TODO: Replace with your actual Cloudflare Workers domain
-    baseUrl: 'https://corporate-bingo-backend.your-subdomain.workers.dev', 
-    wsUrl: 'wss://corporate-bingo-backend.your-subdomain.workers.dev'
+    baseUrl: 'https://corporate-bingo.ryanwixon15.workers.dev', 
+    wsUrl: 'wss://corporate-bingo.ryanwixon15.workers.dev'
   }
 };
 

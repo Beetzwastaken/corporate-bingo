@@ -2,18 +2,20 @@ name = "corporate-bingo"
 main = "worker.js"
 compatibility_date = "2024-01-15"
 
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = [ "BingoRoom", "DashboardAnalytics" ]
+
 [vars]
 CORS_ORIGIN = "https://corporate-bingo-ai.netlify.app"
 
 [[durable_objects.bindings]]
 name = "ROOMS"
 class_name = "BingoRoom"
-script_name = "corporate-bingo"
 
 [[durable_objects.bindings]]
 name = "ANALYTICS"
 class_name = "DashboardAnalytics"
-script_name = "corporate-bingo"
 
 [build]
 command = ""
