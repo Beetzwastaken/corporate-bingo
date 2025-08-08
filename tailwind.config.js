@@ -14,8 +14,22 @@ export default {
       },
       fontFamily: {
         'impact': ['Impact', 'Arial Black', 'sans-serif'],
+        'system': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
       },
+      animation: {
+        'pulse-slow': 'pulse 3s ease-in-out infinite',
+        'bounce-subtle': 'bounce 0.5s ease-out',
+      },
+      transitionDuration: {
+        '150': '150ms',
+      }
     },
   },
   plugins: [],
+  // Optimize for production
+  corePlugins: {
+    // Disable unused plugins
+    preflight: true,
+    // Keep only what we need
+  }
 }

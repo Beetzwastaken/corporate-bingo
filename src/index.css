@@ -24,4 +24,10 @@
   .control-input {
     @apply bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-400;
   }
+  
+  /* Screen reader only content */
+  .sr-only {
+    @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+    clip: rect(0, 0, 0, 0);
+  }
 }

@@ -1,0 +1,39 @@
+{
+  "timestamp": "2025-08-08T01:24:58.747Z",
+  "total_sites": 5,
+  "successful_captures": 2,
+  "results": [
+    {
+      "name": "Microsoft Teams",
+      "url": "https://www.microsoft.com/en-us/microsoft-teams/group-chat-software",
+      "path": "F:/CC/corporate-research-teams.png",
+      "title": "Video Conferencing, Meetings, Calling | Microsoft Teams",
+      "success": true
+    },
+    {
+      "name": "Slack",
+      "url": "https://slack.com",
+      "path": "F:/CC/corporate-research-slack.png",
+      "title": "AI Work Management & Productivity Tools | Slack",
+      "success": true
+    },
+    {
+      "name": "Notion",
+      "url": "https://www.notion.so",
+      "success": false,
+      "error": "Protocol error (Page.captureScreenshot): Session closed. Most likely the page has been closed."
+    },
+    {
+      "name": "Asana",
+      "url": "https://asana.com",
+      "success": false,
+      "error": "Protocol error: Connection closed."
+    },
+    {
+      "name": "Monday.com",
+      "url": "https://monday.com",
+      "success": false,
+      "error": "Protocol error: Connection closed."
+    }
+  ]
+}

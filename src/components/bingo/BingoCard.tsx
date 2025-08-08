@@ -1,3 +1,4 @@
+import { useCallback, useRef } from 'react';
 import type { BingoSquare } from '../../types';
 
 interface BingoCardProps {
@@ -7,6 +8,8 @@ interface BingoCardProps {
 }
 
 export function BingoCard({ squares, onSquareClick, hasBingo }: BingoCardProps) {
+  const gridRef = useRef<HTMLDivElement>(null);
+
   const getSquareClasses = (square: BingoSquare) => {
     let classes = 'bingo-square';
     
@@ -23,6 +26,64 @@ export function BingoCard({ squares, onSquareClick, hasBingo }: BingoCardProps) 
     return classes;
   };
 
+  // Keyboard navigation handler
+  const handleKeyDown = useCallback((event: React.KeyboardEvent, squareId: string, index: number) => {
+    const gridSize = 5;
+    let newIndex = index;
+
+    switch (event.key) {
+      case 'ArrowUp':
+        event.preventDefault();
+        newIndex = Math.max(0, index - gridSize);
+        break;
+      case 'ArrowDown':
+        event.preventDefault();
+        newIndex = Math.min(squares.length - 1, index + gridSize);
+        break;
+      case 'ArrowLeft':
+        event.preventDefault();
+        if (index % gridSize > 0) newIndex = index - 1;
+        break;
+      case 'ArrowRight':
+        event.preventDefault();
+        if (index % gridSize < gridSize - 1) newIndex = index + 1;
+        break;
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        if (!squares[index].isFree) onSquareClick(squareId);
+        return;
+      case 'Home':
+        event.preventDefault();
+        newIndex = 0;
+        break;
+      case 'End':
+        event.preventDefault();
+        newIndex = squares.length - 1;
+        break;
+      default:
+        return;
+    }
+
+    // Focus the new square
+    const newSquareElement = document.querySelector(`button[data-square-index="${newIndex}"]`) as HTMLButtonElement;
+    newSquareElement?.focus();
+  }, [squares, onSquareClick]);
+
+  // Accessibility: Get square description for screen readers
+  const getAriaLabel = useCallback((square: BingoSquare, index: number) => {
+    const row = Math.floor(index / 5) + 1;
+    const col = (index % 5) + 1;
+    const position = `Row ${row}, Column ${col}`;
+    
+    if (square.isFree) {
+      return `Free space, ${position}, always marked`;
+    }
+    
+    const status = square.isMarked ? 'marked' : 'unmarked';
+    return `${square.text}, ${position}, ${status}`;
+  }, []);
+
   return (
     <div className="apple-panel p-6 max-w-2xl mx-auto">
       {/* BINGO Header */}
@@ -35,16 +96,28 @@ export function BingoCard({ squares, onSquareClick, hasBingo }: BingoCardProps) 
       </div>
 
       {/* Perfect 5x5 Bingo Grid */}
-      <div className="bingo-grid">
+      <div 
+        className="bingo-grid"
+        ref={gridRef}
+        role="grid"
+        aria-label="Corporate Bingo Card - 5x5 grid"
+        aria-describedby="bingo-instructions"
+      >
         {squares.map((square, index) => {
           const isCenter = index === 12; // Center square (position 12 in 0-indexed array)
           
           return (
             <button
               key={square.id}
+              data-square-index={index}
               onClick={() => !square.isFree && onSquareClick(square.id)}
+              onKeyDown={(e) => handleKeyDown(e, square.id, index)}
               disabled={square.isFree}
               className={getSquareClasses(square)}
+              role="gridcell"
+              aria-label={getAriaLabel(square, index)}
+              aria-pressed={square.isMarked}
+              tabIndex={index === 0 ? 0 : -1} // Only first square is focusable initially
             >
               {/* Checkmark overlay for marked squares */}
               {square.isMarked && !square.isFree && (
@@ -77,14 +150,19 @@ export function BingoCard({ squares, onSquareClick, hasBingo }: BingoCardProps) 
         })}
       </div>
 
+      {/* Hidden instructions for screen readers */}
+      <div id="bingo-instructions" className="sr-only">
+        Use arrow keys to navigate the bingo grid. Press Enter or Space to mark a square when you hear the phrase mentioned. The center square is always free.
+      </div>
+
       {/* Game Progress */}
       <div className="mt-6 flex items-center justify-between">
         <div className="flex items-center space-x-4 text-sm text-apple-secondary">
-          <span>
+          <span aria-live="polite">
             Marked: {squares.filter(s => s.isMarked).length}/25
           </span>
           {hasBingo && (
-            <span className="text-yellow-400 font-semibold animate-pulse">
+            <span className="text-yellow-400 font-semibold animate-pulse" role="alert" aria-live="assertive">
               🎉 BINGO!
             </span>
           )}

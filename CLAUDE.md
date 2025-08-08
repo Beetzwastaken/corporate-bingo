@@ -47,6 +47,20 @@
 **Bash Commands**: Use `F:/path/` format, never `F:\path\` or `F:path`  
 **Required**: Test paths with `ls "F:/CC/Projects/corporate-bingo/"` before operations
 
+## Testing Infrastructure
+**Quality Assurance Framework** - Organized testing pipeline:
+- **Testing Assets**: `/testing/` - Screenshots, research data, validation files
+- **Screenshot Archive**: `/testing/screenshots/` - Multi-viewport testing results
+- **Research Data**: `/testing/research-data/` - Corporate design analysis and color schemes
+- **MCP Integration Testing**: External testing scripts in MCP servers repository
+- **Visual Validation**: Automated screenshot comparison and quality metrics
+
+### **⚠️ MANDATORY FILE PATH ENFORCEMENT**
+- **CRITICAL RULE**: ALL Corporate Bingo screenshots MUST be saved to `F:/CC/Projects/Corporate Bingo/testing/screenshots/`
+- **VIOLATION**: Any script saving to root directory (`F:/CC/`) is STRICTLY PROHIBITED
+- **TESTING SCRIPTS**: Must use project-specific paths - NO EXCEPTIONS
+- **IMMEDIATE CORRECTION**: Stop execution if wrong path detected and correct before proceeding
+
 ## Project Scope
 **Corporate Bingo & Buzzword Entertainment Platform** - A real-time multiplayer web application that transforms corporate meetings into interactive entertainment. Features professional-grade architecture with 414+ curated buzzwords, democratic verification system, and anti-cheat detection for authentic corporate humor.
 

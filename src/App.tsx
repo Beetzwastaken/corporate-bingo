@@ -1,13 +1,24 @@
 // Corporate Bingo - Single-page Apple Dark Mode Experience  
-// Version: 2.0.0 - Complete Apple Dark Mode redesign with single-page functionality
+// Version: 2.0.1 - Performance optimized with accessibility enhancements
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BingoCard } from './components/bingo/BingoCard';
-import { RoomManager } from './components/bingo/RoomManager';
-import { BingoStats } from './components/bingo/BingoStats';
 import { useBingoStore } from './utils/store';
 import { APP_VERSION } from './utils/version';
 import './App.css';
+
+// Lazy load non-critical components
+const RoomManager = lazy(() => import('./components/bingo/RoomManager').then(module => ({ default: module.RoomManager })));
+const BingoStats = lazy(() => import('./components/bingo/BingoStats').then(module => ({ default: module.BingoStats })));
+
+// Loading component for lazy loaded components
+function ComponentLoader() {
+  return (
+    <div className="flex items-center justify-center p-8">
+      <div className="animate-spin w-6 h-6 border-2 border-apple-accent border-t-transparent rounded-full"></div>
+    </div>
+  );
+}
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -244,8 +255,10 @@ function App() {
         {sidebarOpen && (
           <aside className="w-80 bg-apple-sidebar border-l border-apple-border overflow-hidden">
             <div className="h-full overflow-auto">
-              {activePanel === 'rooms' && <RoomManager />}
-              {activePanel === 'stats' && <BingoStats stats={gameStats} />}
+              <Suspense fallback={<ComponentLoader />}>
+                {activePanel === 'rooms' && <RoomManager />}
+                {activePanel === 'stats' && <BingoStats stats={gameStats} />}
+              </Suspense>
             </div>
           </aside>
         )}

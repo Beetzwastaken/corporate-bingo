@@ -1,0 +1,75 @@
+{
+  "url": "http://localhost:5176",
+  "timestamp": "2025-08-08T01:29:41.708Z",
+  "screenshots": [
+    {
+      "type": "initial",
+      "path": "F:/CC/Projects/Corporate Bingo/testing/screenshots/analysis-initial-state.png"
+    },
+    {
+      "type": "square_interaction",
+      "path": "F:/CC/Projects/Corporate Bingo/testing/screenshots/analysis-square-interaction.png"
+    },
+    {
+      "type": "mobile_responsive",
+      "path": "F:/CC/Projects/Corporate Bingo/testing/screenshots/analysis-mobile-responsive.png"
+    }
+  ],
+  "interactions": [
+    {
+      "type": "bingo_square_click",
+      "text": "Competitive Advantage",
+      "marked": true,
+      "success": true
+    }
+  ],
+  "issues": [],
+  "elements": {
+    "bingoGrid": {
+      "exists": true,
+      "working": true
+    },
+    "bingoSquares": {
+      "count": 25,
+      "expected": 25
+    },
+    "buttons": {
+      "count": 29,
+      "elements": [
+        {
+          "index": 0,
+          "text": "Rooms",
+          "tagName": "BUTTON"
+        },
+        {
+          "index": 1,
+          "text": "Stats",
+          "tagName": "BUTTON"
+        },
+        {
+          "index": 2,
+          "text": "New Game",
+          "tagName": "BUTTON"
+        },
+        {
+          "index": 3,
+          "text": "No text",
+          "tagName": "BUTTON"
+        },
+        {
+          "index": 4,
+          "text": "Acceptance Criteria",
+          "tagName": "BUTTON"
+        }
+      ]
+    }
+  },
+  "performance": {
+    "loadTime": 207.69999999925494,
+    "domContentLoaded": 207,
+    "firstContentfulPaint": 348
+  },
+  "title": "Corporate Bingo - Real-time Multiplayer Buzzword Game",
+  "finalUrl": "http://localhost:5176/",
+  "consoleErrors": []
+}
