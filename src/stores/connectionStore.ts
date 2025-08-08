@@ -129,6 +129,14 @@ export const useConnectionStore = create<ConnectionStore>()(
           });
           
           console.log('WebSocket connected successfully');
+          
+          // Request immediate room state to sync other players
+          setTimeout(() => {
+            const roomStore = useRoomStore.getState();
+            if (roomStore.currentRoom && roomStore.currentPlayer) {
+              roomStore.syncRoomState(roomStore.currentRoom.code, roomStore.currentPlayer.id);
+            }
+          }, 200); // Small delay to ensure WebSocket is fully ready
         } catch (wsError) {
           console.warn('WebSocket failed, falling back to polling:', wsError);
           
@@ -158,6 +166,14 @@ export const useConnectionStore = create<ConnectionStore>()(
             });
             
             console.log('Polling connected successfully');
+            
+            // Request immediate room state to sync other players
+            setTimeout(() => {
+              const roomStore = useRoomStore.getState();
+              if (roomStore.currentRoom && roomStore.currentPlayer) {
+                roomStore.syncRoomState(roomStore.currentRoom.code, roomStore.currentPlayer.id);
+              }
+            }, 300); // Slightly longer delay for polling to be ready
           } catch (pollError) {
             console.error('Both WebSocket and polling failed:', pollError);
             set({
@@ -268,6 +284,29 @@ export const useConnectionStore = create<ConnectionStore>()(
             
           case MESSAGE_TYPES.GAME_RESET:
             gameStore.resetGame();
+            break;
+            
+          case MESSAGE_TYPES.LINE_MULTIPLIER:
+            // Handle line multiplier bonus notifications
+            if (message.playerName && message.bonusPoints && message.message) {
+              console.log(`🎉 ${message.playerName} earned ${message.bonusPoints} bonus points for ${message.lineType}`);
+              // You could show a notification here or update the UI state
+              // For now, we'll just log it - could extend to show toast notifications
+            }
+            break;
+            
+          case MESSAGE_TYPES.CLAIM_APPROVED:
+            // Handle approved claims
+            if (message.claimerName && message.points) {
+              console.log(`✅ ${message.claimerName} scored ${message.points} points for "${message.buzzword}"`);
+            }
+            break;
+            
+          case MESSAGE_TYPES.CLAIM_REJECTED:
+            // Handle rejected claims
+            if (message.claimerName && message.reason) {
+              console.log(`❌ ${message.claimerName}'s claim rejected: ${message.reason}`);
+            }
             break;
             
           case 'gameState': {

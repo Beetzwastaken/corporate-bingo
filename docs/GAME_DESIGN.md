@@ -45,7 +45,7 @@ Transform the tedium of corporate meetings into an engaging social game where pl
 
 ### Board Generation
 - **5x5 grid** with center FREE SPACE
-- **24 unique buzzwords** per player from 414+ term library
+- **24 unique buzzwords** per player from 369+ term library
 - **Fisher-Yates shuffle** ensures true randomization
 - **No duplicate boards** - every player gets different terms
 
@@ -60,15 +60,18 @@ The core innovation that prevents cheating and creates social interaction:
 
 #### Anti-Cheat Protection  
 - **Self-claim detection**: Can't mark words you said yourself
-- **-50 point penalty** for attempted self-claims
+- **Claim rejection**: Self-claims are rejected without penalty
 - **Speaker attribution**: Voters identify who actually said the word
 - **Timeout system**: 30-second limit on verification votes
 
 ### Scoring System
 - **+10 points** per verified square
-- **+5 points** for FREE SPACE (automatic)
-- **+500 points** for bingo completion
-- **-50 points** for self-claim penalty
+- **0 points** for FREE SPACE (no bonus)
+- **Progressive Line Multipliers**:
+  - **+50 bonus points** for 3-in-a-row achievement
+  - **+100 bonus points** for 4-in-a-row achievement
+  - **+200 bonus points** for bingo completion (reduced from 500)
+- **No penalties** (self-claims are rejected without point deduction)
 - **Cumulative scoring** across multiple rounds
 
 ### Round Structure
@@ -148,7 +151,7 @@ The core innovation that prevents cheating and creates social interaction:
 
 ## Content Design
 
-### Buzzword Categories (414 total terms)
+### Buzzword Categories (369 total terms)
 
 #### 1. Classic Corporate Speak (20 terms)
 **Philosophy**: The absolute worst traditional business jargon
@@ -277,7 +280,7 @@ The core innovation that prevents cheating and creates social interaction:
 ### Phase 1: MVP (Completed)
 - ✅ Real multiplayer functionality
 - ✅ Verification system with anti-cheat  
-- ✅ 414+ buzzword library
+- ✅ 369+ buzzword library
 - ✅ Responsive web interface
 - ✅ Room-based gameplay
 

@@ -1,6 +1,10 @@
 // Buzzword Bingo - Cloudflare Workers + Durable Objects Backend
 // Handles real multiplayer rooms with unique boards per player
 
+// Import buzzwords from shared TypeScript constants
+import { CORPORATE_BUZZWORDS } from './src/data/buzzwords.js';
+const BUZZWORDS = CORPORATE_BUZZWORDS;
+
 // CORS helper with security improvements
 function corsHeaders(origin) {
   const allowedOrigins = [
@@ -165,7 +169,7 @@ export default {
         const roomId = env.ROOMS.idFromName(roomCode);
         const roomObj = env.ROOMS.get(roomId);
         
-        const response = await roomObj.fetch(new Request('https://dummy/players', {
+        const response = await roomObj.fetch(new Request('https://dummy.worker/players', {
           method: 'GET',
           headers: { 'Content-Type': 'application/json', 'X-Player-ID': playerId || '' }
         }));
@@ -645,161 +649,6 @@ function generateMockSystemHealth() {
   };
 }
 
-// Corporate buzzwords library (same as frontend)
-const BUZZWORDS = [
-    // Classic Corporate Speak (The Absolute Worst)
-    'Synergy', 'Leverage', 'Deep Dive', 'Circle Back', 'Touch Base',
-    'Low-hanging Fruit', 'Move the Needle', 'Paradigm Shift', 'Think Outside the Box',
-    'Best Practice', 'Core Competency', 'Value-add', 'Game Changer', 'Win-win',
-    'Right-size', 'Optimize', 'Streamline', 'Ideate', 'Impactful',
-    
-    // Meeting & Communication Gems  
-    'Take it Offline', 'Ping Me', 'Loop In', 'Bandwidth', 'On My Radar',
-    'Align on This', 'Sync Up', 'Park That', 'Table This', 'Double Click',
-    'Drill Down', 'Level Set', 'Socialize', 'Evangelize', 'Champion',
-    'Cascade Down', 'Run it Up', 'Put a Pin In', 'Peel the Onion', 'Boil the Ocean',
-    'Circle Back Later', 'Take That Offline', 'Sync Up Tomorrow', 'Revisit This',
-    'Follow Up Separately', 'Schedule a Follow-up', 'Set Up Time', 'Grab Time',
-    'Quick Sync', 'Brain Dump', 'Download You', 'Get You Up to Speed',
-    'Bring Everyone Along', 'Get Buy-in', 'Surface This Up', 'Bubble Up',
-    
-    // Meeting Theater & Corporate Comedy
-    'Let\'s Take This Offline', 'We Need to Socialize This', 'Run it by Legal',
-    'Get Finance Involved', 'Check with Compliance', 'Validate with Leadership',
-    'Vet This Through', 'Pressure Test the Idea', 'Stress Test Assumptions',
-    'Sanity Check Numbers', 'Gut Check the Plan', 'Reality Check Timeline',
-    'Can You Speak to That?', 'What\'s Your Take?', 'How Do You See This?',
-    'Where Do You Land?', 'What\'s Your Comfort Level?', 'Any Concerns?',
-    'Red Flags?', 'Deal Breakers?', 'Showstoppers?', 'Blockers?',
-    'Circle Back on Monday', 'Let\'s Unpack This', 'Thoughts?', 'Does That Resonate?',
-    
-    // Virtual Meeting Comedy Gold
-    'You\'re Muted', 'Can You Hear Me?', 'Are You There?', 'Hello? Hello?',
-    'Can You Unmute?', 'Still Muted', 'You\'re Still Muted', 'Unmute Please',
-    'Can Everyone See My Screen?', 'Are You Presenting?', 'Who\'s Presenting?',
-    'Let Me Share My Screen', 'Can You See This?', 'Is This Visible?',
-    'Sorry, I Was Muted', 'You Cut Out There', 'Your Audio is Breaking Up',
-    'Can You Repeat That?', 'Sorry, Can You Say That Again?', 'I Didn\'t Catch That',
-    'Let Me Stop Sharing', 'I Think You\'re Still Muted', 'We Can\'t Hear You',
-    'Your Video is Frozen', 'You\'re Breaking Up', 'Bad Connection',
-    'Can Someone Else Drive?', 'Who Has the Deck?', 'Next Slide Please',
-    'Sorry, I\'m Having Technical Issues', 'Let Me Try Again', 'Can You Try Now?',
-    'I\'ll Send the Link in Chat', 'Check the Chat', 'Posted in Chat',
-    'Sorry, I\'m Late', 'Traffic Was Terrible', 'Had Back-to-Back Meetings',
-    'Can We Get Started?', 'Let\'s Give It Two More Minutes', 'Waiting for Everyone',
-    'Someone Else Just Joined', 'I Think We\'re All Here', 'Let\'s Begin',
-    'Can You Make Me Presenter?', 'I Need Presenter Rights', 'Who\'s the Organizer?',
-    'Let Me Make You Presenter', 'I\'ll Give You Control', 'Taking Control Back',
-    'Echo on the Line', 'Hearing an Echo', 'Someone\'s Not Muted',
-    'Feedback Loop', 'Can Everyone Mute?', 'Please Mute When Not Speaking',
-    'Dog is Barking', 'Kids in Background', 'Sorry About the Noise',
-    'Construction Outside', 'Leaf Blower', 'Lawnmower Outside',
-    'I Have a Hard Stop', 'Need to Drop in 10 Minutes', 'Another Meeting Starting',
-    'Double Booked', 'Conflict with Another Meeting', 'Need to Jump to Another Call',
-    'Back-to-back Meetings', 'Calendar Conflict', 'Overbooked', 'Running Late',
-    'Can We Record This?', 'Is This Being Recorded?', 'I\'ll Start Recording',
-    'Meeting Notes', 'Action Items', 'Who\'s Taking Notes?',
-    'I\'ll Send a Recap', 'Follow-up Email', 'Meeting Summary',
-    'Can You Put That in Chat?', 'Link in the Chat', 'I Shared in Chat',
-    'Private Chat', 'Sidebar Conversation', 'Offline Discussion',
-    'Breakout Rooms', 'Let\'s Split into Groups', 'Back to Main Room',
-    
-    // Corporate Speak Poetry & Fluff
-    'At the End of the Day', 'When All is Said and Done', 'Bottom Line',
-    'Net-Net', 'Long Story Short', 'To Be Completely Transparent',
-    'If I\'m Being Honest', 'To Level Set', 'For Context', 'Background Info',
-    'Quick Backstory', 'History Lesson', 'Let Me Paint a Picture',
-    'Here\'s the Situation', 'Here\'s Where We Are', 'Current State',
-    'Moving Forward', 'Going Forward', 'Path Forward', 'Next Steps',
-    
-    // Absurd Corporate Priorities  
-    'Client-centric Solutions', 'Customer Success Journey', 'Stakeholder Alignment',
-    'Cross-functional Collaboration', 'Omnichannel Experience', 'End-to-end Solutions',
-    'Holistic Approach', 'Strategic Roadmap', 'Digital-first Mindset', 'Data-driven Decisions',
-    'Growth Mindset', 'Innovation Pipeline', 'Transformation Journey', 'Change Management',
-    'Process Optimization', 'Operational Excellence', 'Best-in-class', 'World-class',
-    'Industry-leading', 'Market-leading', 'Award-winning', 'Cutting-edge',
-    
-    // Hilarious Consultant Word Salad
-    'Value Creation', 'Competitive Advantage', 'Thought Leadership', 'Subject Matter Expert',
-    'Industry Best Practices', 'Benchmarking Studies', 'Gap Analysis', 'SWOT Analysis',
-    'Root Cause Analysis', 'Impact Assessment', 'Business Case Development', 'ROI Analysis',
-    'Cost-benefit Analysis', 'Risk Mitigation', 'Strategic Planning', 'Implementation Roadmap',
-    'Phase Gate Reviews', 'Milestone Tracking', 'Performance Metrics', 'Success Criteria',
-    'Key Performance Indicators', 'Return on Investment', 'Total Cost of Ownership',
-    
-    // Meeting Types & Corporate Events
-    'All Hands Meeting', 'Town Hall', 'Skip Level', 'One-on-One', 'Check-in',
-    'Stand-up', 'Scrum', 'Sprint Planning', 'Retrospective', 'Post-mortem',
-    'Brainstorming Session', 'Ideation Workshop', 'Design Thinking', 'Innovation Lab',
-    'Hackathon', 'Deep Dive Session', 'Working Session', 'Strategic Offsite',
-    'Leadership Retreat', 'Team Building', 'Culture Session', 'Values Workshop',
-    'Kick-off Meeting', 'Status Update', 'Checkpoint Review', 'Quarterly Business Review',
-    
-    // Startup & Business Development Nonsense
-    'Product-Market Fit', 'Go-to-Market Strategy', 'Minimum Viable Product', 'User Feedback',
-    'Iteration Cycle', 'Pivot Strategy', 'Scale Operations', 'Market Penetration',
-    'Customer Acquisition', 'Revenue Streams', 'Business Model', 'Value Proposition',
-    'Competitive Landscape', 'Market Opportunity', 'Total Addressable Market', 'Monetization Strategy',
-    'Customer Lifecycle', 'User Experience', 'Customer Experience', 'Brand Experience',
-    
-    // People & Culture Comedy
-    'Culture Fit', 'Team Player', 'Self-starter', 'Go-getter', 'Problem Solver',
-    'Strategic Thinker', 'Detail-oriented', 'Results-driven', 'Customer-focused',
-    'Collaborative Leader', 'Change Agent', 'Innovation Champion', 'Brand Ambassador',
-    'Cross-functional Partner', 'Stakeholder Manager', 'Relationship Builder',
-    'Culture Carrier', 'People Person', 'Servant Leader', 'Thought Partner',
-    'Executive Presence', 'Leadership Potential', 'High Performer', 'Top Talent',
-    'Growth Mindset', 'Emotional Intelligence', 'Psychological Safety', 'Inclusive Leader',
-    'Belonging', 'Authentic Self', 'Vulnerability', 'Empathy-driven',
-    
-    // Modern Business Buzzwords  
-    'Digital Transformation', 'Cloud-first', 'AI-powered', 'Machine Learning',
-    'Data Analytics', 'Business Intelligence', 'Predictive Analytics', 'Automation',
-    'Scalable Solutions', 'Agile Methodology', 'DevOps', 'Continuous Improvement',
-    'Innovation Culture', 'Disruptive Technology', 'Emerging Technologies', 'Future-ready',
-    'Next-generation', 'State-of-the-art', 'Revolutionary', 'Groundbreaking',
-    'Hybrid Work', 'Digital-first', 'Customer Journey', 'User Experience',
-    'Remote-first', 'Async Communication', 'Work-life Balance', 'Flexible Schedule',
-    
-    // Sales & Marketing Theater
-    'Customer Journey', 'Buyer Persona', 'Lead Generation', 'Sales Funnel',
-    'Conversion Rate', 'Customer Acquisition Cost', 'Lifetime Value', 'Retention Strategy',
-    'Churn Analysis', 'Upselling', 'Cross-selling', 'Market Segmentation',
-    'Target Audience', 'Brand Positioning', 'Content Marketing', 'Inbound Strategy',
-    'Outbound Campaigns', 'Multi-touch Attribution', 'Lead Nurturing', 'Sales Enablement',
-    
-    // Project Management Comedy
-    'Scope Creep', 'Requirements Change', 'Budget Overrun', 'Schedule Slip',
-    'Resource Constraint', 'Dependencies', 'Critical Path', 'Milestone',
-    'Deliverable', 'Work Package', 'Action Item', 'Follow-up Item',
-    'Risk Register', 'Issue Log', 'Change Request', 'Status Report',
-    'Project Charter', 'Statement of Work', 'Work Breakdown Structure', 'Gantt Chart',
-    
-    // Executive & Leadership Speak
-    'Strategic Vision', 'Mission Critical', 'Core Values', 'Company Culture',
-    'Organizational Excellence', 'Leadership Development', 'Succession Planning', 'Talent Management',
-    'Performance Management', 'Engagement Survey', 'Employee Experience', 'Workplace Culture',
-    'Diversity & Inclusion', 'Corporate Social Responsibility', 'Sustainability Initiative', 'ESG Compliance',
-    'Governance Framework', 'Risk Management', 'Compliance Program', 'Audit Trail',
-    'Purpose-driven', 'Values-based', 'Stakeholder Capitalism', 'Triple Bottom Line',
-    'Social Impact', 'Environmental Stewardship', 'Conscious Leadership', 'Sustainable Growth',
-    
-    // Finance & Operations Fluff
-    'Financial Planning', 'Budget Cycle', 'Cost Center', 'Profit Center',
-    'Revenue Recognition', 'Cash Flow', 'Working Capital', 'EBITDA',
-    'Gross Margin', 'Operating Margin', 'Capital Expenditure', 'Operating Expenditure',
-    'Accounts Receivable', 'Accounts Payable', 'Invoice Processing', 'Purchase Order',
-    'Vendor Management', 'Supplier Relations', 'Procurement Process', 'Supply Chain Management',
-    
-    // Light Tech Humor (Relatable but Not Technical)
-    'Technical Debt', 'Legacy System', 'System Upgrade', 'Maintenance Window',
-    'Code Review', 'Quality Control', 'Testing Phase', 'User Acceptance Testing',
-    'Hot Fix', 'Patch Release', 'Version Control', 'Change Management',
-    'Documentation', 'Knowledge Transfer', 'Training Program', 'Best Practices Guide',
-    'System Integration', 'API First', 'Microservices', 'Container Strategy',
-    'Platform Approach', 'Service Mesh', 'Event-driven', 'Serverless'
-];
 
 // Durable Object - BingoRoom handles individual room state and real-time gameplay
 export class BingoRoom {
@@ -851,7 +700,9 @@ export class BingoRoom {
         currentScore: 0,
         totalScore: 0,
         joinedAt: Date.now(),
-        bingoAchievedThisRound: false
+        bingoAchievedThisRound: false,
+        hasThreeInRow: false,
+        hasFourInRow: false
       };
       
       this.players.set(this.gameState.hostId, hostPlayer);
@@ -904,7 +755,9 @@ export class BingoRoom {
         currentScore: 0,
         totalScore: 0,
         joinedAt: Date.now(),
-        bingoAchievedThisRound: false
+        bingoAchievedThisRound: false,
+        hasThreeInRow: false,
+        hasFourInRow: false
       };
       
       this.players.set(playerId, newPlayer);
@@ -1003,7 +856,7 @@ export class BingoRoom {
         // Simple square marking (simplified for HTTP polling)
         if (squareIndex >= 0 && squareIndex < 25 && !player.markedSquares[squareIndex]) {
           player.markedSquares[squareIndex] = true;
-          player.currentScore += (squareIndex === 12 ? 5 : 10); // 5 for FREE SPACE, 10 for others
+          player.currentScore += 10; // 10 points for all squares (FREE SPACE no longer gets bonus)
           
           this.gameState.lastActivity = Date.now();
           
@@ -1251,7 +1104,7 @@ export class BingoRoom {
     // Skip verification for FREE SPACE
     if (buzzword === 'FREE SPACE') {
       player.markedSquares[squareIndex] = true;
-      player.currentScore += 5; // Small bonus for free space
+      // No bonus points for FREE SPACE in new scoring system
       
       // Track buzzword claim analytics
       this.trackBuzzwordClaim({
@@ -1381,7 +1234,7 @@ export class BingoRoom {
     
     // ANTI-CHEAT: Reject if majority says the claimer said it themselves
     if (topSpeaker === claimingPlayer.name && speakerCounts[topSpeaker] > verification.votes.size / 2) {
-      claimingPlayer.currentScore = Math.max(0, claimingPlayer.currentScore - 50);
+      // No penalty for self-claims in new scoring system (just reject the claim)
       
       // Track cheating attempt analytics
       this.trackPlayerAction({
@@ -1414,6 +1267,9 @@ export class BingoRoom {
       // APPROVED - mark the square
       claimingPlayer.markedSquares[verification.squareIndex] = true;
       claimingPlayer.currentScore += 10; // 10 points per verified square
+      
+      // Check for line multipliers (3/4 in a row bonuses)
+      this.checkLineMultipliers(verification.claimedBy);
       
       // Track successful buzzword claim analytics
       this.trackBuzzwordClaim({
@@ -1463,6 +1319,62 @@ export class BingoRoom {
     this.gameState.pendingVerifications.delete(verificationId);
   }
 
+  // Check for line multipliers (3/4 in a row bonus points)
+  checkLineMultipliers(playerId) {
+    const player = this.players.get(playerId);
+    if (!player) return;
+    
+    const marked = player.markedSquares;
+    
+    // All possible line patterns (rows, columns, diagonals)
+    const patterns = [
+      // Rows
+      [0,1,2,3,4], [5,6,7,8,9], [10,11,12,13,14], [15,16,17,18,19], [20,21,22,23,24],
+      // Columns  
+      [0,5,10,15,20], [1,6,11,16,21], [2,7,12,17,22], [3,8,13,18,23], [4,9,14,19,24],
+      // Diagonals
+      [0,6,12,18,24], [4,8,12,16,20]
+    ];
+    
+    let bestLineCount = 0;
+    let bestPattern = null;
+    
+    // Find the longest line this player has
+    for (const pattern of patterns) {
+      const markedCount = pattern.filter(i => marked[i] || i === 12).length; // 12 is free space
+      if (markedCount > bestLineCount) {
+        bestLineCount = markedCount;
+        bestPattern = pattern;
+      }
+    }
+    
+    // Award multiplier bonuses (only if not already achieved this round)
+    if (bestLineCount === 3 && !player.hasThreeInRow) {
+      player.currentScore += 50;
+      player.hasThreeInRow = true;
+      
+      this.broadcast({
+        type: 'LINE_MULTIPLIER',
+        playerName: player.name,
+        lineType: '3-in-a-row',
+        bonusPoints: 50,
+        message: `🔥 ${player.name} got 3-in-a-row! +50 bonus points!`
+      });
+      
+    } else if (bestLineCount === 4 && !player.hasFourInRow) {
+      player.currentScore += 100;
+      player.hasFourInRow = true;
+      
+      this.broadcast({
+        type: 'LINE_MULTIPLIER', 
+        playerName: player.name,
+        lineType: '4-in-a-row',
+        bonusPoints: 100,
+        message: `🚀 ${player.name} got 4-in-a-row! +100 bonus points!`
+      });
+    }
+  }
+
   // Check if player achieved bingo (5 in a row)
   checkForBingo(playerId) {
     const player = this.players.get(playerId);
@@ -1494,7 +1406,7 @@ export class BingoRoom {
     if (!player) return;
     
     player.bingoAchievedThisRound = true;
-    player.currentScore += 500; // Bonus points for bingo
+    player.currentScore += 200; // Reduced bingo bonus (was 500, now 200)
     player.totalScore += player.currentScore;
     
     // Track bingo achievement analytics
@@ -1540,6 +1452,8 @@ export class BingoRoom {
       player.markedSquares = new Array(25).fill(false);
       player.currentScore = 0;
       player.bingoAchievedThisRound = false;
+      player.hasThreeInRow = false;
+      player.hasFourInRow = false;
     });
     
     // Send new boards to all players
