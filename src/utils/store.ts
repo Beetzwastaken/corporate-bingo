@@ -384,7 +384,7 @@ export const useBingoStore = create<BingoStore>()(
               console.error('Polling error:', pollError);
               set({ connectionError: `Connection unstable: ${pollError.message}` });
             },
-            pollInterval: 3000 // Poll every 3 seconds
+            pollInterval: 3000 // Poll every 3 seconds for real-time sync
           });
           
           pollingClient.startPolling();
