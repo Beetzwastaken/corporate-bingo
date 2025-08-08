@@ -358,42 +358,45 @@ export const useBingoStore = create<BingoStore>()(
           try {
             await wsClient.connect();
             set({ wsClient });
+            console.log('✅ WebSocket connected successfully');
           } catch (error) {
             console.warn('WebSocket connection failed, falling back to HTTP polling:', error);
-            
-            // Fall back to HTTP polling for multiplayer synchronization
-            const pollingClient = createPollingClient({
-              roomCode: state.currentRoom.code,
-              playerId: state.currentPlayer.id,
-              onUpdate: (gameState) => {
-                // Handle polling updates - update room state
-                if (gameState && typeof gameState === 'object') {
-                  if ('players' in gameState && Array.isArray(gameState.players)) {
-                    get().updateRoomPlayers(gameState.players);
-                  }
-                  if ('playerCount' in gameState) {
-                    console.log('📊 Polling update - Player count:', gameState.playerCount);
-                  }
-                }
-              },
-              onError: (pollError) => {
-                console.error('Polling error:', pollError);
-                set({ connectionError: `Connection unstable: ${pollError.message}` });
-              },
-              pollInterval: 2000 // Poll every 2 seconds
-            });
-            
-            pollingClient.startPolling();
-            
-            set({ 
-              pollingClient,
-              isConnected: true, // Consider polling as "connected"
-              isConnecting: false,
-              connectionError: null
-            });
-            
-            console.log('🔄 HTTP polling active for multiplayer synchronization');
           }
+          
+          // ALWAYS start polling as backup/secondary sync method
+          // This ensures multiplayer works even if WebSocket has issues
+          const pollingClient = createPollingClient({
+            roomCode: state.currentRoom.code,
+            playerId: state.currentPlayer.id,
+            onUpdate: (gameState) => {
+              // Handle polling updates - update room state
+              if (gameState && typeof gameState === 'object') {
+                if ('players' in gameState && Array.isArray(gameState.players)) {
+                  console.log('📊 Polling update - Players:', gameState.players.map((p: BingoPlayer) => p.name));
+                  get().updateRoomPlayers(gameState.players);
+                }
+                if ('playerCount' in gameState) {
+                  console.log('📊 Polling update - Player count:', gameState.playerCount);
+                }
+              }
+            },
+            onError: (pollError) => {
+              console.error('Polling error:', pollError);
+              set({ connectionError: `Connection unstable: ${pollError.message}` });
+            },
+            pollInterval: 3000 // Poll every 3 seconds
+          });
+          
+          pollingClient.startPolling();
+          
+          set({ 
+            pollingClient,
+            isConnected: true, // Mark as connected (WebSocket OR polling)
+            isConnecting: false,
+            connectionError: null
+          });
+          
+          console.log('🔄 HTTP polling active for multiplayer synchronization');
         },
         
         disconnectWebSocket: () => {
