@@ -221,31 +221,21 @@ function App() {
 
             {/* Game Content */}
             <div className="flex-1 p-4 overflow-auto">
-              {gameState.board.length > 0 ? (
-                <div className="max-w-2xl mx-auto">
-                  <BingoCard 
-                    squares={gameState.board}
-                    onSquareClick={handleSquareClick}
-                    hasBingo={gameState.hasWon}
-                  />
-                </div>
-              ) : (
-                <div className="max-w-md mx-auto mt-20 text-center">
-                  <div className="w-24 h-24 rounded-full bg-apple-secondary/10 flex items-center justify-center mx-auto mb-6">
-                    <div className="w-12 h-12 rounded-full bg-apple-accent flex items-center justify-center">
-                      <span className="text-white text-xl font-semibold">B</span>
-                    </div>
+              <div className="max-w-2xl mx-auto">
+                {/* Solo Play Mode - Always Ready */}
+                {!currentRoom && (
+                  <div className="text-center mb-6">
+                    <h2 className="text-xl font-medium text-apple-text mb-2">Solo Play Mode</h2>
+                    <p className="text-apple-secondary text-sm">Play solo or create/join a room for multiplayer</p>
                   </div>
-                  <h2 className="text-xl font-medium text-apple-text mb-2">Ready to Play</h2>
-                  <p className="text-apple-secondary mb-8">Create or join a room to start</p>
-                  <button
-                    onClick={() => togglePanel('rooms')}
-                    className="px-6 py-3 bg-apple-accent hover:bg-apple-accent-hover text-white rounded-lg font-medium transition-colors"
-                  >
-                    Get Started
-                  </button>
-                </div>
-              )}
+                )}
+                
+                <BingoCard 
+                  squares={gameState.board}
+                  onSquareClick={handleSquareClick}
+                  hasBingo={gameState.hasWon}
+                />
+              </div>
             </div>
           </div>
         </main>

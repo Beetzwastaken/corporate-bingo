@@ -1,9 +1,45 @@
 # Corporate Bingo Project Context
 
 **Project Type**: Corporate Humor Web Application  
-**Current Status**: Production Ready - Real-time Multiplayer System  
+**Current Status**: ⚠️ CRITICAL ISSUES IDENTIFIED - Requires Immediate Fixes  
 **Last Updated**: August 7, 2025  
 **Live URL**: https://corporate-bingo-ai.netlify.app
+
+## 🚨 CRITICAL ISSUES - PRIORITY FIXES NEEDED
+
+### **1. BROKEN UX FLOW - Users Cannot Play Solo**
+**SEVERITY**: CRITICAL - Blocks core functionality
+**Issue**: Users are forced to create rooms to play, preventing immediate solo play
+**Required Fix**: Load site with playable 5x5 bingo grid ready for solo play
+**Current Problem**: Barriers to entry prevent users from playing immediately
+**Solution**: Default to solo mode, make rooms optional for multiplayer only
+
+### **2. AWFUL COLOR SCHEME**
+**SEVERITY**: HIGH - Professional appearance
+**Issue**: Current blue accent (#007aff) looks terrible and unprofessional
+**Required Fix**: Replace with subtle, muted professional accent color
+**Options**: Gray tones (#6B7280, #4B5563), muted blues (#64748B), warm grays (#78716C)
+**Constraint**: NO bright colors - keep palette sophisticated and muted
+
+### **3. RESPONSIVE DESIGN FAILURES**
+**SEVERITY**: HIGH - Cross-device functionality  
+**Issue**: Content cut off/outside window boundaries on various devices
+**Required Fix**: Comprehensive responsive testing and proper scaling
+**Problem Areas**: Mobile breakpoints, 5x5 grid scaling, sidebar behavior
+**Solution**: Ensure all content visible in viewport on all device sizes
+
+### **4. MISSING GRAPHICS/VISUAL ASSETS**
+**SEVERITY**: MEDIUM - Visual polish
+**Issue**: No graphics visible, SVGMaker MCP unavailable (paid service)
+**Required Fix**: Alternative graphics solution
+**Options**: CSS-only icons, Unicode symbols (▢ ✓ ⚙️ 👥 📊), minimal geometric shapes
+**Constraint**: Keep design minimal and professional
+
+### **5. POOR DESIGN QUALITY**
+**SEVERITY**: MEDIUM - Professional appearance
+**Issue**: Current implementation looks unprofessional
+**Required Fix**: Visual overhaul focusing on spacing, typography, polish
+**Goal**: Clean, modern, corporate-appropriate aesthetic
 
 ## System Configuration
 **Platform**: Windows  
@@ -20,15 +56,18 @@
 - **Professional Architecture**: Enterprise-grade security and performance
 - **Social Corporate Entertainment**: Viral mechanics through room sharing
 
-## Current State
-- **Version**: v1.0 Production - Fully deployed multiplayer system
-- **Architecture**: React + TypeScript frontend, Cloudflare Workers + Durable Objects backend
+## Current State  
+- **Version**: v1.2.1 - Single Page Dark Theme (WITH CRITICAL ISSUES)
+- **Architecture**: React + TypeScript single-page, Cloudflare Workers + Durable Objects backend
+- **Recent Changes**: Removed home page, integrated sidebar, dark theme implementation
 - **Key Files**:
-  - Frontend: `/src/App.tsx`, `/src/pages/BingoPage.tsx`, `/package.json`
-  - Backend: `/worker.js` (1037 lines - complete multiplayer implementation)
+  - Frontend: `/src/App.tsx` (single-page layout), `/src/components/bingo/`, `/package.json`
+  - Backend: `/worker.js` (1037 lines - complete multiplayer implementation with 460+ buzzwords)
   - Config: `/vite.config.ts`, `/tailwind.config.js`, `/tsconfig.json`
-  - Deployment: `/netlify.toml`, `/wrangler.toml`
-- **Success Metrics**: Real-time multiplayer, 414+ buzzwords, anti-cheat system, production deployed
+  - Deployment: `/netlify.toml`, `/wrangler.toml`, `.github/workflows/deploy.yml`
+- **Architecture Issues**: Users cannot play solo without creating rooms (CRITICAL UX BUG)
+- **Design Issues**: Poor visual quality, awful blue colors, responsive failures
+- **Content**: 460+ enhanced corporate buzzwords (improved from 414+)
 
 ## Technology Stack
 - **Frontend**: React 19.1.0, TypeScript, Vite 7.0.4, Tailwind CSS 4.1.11, React Router 7.7.1

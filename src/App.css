@@ -2,7 +2,7 @@
 
 /* Apple Dark Mode Color Variables */
 :root {
-  /* Apple Dark Mode Colors */
+  /* Apple Dark Mode Colors - Professional Corporate Theme */
   --apple-black: #000000;
   --apple-dark: #0a0a0a;
   --apple-darker: #1a1a1a;
@@ -13,8 +13,9 @@
   --apple-text-secondary: #f5f5f7;
   --apple-secondary: #a1a1aa;
   --apple-tertiary: #8e8e93;
-  --apple-accent: #007aff;
-  --apple-accent-hover: #0056b3;
+  --apple-accent: #7c3aed; /* Professional purple - matches corporate research */
+  --apple-accent-hover: #5b21b6; /* Darker purple for hover states */
+  --apple-accent-light: rgba(124, 58, 237, 0.1); /* Light purple for backgrounds */
   --apple-sidebar: #1c1c1e;
   --apple-hover: rgba(255, 255, 255, 0.05);
   
@@ -99,7 +100,7 @@ body {
 .apple-input:focus {
   outline: none;
   border-color: var(--apple-accent);
-  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3);
   background: var(--apple-darkest);
 }
 

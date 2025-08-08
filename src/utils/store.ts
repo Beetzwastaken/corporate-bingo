@@ -6,6 +6,7 @@ import { devtools, persist } from 'zustand/middleware';
 import { BingoWebSocketClient, createWebSocketClient, MESSAGE_TYPES } from '../lib/websocket';
 import { createBingoRoom, joinBingoRoom } from '../lib/api';
 import { APP_VERSION, needsStateMigration, logVersionInfo } from './version';
+import { BingoEngine } from '../lib/bingoEngine';
 
 // Player interface
 export interface BingoPlayer {
@@ -130,10 +131,10 @@ export const useBingoStore = create<BingoStore>()(
         // Initial room state
         currentRoom: null,
         
-        // Initial game state
+        // Initial game state - Start with solo board ready to play immediately
         gameState: {
-          board: [],
-          markedSquares: new Array(25).fill(false),
+          board: BingoEngine.generateCard(),
+          markedSquares: new Array(25).fill(false).map((_, i) => i === 12), // Center square marked
           hasWon: false,
         },
         
@@ -246,17 +247,24 @@ export const useBingoStore = create<BingoStore>()(
           })),
         
         resetGame: () => 
-          set((state) => ({
-            gameState: {
-              board: state.gameState.board.map(square => ({
-                ...square,
-                isMarked: square.isFree || false
-              })),
-              markedSquares: new Array(25).fill(false).map((_, i) => i === 12),
-              hasWon: false,
-              winningPattern: undefined
-            }
-          })),
+          set((state) => {
+            // Generate new board for solo mode, reset existing board for multiplayer
+            const newBoard = state.currentRoom 
+              ? state.gameState.board.map(square => ({
+                  ...square,
+                  isMarked: square.isFree || false
+                }))
+              : BingoEngine.generateCard(); // Fresh buzzwords for solo mode
+              
+            return {
+              gameState: {
+                board: newBoard,
+                markedSquares: new Array(25).fill(false).map((_, i) => i === 12),
+                hasWon: false,
+                winningPattern: undefined
+              }
+            };
+          }),
         
         // WebSocket Management
         connectWebSocket: async () => {
@@ -496,8 +504,8 @@ export const useBingoStore = create<BingoStore>()(
             currentRoom: null,
             currentPlayer: null,
             gameState: {
-              board: [],
-              markedSquares: new Array(25).fill(false),
+              board: BingoEngine.generateCard(),
+              markedSquares: new Array(25).fill(false).map((_, i) => i === 12),
               hasWon: false,
             },
             isConnected: false,
@@ -535,8 +543,8 @@ export const useBingoStore = create<BingoStore>()(
               playerName: '',
               currentRoom: null,
               gameState: {
-                board: [],
-                markedSquares: new Array(25).fill(false),
+                board: BingoEngine.generateCard(),
+                markedSquares: new Array(25).fill(false).map((_, i) => i === 12),
                 hasWon: false,
               },
               wsClient: null,
