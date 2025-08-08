@@ -1,0 +1,63 @@
+{
+  "url": "http://localhost:5176",
+  "timestamp": "2025-08-08T02:30:10.668Z",
+  "testResults": [],
+  "criticalIssues": [
+    {
+      "severity": "HIGH",
+      "viewport": "Desktop",
+      "issue": "Failed to test Rooms modal: SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Rooms\")' is not a valid selector.",
+      "error": "SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Rooms\")' is not a valid selector."
+    },
+    {
+      "severity": "HIGH",
+      "viewport": "Laptop",
+      "issue": "Failed to test Rooms modal: SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Rooms\")' is not a valid selector.",
+      "error": "SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Rooms\")' is not a valid selector."
+    },
+    {
+      "severity": "HIGH",
+      "viewport": "Tablet",
+      "issue": "Failed to test Rooms modal: SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Rooms\")' is not a valid selector.",
+      "error": "SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Rooms\")' is not a valid selector."
+    },
+    {
+      "severity": "HIGH",
+      "viewport": "Mobile-Large",
+      "issue": "Failed to test Rooms modal: SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Rooms\")' is not a valid selector.",
+      "error": "SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Rooms\")' is not a valid selector."
+    },
+    {
+      "severity": "HIGH",
+      "viewport": "Mobile-Small",
+      "issue": "Failed to test Rooms modal: SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Rooms\")' is not a valid selector.",
+      "error": "SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Rooms\")' is not a valid selector."
+    },
+    {
+      "severity": "CRITICAL",
+      "issue": "Network testing failed: SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Rooms\")' is not a valid selector.",
+      "error": "SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Rooms\")' is not a valid selector."
+    }
+  ],
+  "screenshots": [],
+  "viewportTests": [],
+  "interactionTests": [
+    {
+      "type": "bingo_square_click",
+      "textBefore": "Keep in Mind",
+      "styleAfter": {
+        "text": "Keep in Mind",
+        "hasMarkClass": true,
+        "color": "rgb(255, 255, 255)",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "opacity": "1",
+        "visibility": "visible",
+        "textShadow": "none",
+        "zIndex": "auto"
+      },
+      "textObscured": false,
+      "beforeScreenshot": "F:/CC/Projects/Corporate Bingo/testing/screenshots/square-before-click.png",
+      "afterScreenshot": "F:/CC/Projects/Corporate Bingo/testing/screenshots/square-after-click.png"
+    }
+  ]
+}

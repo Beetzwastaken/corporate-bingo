@@ -1,0 +1,361 @@
+{
+  "url": "http://localhost:5176",
+  "timestamp": "2025-08-08T02:33:01.681Z",
+  "testResults": [],
+  "criticalIssues": [
+    {
+      "severity": "CRITICAL",
+      "viewport": "Desktop",
+      "issue": "Rooms sidebar clipping outside viewport - extends  1px below",
+      "element": "aside",
+      "bounds": {
+        "left": 1600,
+        "right": 1920,
+        "top": 65,
+        "bottom": 1081,
+        "width": 320,
+        "height": 1016
+      },
+      "viewportBounds": {
+        "width": 1920,
+        "height": 1080
+      }
+    },
+    {
+      "severity": "CRITICAL",
+      "viewport": "Laptop",
+      "issue": "Rooms sidebar clipping outside viewport - extends  1px below",
+      "element": "aside",
+      "bounds": {
+        "left": 1046,
+        "right": 1366,
+        "top": 65,
+        "bottom": 769,
+        "width": 320,
+        "height": 704
+      },
+      "viewportBounds": {
+        "width": 1366,
+        "height": 768
+      }
+    },
+    {
+      "severity": "CRITICAL",
+      "viewport": "Tablet",
+      "issue": "Rooms sidebar clipping outside viewport - extends  1px below",
+      "element": "aside",
+      "bounds": {
+        "left": 448,
+        "right": 768,
+        "top": 65,
+        "bottom": 1025,
+        "width": 320,
+        "height": 960
+      },
+      "viewportBounds": {
+        "width": 768,
+        "height": 1024
+      }
+    },
+    {
+      "severity": "CRITICAL",
+      "viewport": "Mobile-Large",
+      "issue": "Rooms sidebar clipping outside viewport - extends  1px below",
+      "element": "aside",
+      "bounds": {
+        "left": 94,
+        "right": 414,
+        "top": 65,
+        "bottom": 897,
+        "width": 320,
+        "height": 832
+      },
+      "viewportBounds": {
+        "width": 414,
+        "height": 896
+      }
+    },
+    {
+      "severity": "CRITICAL",
+      "viewport": "Mobile-Small",
+      "issue": "Rooms sidebar clipping outside viewport - extends  1px below",
+      "element": "aside",
+      "bounds": {
+        "left": 55,
+        "right": 375,
+        "top": 65,
+        "bottom": 668,
+        "width": 320,
+        "height": 603
+      },
+      "viewportBounds": {
+        "width": 375,
+        "height": 667
+      }
+    },
+    {
+      "severity": "HIGH",
+      "issue": "Bingo square text obscured by checkmark/marking",
+      "element": ".bingo-square.marked",
+      "textBefore": "Profit Center",
+      "analysis": {
+        "text": "Profit Center",
+        "hasMarkClass": true,
+        "color": "rgb(255, 255, 255)",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "opacity": "1",
+        "visibility": "visible",
+        "textShadow": "none",
+        "zIndex": "auto",
+        "position": "relative",
+        "fontSize": "12px",
+        "fontWeight": "500",
+        "children": [
+          {
+            "tagName": "DIV",
+            "className": "absolute inset-0 flex items-center justify-center z-10",
+            "textContent": "",
+            "style": {
+              "position": "absolute",
+              "zIndex": "10",
+              "opacity": "1"
+            }
+          },
+          {
+            "tagName": "SPAN",
+            "className": "relative z-20 text-white font-semibold text-shadow-sm",
+            "textContent": "Profit Center",
+            "style": {
+              "position": "relative",
+              "zIndex": "20",
+              "opacity": "1"
+            }
+          }
+        ]
+      },
+      "reasonForObscuration": true
+    },
+    {
+      "severity": "CRITICAL",
+      "issue": "Network connectivity failure when creating rooms",
+      "errorMessages": [
+        "Failed to fetch"
+      ],
+      "networkErrors": [],
+      "consoleErrors": [
+        {
+          "text": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+          "location": {
+            "url": "http://localhost:8787/api/room/create"
+          }
+        },
+        {
+          "text": "API request failed: JSHandle@error",
+          "location": {
+            "url": "http://localhost:5176/src/lib/api.ts",
+            "lineNumber": 24,
+            "columnNumber": 12
+          }
+        }
+      ],
+      "element": "room creation flow"
+    }
+  ],
+  "screenshots": [],
+  "viewportTests": [
+    {
+      "viewport": "Desktop",
+      "success": true,
+      "viewportBounds": {
+        "width": 1920,
+        "height": 1080
+      },
+      "sidebarBounds": {
+        "left": 1600,
+        "right": 1920,
+        "top": 65,
+        "bottom": 1081,
+        "width": 320,
+        "height": 1016
+      },
+      "nameFields": [
+        {
+          "left": 1650,
+          "right": 1865,
+          "top": 190,
+          "bottom": 259.6875,
+          "width": 215,
+          "height": 69.6875,
+          "placeholder": "Your name",
+          "type": "text"
+        }
+      ],
+      "beforeScreenshot": "F:/CC/Projects/Corporate Bingo/testing/screenshots/before-rooms-desktop.png",
+      "afterScreenshot": "F:/CC/Projects/Corporate Bingo/testing/screenshots/after-rooms-desktop.png"
+    },
+    {
+      "viewport": "Laptop",
+      "success": true,
+      "viewportBounds": {
+        "width": 1366,
+        "height": 768
+      },
+      "sidebarBounds": {
+        "left": 1046,
+        "right": 1366,
+        "top": 65,
+        "bottom": 769,
+        "width": 320,
+        "height": 704
+      },
+      "nameFields": [
+        {
+          "left": 1096,
+          "right": 1311,
+          "top": 190,
+          "bottom": 259.6875,
+          "width": 215,
+          "height": 69.6875,
+          "placeholder": "Your name",
+          "type": "text"
+        }
+      ],
+      "beforeScreenshot": "F:/CC/Projects/Corporate Bingo/testing/screenshots/before-rooms-laptop.png",
+      "afterScreenshot": "F:/CC/Projects/Corporate Bingo/testing/screenshots/after-rooms-laptop.png"
+    },
+    {
+      "viewport": "Tablet",
+      "success": true,
+      "viewportBounds": {
+        "width": 768,
+        "height": 1024
+      },
+      "sidebarBounds": {
+        "left": 448,
+        "right": 768,
+        "top": 65,
+        "bottom": 1025,
+        "width": 320,
+        "height": 960
+      },
+      "nameFields": [
+        {
+          "left": 498,
+          "right": 713,
+          "top": 194,
+          "bottom": 263.6875,
+          "width": 215,
+          "height": 69.6875,
+          "placeholder": "Your name",
+          "type": "text"
+        }
+      ],
+      "beforeScreenshot": "F:/CC/Projects/Corporate Bingo/testing/screenshots/before-rooms-tablet.png",
+      "afterScreenshot": "F:/CC/Projects/Corporate Bingo/testing/screenshots/after-rooms-tablet.png"
+    },
+    {
+      "viewport": "Mobile-Large",
+      "success": true,
+      "viewportBounds": {
+        "width": 414,
+        "height": 896
+      },
+      "sidebarBounds": {
+        "left": 94,
+        "right": 414,
+        "top": 65,
+        "bottom": 897,
+        "width": 320,
+        "height": 832
+      },
+      "nameFields": [
+        {
+          "left": 144,
+          "right": 359,
+          "top": 194,
+          "bottom": 263.6875,
+          "width": 215,
+          "height": 69.6875,
+          "placeholder": "Your name",
+          "type": "text"
+        }
+      ],
+      "beforeScreenshot": "F:/CC/Projects/Corporate Bingo/testing/screenshots/before-rooms-mobile-large.png",
+      "afterScreenshot": "F:/CC/Projects/Corporate Bingo/testing/screenshots/after-rooms-mobile-large.png"
+    },
+    {
+      "viewport": "Mobile-Small",
+      "success": true,
+      "viewportBounds": {
+        "width": 375,
+        "height": 667
+      },
+      "sidebarBounds": {
+        "left": 55,
+        "right": 375,
+        "top": 65,
+        "bottom": 668,
+        "width": 320,
+        "height": 603
+      },
+      "nameFields": [
+        {
+          "left": 105,
+          "right": 320,
+          "top": 194,
+          "bottom": 263.6875,
+          "width": 215,
+          "height": 69.6875,
+          "placeholder": "Your name",
+          "type": "text"
+        }
+      ],
+      "beforeScreenshot": "F:/CC/Projects/Corporate Bingo/testing/screenshots/before-rooms-mobile-small.png",
+      "afterScreenshot": "F:/CC/Projects/Corporate Bingo/testing/screenshots/after-rooms-mobile-small.png"
+    }
+  ],
+  "interactionTests": [
+    {
+      "type": "bingo_square_click",
+      "textBefore": "Profit Center",
+      "analysis": {
+        "text": "Profit Center",
+        "hasMarkClass": true,
+        "color": "rgb(255, 255, 255)",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "opacity": "1",
+        "visibility": "visible",
+        "textShadow": "none",
+        "zIndex": "auto",
+        "position": "relative",
+        "fontSize": "12px",
+        "fontWeight": "500",
+        "children": [
+          {
+            "tagName": "DIV",
+            "className": "absolute inset-0 flex items-center justify-center z-10",
+            "textContent": "",
+            "style": {
+              "position": "absolute",
+              "zIndex": "10",
+              "opacity": "1"
+            }
+          },
+          {
+            "tagName": "SPAN",
+            "className": "relative z-20 text-white font-semibold text-shadow-sm",
+            "textContent": "Profit Center",
+            "style": {
+              "position": "relative",
+              "zIndex": "20",
+              "opacity": "1"
+            }
+          }
+        ]
+      },
+      "textObscured": true,
+      "beforeScreenshot": "F:/CC/Projects/Corporate Bingo/testing/screenshots/square-before-click.png",
+      "afterScreenshot": "F:/CC/Projects/Corporate Bingo/testing/screenshots/square-after-click.png"
+    }
+  ]
+}

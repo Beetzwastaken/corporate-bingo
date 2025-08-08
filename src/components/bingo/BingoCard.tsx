@@ -119,11 +119,11 @@ export function BingoCard({ squares, onSquareClick, hasBingo }: BingoCardProps) 
               aria-pressed={square.isMarked}
               tabIndex={index === 0 ? 0 : -1} // Only first square is focusable initially
             >
-              {/* Checkmark overlay for marked squares */}
+              {/* Checkmark overlay for marked squares - semi-transparent to show text */}
               {square.isMarked && !square.isFree && (
-                <div className="absolute inset-0 flex items-center justify-center z-10">
-                  <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <div className="absolute top-1 right-1 z-10">
+                  <div className="w-5 h-5 bg-white bg-opacity-90 rounded-full flex items-center justify-center shadow-lg">
+                    <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
@@ -141,8 +141,8 @@ export function BingoCard({ squares, onSquareClick, hasBingo }: BingoCardProps) 
                 </div>
               )}
 
-              {/* Square text */}
-              <span className={`relative z-0 ${square.isMarked && !square.isFree ? 'opacity-60' : ''}`}>
+              {/* Square text - Always visible */}
+              <span className="relative z-0 pointer-events-none">
                 {square.text}
               </span>
             </button>

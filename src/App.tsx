@@ -120,9 +120,9 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-system">
+    <div className="h-screen bg-black text-white font-system flex flex-col overflow-hidden">
       {/* Apple-style Header */}
-      <header className="bg-apple-dark border-b border-apple-border sticky top-0 z-50 backdrop-blur-xl bg-opacity-80">
+      <header className="bg-apple-dark border-b border-apple-border z-50 backdrop-blur-xl bg-opacity-80 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -216,7 +216,7 @@ function App() {
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-4rem)]">
+      <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Main Content */}
         <main className="flex-1 overflow-hidden">
           <div className="h-full flex flex-col">
@@ -251,10 +251,10 @@ function App() {
           </div>
         </main>
 
-        {/* Sidebar */}
+        {/* Sidebar - Fixed height to prevent viewport clipping */}
         {sidebarOpen && (
-          <aside className="w-80 bg-apple-sidebar border-l border-apple-border overflow-hidden">
-            <div className="h-full overflow-auto">
+          <aside className="w-80 bg-apple-sidebar border-l border-apple-border overflow-hidden h-full max-h-full">
+            <div className="h-full max-h-full overflow-auto">
               <Suspense fallback={<ComponentLoader />}>
                 {activePanel === 'rooms' && <RoomManager />}
                 {activePanel === 'stats' && <BingoStats stats={gameStats} />}
