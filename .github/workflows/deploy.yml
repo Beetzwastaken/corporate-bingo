@@ -35,6 +35,9 @@ jobs:
         run: npx tsc --noEmit
         
       - name: Build application
+        env:
+          VITE_API_URL: https://corporatebingo.ryanwixon15.workers.dev
+          VITE_WS_URL: wss://corporatebingo.ryanwixon15.workers.dev
         run: npm run build
         
       - name: Upload build artifacts
@@ -62,6 +65,9 @@ jobs:
           cache: 'npm'
           
       - name: Install dependencies and build
+        env:
+          VITE_API_URL: https://corporatebingo.ryanwixon15.workers.dev
+          VITE_WS_URL: wss://corporatebingo.ryanwixon15.workers.dev
         run: |
           npm ci
           npm run build
