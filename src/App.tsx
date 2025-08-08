@@ -5,6 +5,7 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { BingoCard } from './components/bingo/BingoCard';
 import { useBingoStore } from './utils/store';
 import { APP_VERSION } from './utils/version';
+import { BingoEngine } from './lib/bingoEngine';
 import './App.css';
 
 // Lazy load non-critical components
@@ -41,49 +42,21 @@ function App() {
     emergencyReset
   } = useBingoStore();
 
-  // Check for bingo winning condition
-  const checkBingo = (markedSquares: boolean[]): { hasBingo: boolean; pattern?: number[] } => {
-    // Check rows
-    for (let row = 0; row < 5; row++) {
-      const start = row * 5;
-      const rowSquares = [start, start + 1, start + 2, start + 3, start + 4];
-      if (rowSquares.every(i => markedSquares[i])) {
-        return { hasBingo: true, pattern: rowSquares };
-      }
-    }
-    
-    // Check columns
-    for (let col = 0; col < 5; col++) {
-      const colSquares = [col, col + 5, col + 10, col + 15, col + 20];
-      if (colSquares.every(i => markedSquares[i])) {
-        return { hasBingo: true, pattern: colSquares };
-      }
-    }
-    
-    // Check diagonals
-    const diagonal1 = [0, 6, 12, 18, 24];
-    const diagonal2 = [4, 8, 12, 16, 20];
-    
-    if (diagonal1.every(i => markedSquares[i])) {
-      return { hasBingo: true, pattern: diagonal1 };
-    }
-    
-    if (diagonal2.every(i => markedSquares[i])) {
-      return { hasBingo: true, pattern: diagonal2 };
-    }
-    
-    return { hasBingo: false };
-  };
-
-  // Watch for bingo condition
+  // Watch for bingo condition using BingoEngine
   useEffect(() => {
-    const { hasBingo, pattern } = checkBingo(gameState.markedSquares);
-    if (hasBingo && !gameState.hasWon) {
-      setGameWon(true, pattern);
-    } else if (!hasBingo && gameState.hasWon) {
+    // Convert marked squares array to board format for BingoEngine
+    const boardSquares = gameState.board.map((square, index) => ({
+      ...square,
+      isMarked: gameState.markedSquares[index] || false
+    }));
+    
+    const result = BingoEngine.checkBingo(boardSquares);
+    if (result.hasWon && !gameState.hasWon) {
+      setGameWon(true, result.winningCells);
+    } else if (!result.hasWon && gameState.hasWon) {
       setGameWon(false);
     }
-  }, [gameState.markedSquares, gameState.hasWon, setGameWon]);
+  }, [gameState.markedSquares, gameState.hasWon, gameState.board, setGameWon]);
 
   const handleSquareClick = (squareId: string) => {
     const squareIndex = parseInt(squareId.split('-')[1]);
