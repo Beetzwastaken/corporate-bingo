@@ -86,21 +86,21 @@ export const useRoomStore = create<RoomStore>()(
               };
             }
             
-            const room: BingoRoom = {
-              id: response.data.playerId,
-              name: roomName,
-              code: response.data.roomCode,
-              players: [],
-              isActive: true,
-              createdAt: new Date()
-            };
-            
             const player: BingoPlayer = {
               id: response.data.playerId,
               name: playerName,
               isHost: response.data.isHost,
               isConnected: true,
               joinedAt: Date.now()
+            };
+            
+            const room: BingoRoom = {
+              id: response.data.playerId,
+              name: roomName,
+              code: response.data.roomCode,
+              players: [player], // Initialize with the creating player
+              isActive: true,
+              createdAt: new Date()
             };
             
             set({
@@ -130,20 +130,20 @@ export const useRoomStore = create<RoomStore>()(
               };
             }
             
-            const room: BingoRoom = {
-              id: roomCode,
-              name: response.data.roomName,
-              code: roomCode,
-              players: [],
-              isActive: true
-            };
-            
             const player: BingoPlayer = {
               id: response.data.playerId,
               name: playerName,
               isHost: false,
               isConnected: true,
               joinedAt: Date.now()
+            };
+            
+            const room: BingoRoom = {
+              id: roomCode,
+              name: response.data.roomName,
+              code: roomCode,
+              players: [player], // Initialize with the joining player 
+              isActive: true
             };
             
             set({

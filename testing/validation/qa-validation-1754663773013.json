@@ -1,0 +1,42 @@
+{
+  "regression": {
+    "gridPresent": true,
+    "squareCount": 25,
+    "soloMode": true,
+    "clickable": false
+  },
+  "performance": {
+    "loadTime": null,
+    "domContentLoaded": null,
+    "consoleErrors": 0,
+    "bundleSize": 201.6
+  },
+  "accessibility": {
+    "ariaAttributes": 26,
+    "focusableElements": 29,
+    "keyboardNavigation": true
+  },
+  "mobileUX": {
+    "fitsScreen": true,
+    "touchTargetsOK": true,
+    "touchTargetCount": "25/25"
+  },
+  "summary": {
+    "overallStatus": "GOOD",
+    "goNoGoDecision": "GO",
+    "passPercentage": 89,
+    "passingChecks": 8,
+    "totalChecks": 9,
+    "criticalChecks": {
+      "gridWorks": true,
+      "soloPlayEnabled": true,
+      "interactionWorks": false,
+      "performanceGood": true,
+      "noErrors": true,
+      "accessibilityBasic": true,
+      "keyboardWorks": true,
+      "mobileResponsive": true,
+      "touchTargetsOK": true
+    }
+  }
+}

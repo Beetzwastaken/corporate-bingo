@@ -231,7 +231,10 @@ function App() {
                 )}
                 
                 <BingoCard 
-                  squares={gameState.board}
+                  squares={gameState.board.map((square, index) => ({
+                    ...square,
+                    isMarked: gameState.markedSquares[index] || false
+                  }))}
                   onSquareClick={handleSquareClick}
                   hasBingo={gameState.hasWon}
                 />

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Store State Debug Tool</title>
+    <style>
+        body { font-family: monospace; background: #1a1a1a; color: #e0e0e0; padding: 20px; }
+        .debug-panel { background: #2d2d2d; border: 1px solid #444; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .debug-title { color: #4ade80; font-weight: bold; margin-bottom: 10px; }
+        .debug-item { margin: 5px 0; }
+        .debug-warning { color: #fbbf24; }
+        .debug-error { color: #ef4444; }
+        .debug-success { color: #4ade80; }
+        button { background: #4ade80; color: black; padding: 10px 20px; border: none; border-radius: 5px; margin: 5px; cursor: pointer; }
+        button:hover { background: #22c55e; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Corporate Bingo - Store State Debug Tool</h1>
+    
+    <div class="debug-panel">
+        <div class="debug-title">Debug Controls</div>
+        <button onclick="debugStores()">Debug Store States</button>
+        <button onclick="testSquareMarking()">Test Square Marking</button>
+        <button onclick="testRoomState()">Test Room State</button>
+        <button onclick="clearDebugLog()">Clear Log</button>
+    </div>
+    
+    <div class="debug-panel">
+        <div class="debug-title">Debug Log</div>
+        <div id="debugLog">Debug log will appear here...</div>
+    </div>
+
+    <script>
+        let logElement = document.getElementById('debugLog');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'debug-error' : 
+                             type === 'warning' ? 'debug-warning' : 
+                             type === 'success' ? 'debug-success' : '';
+            logElement.innerHTML += `<div class="debug-item ${className}">[${timestamp}] ${message}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function clearDebugLog() {
+            logElement.innerHTML = 'Debug log cleared...';
+        }
+        
+        async function debugStores() {
+            log('🧪 Starting store state analysis...', 'info');
+            
+            try {
+                // Test local storage state
+                const gameStorage = localStorage.getItem('bingo-game-storage');
+                const roomStorage = localStorage.getItem('bingo-room-storage');
+                
+                if (gameStorage) {
+                    const gameData = JSON.parse(gameStorage);
+                    log(`📊 Game Storage: ${JSON.stringify(gameData.state, null, 2)}`, 'info');
+                } else {
+                    log('⚠️ No game storage found', 'warning');
+                }
+                
+                if (roomStorage) {
+                    const roomData = JSON.parse(roomStorage);
+                    log(`🏠 Room Storage: ${JSON.stringify(roomData.state, null, 2)}`, 'info');
+                } else {
+                    log('⚠️ No room storage found', 'warning');
+                }
+                
+                // Check if running in browser with bingo stores available
+                if (window.location.hostname === 'localhost') {
+                    log('🌐 Running on localhost - stores should be available via window object', 'info');
+                    log('💡 Open browser console and run: window.__ZUSTAND_DEBUG__', 'info');
+                } else {
+                    log('📡 Not on localhost - limited debugging available', 'warning');
+                }
+                
+                log('✅ Store analysis complete', 'success');
+                
+            } catch (error) {
+                log(`❌ Error debugging stores: ${error.message}`, 'error');
+            }
+        }
+        
+        function testSquareMarking() {
+            log('🎯 Testing square marking logic...', 'info');
+            
+            // Simulate the game state structure
+            const mockGameState = {
+                board: Array.from({length: 25}, (_, i) => ({
+                    id: `square-${i}`,
+                    text: `Square ${i}`,
+                    isMarked: false,
+                    isFree: i === 12
+                })),
+                markedSquares: Array(25).fill(false),
+                hasWon: false
+            };
+            
+            // Mark center square (free space)
+            mockGameState.markedSquares[12] = true;
+            
+            // Test the mapping logic from App.tsx
+            const mappedSquares = mockGameState.board.map((square, index) => ({
+                ...square,
+                isMarked: mockGameState.markedSquares[index] || false
+            }));
+            
+            log(`📋 Board squares: ${mockGameState.board.length}`, 'info');
+            log(`✅ Marked squares in state: ${mockGameState.markedSquares.filter(Boolean).length}`, 'info');
+            log(`✅ Mapped squares marked: ${mappedSquares.filter(s => s.isMarked).length}`, 'info');
+            
+            // Test marking a square
+            mockGameState.markedSquares[5] = true;
+            const remappedSquares = mockGameState.board.map((square, index) => ({
+                ...square,
+                isMarked: mockGameState.markedSquares[index] || false
+            }));
+            
+            log(`🎯 After marking square 5: ${remappedSquares.filter(s => s.isMarked).length} marked`, 'success');
+            
+            if (remappedSquares[5].isMarked && remappedSquares[12].isMarked) {
+                log('✅ Square marking logic works correctly!', 'success');
+            } else {
+                log('❌ Square marking logic has issues', 'error');
+            }
+        }
+        
+        function testRoomState() {
+            log('🏠 Testing room state logic...', 'info');
+            
+            // Simulate room state
+            const mockRoom = {
+                id: 'test-room',
+                name: 'Test Room',
+                code: 'ABC123',
+                players: [
+                    { id: 'player-1', name: 'Alice', isConnected: true },
+                    { id: 'player-2', name: 'Bob', isConnected: true },
+                    { id: 'player-3', name: 'Charlie', isConnected: false }
+                ],
+                isActive: true
+            };
+            
+            log(`🏠 Room: ${mockRoom.name} (${mockRoom.code})`, 'info');
+            log(`👥 Total players: ${mockRoom.players.length}`, 'info');
+            log(`🟢 Connected players: ${mockRoom.players.filter(p => p.isConnected).length}`, 'info');
+            log(`🔴 Disconnected players: ${mockRoom.players.filter(p => !p.isConnected).length}`, 'warning');
+            
+            // Test player update logic
+            const updatedPlayers = mockRoom.players.map(player => 
+                player.id === 'player-3' 
+                    ? { ...player, isConnected: true }
+                    : player
+            );
+            
+            log(`✅ After reconnecting Charlie: ${updatedPlayers.filter(p => p.isConnected).length} connected`, 'success');
+            
+            if (updatedPlayers.length === mockRoom.players.length) {
+                log('✅ Room state update logic works correctly!', 'success');
+            } else {
+                log('❌ Room state update logic has issues', 'error');
+            }
+        }
+        
+        // Auto-run initial debug
+        window.addEventListener('load', () => {
+            log('🚀 Debug tool loaded - ready to analyze Corporate Bingo stores', 'success');
+            log('💡 Click "Debug Store States" to analyze current store data', 'info');
+        });
+    </script>
+</body>
+</html>

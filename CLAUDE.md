@@ -69,14 +69,15 @@
 - **Social Corporate Entertainment**: Viral mechanics through room sharing
 
 ## Current State  
-- **Version**: v1.3.0 - Production Ready with Full Functionality ✅
+- **Version**: v1.3.1 - ⚠️ REFACTORING ISSUES - NEEDS ATTENTION
 - **Architecture**: React 19 + TypeScript, Cloudflare Workers + Durable Objects, Hybrid connectivity
-- **Recent Achievements**: 
-  - ✅ Solo play implemented (instant startup)
-  - ✅ Mobile UX perfected (sliding sidebar with touch controls)
-  - ✅ Multiplayer reliability (WebSocket + HTTP polling backup)
-  - ✅ Apple-inspired professional design
-  - ✅ TypeScript strict compliance and deployment stability
+- **Recent Changes**: 
+  - ✅ Store refactored into 4 focused modules (architecture improved)
+  - ✅ 32 lines removed from App.tsx (code simplified)  
+  - ❌ Cell highlighting broken (squares don't highlight when clicked)
+  - ❌ Room player counts incorrect (multiplayer state sync issues)
+  - ❌ Runtime functionality compromised despite successful build
+- **Status**: Backup available at `Corporate-Bingo-Backup-20250807-225205` for rollback
 - **Key Files**:
   - Frontend: `/src/App.tsx` (single-page with sidebar), `/src/components/bingo/`, `/src/utils/store.ts` (Zustand)
   - Backend: `/worker.js` (1037 lines - complete multiplayer + 460+ buzzwords)
@@ -165,40 +166,65 @@ All development is driven by specialized autonomous agents that collaborate usin
 ### **Maximum MCP Utilization Strategy**
 All agents are configured to leverage available MCP servers for enhanced capabilities:
 
-#### **SVGMaker MCP Integration**
+#### **IDE MCP Integration** ⭐ **NEW**
 ```yaml
-Primary Users: Frontend Dev Agent, Content Manager Agent
+Primary Users: Frontend Dev Agent, Backend Dev Agent, QA Engineer Agent
+Applications:
+  - Real-time TypeScript diagnostics and error analysis
+  - Live code execution for testing React component behavior
+  - Interactive debugging of Zustand store state management
+  - WebSocket connection testing and validation
+  - Component behavior validation through code execution
+  - Live testing of state synchronization issues
+Tools: mcp__ide__getDiagnostics, mcp__ide__executeCode
+```
+
+#### **OpenCV MCP Integration** ⭐ **ENHANCED**
+```yaml
+Primary Users: QA Engineer Agent, Frontend Dev Agent, Content Manager Agent
+Applications:
+  - Automated UI testing and visual regression detection
+  - Before/after screenshot comparison for refactoring validation
+  - Multi-viewport responsive design testing
+  - Square highlighting functionality verification
+  - Visual validation of game state changes
+  - Cross-device compatibility analysis
+  - Automated detection of clickable UI elements
+  - Color consistency analysis for design validation
+Tools: mcp__opencv__get_image_stats_tool, mcp__opencv__resize_image_tool, mcp__opencv__crop_image_tool, 
+      mcp__opencv__detect_contours_tool, mcp__opencv__apply_filter_tool, mcp__opencv__detect_faces_tool
+```
+
+#### **Excel VBA MCP Integration** ⭐ **ENHANCED**
+```yaml
+Primary Users: All agents for analytics, reporting, and project management
+Applications:
+  - Real-time agent task coordination dashboard
+  - Performance metrics (response times, state updates, concurrent users)
+  - Test results compilation with success/failure rates
+  - Quality gate enforcement with visual charts
+  - Bug tracking with resolution timeline analysis
+  - Agent productivity and coordination metrics
+  - Project progress tracking with automated metrics
+  - Comprehensive quality assurance reporting
+Tools: mcp__excel__create_workbook, mcp__excel__write_excel_data, mcp__excel__read_excel_data,
+      mcp__excel__format_cells, mcp__excel__create_worksheet, mcp__excel__bulk_data_operations,
+      mcp__excel__conditional_formatting, mcp__excel__chart_operations
+```
+
+#### **SVGMaker MCP Integration** ⭐ **ENHANCED**
+```yaml
+Primary Users: Frontend Dev Agent, Content Manager Agent, Project Manager Agent
 Applications:
   - Dynamic meme template generation and customization
   - Corporate humor graphics and visual content creation  
   - Professional UI icons and visual elements
-  - Real-time SVG-based meme canvas operations
+  - Diagnostic flowcharts for debugging processes
+  - Visual documentation of store architecture changes
+  - Before/after UI comparison graphics generation
+  - Professional project status visualizations
   - Engineering-themed graphics and illustrations
-Tools: mcp__svgmaker__svgmaker_generate, mcp__svgmaker__svgmaker_edit
-```
-
-#### **Excel VBA MCP Integration**
-```yaml
-Primary Users: All agents for analytics and reporting
-Applications:
-  - User engagement analytics and behavior tracking
-  - Performance metrics (response times, concurrent users)
-  - Content effectiveness analysis (buzzword popularity)
-  - Test results compilation and quality reporting
-  - Project management dashboards and progress tracking
-Tools: mcp__excel__create_workbook, mcp__excel__write_excel_data, mcp__excel__read_excel_data
-```
-
-#### **OpenCV MCP Integration**
-```yaml
-Primary Users: QA Engineer Agent, Content Manager Agent
-Applications:
-  - Automated UI testing and visual regression detection
-  - Meme image quality validation and optimization
-  - Screenshot-based testing for responsive design
-  - Visual accessibility testing and compliance
-  - Image processing for enhanced meme generation
-Tools: mcp__opencv__get_image_stats_tool, mcp__opencv__detect_faces_tool, mcp__opencv__apply_filter_tool
+Tools: mcp__svgmaker__svgmaker_generate, mcp__svgmaker__svgmaker_edit, mcp__svgmaker__svgmaker_convert
 ```
 
 ## Agent Collaboration Protocols

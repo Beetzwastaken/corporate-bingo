@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connection Test Tool</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #1a1a1a; 
+            color: #e0e0e0; 
+            padding: 20px; 
+            line-height: 1.6;
+        }
+        .panel { 
+            background: #2d2d2d; 
+            border: 1px solid #444; 
+            padding: 20px; 
+            margin: 15px 0; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .panel-title { 
+            color: #4ade80; 
+            font-weight: bold; 
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .panel-title::before { 
+            content: '🔧'; 
+            margin-right: 8px; 
+        }
+        .test-item { 
+            margin: 8px 0; 
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        .success { color: #4ade80; }
+        .warning { color: #fbbf24; }
+        .error { color: #ef4444; }
+        .info { color: #60a5fa; }
+        button { 
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: white; 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 8px; 
+            margin: 8px; 
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        button:hover { 
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            transform: translateY(-1px);
+        }
+        button:disabled {
+            background: #374151;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .log {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            padding: 15px;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 8px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-online { background: #10b981; }
+        .status-offline { background: #ef4444; }
+        .status-testing { background: #f59e0b; animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Corporate Bingo Connection Test Suite</h1>
+    
+    <div class="panel">
+        <div class="panel-title">Connection Status</div>
+        <div class="test-item">
+            <span class="status-indicator status-offline" id="wsStatus"></span>
+            <strong>WebSocket:</strong> <span id="wsStatusText">Not tested</span>
+        </div>
+        <div class="test-item">
+            <span class="status-indicator status-offline" id="pollingStatus"></span>
+            <strong>HTTP Polling:</strong> <span id="pollingStatusText">Not tested</span>
+        </div>
+        <div class="test-item">
+            <span class="status-indicator status-offline" id="apiStatus"></span>
+            <strong>API Backend:</strong> <span id="apiStatusText">Not tested</span>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title">Test Controls</div>
+        <button onclick="testWebSocket()">Test WebSocket</button>
+        <button onclick="testPolling()">Test HTTP Polling</button>
+        <button onclick="testAPI()">Test API Backend</button>
+        <button onclick="runFullTest()">Run Full Test Suite</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+    
+    <div class="panel">
+        <div class="panel-title">Test Results</div>
+        <div id="testLog" class="log">Connection test log will appear here...</div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title">Configuration Info</div>
+        <div class="test-item">
+            <strong>Environment:</strong> <span id="envInfo">Loading...</span>
+        </div>
+        <div class="test-item">
+            <strong>API Base URL:</strong> <span id="apiBaseUrl">Loading...</span>
+        </div>
+        <div class="test-item">
+            <strong>WebSocket URL:</strong> <span id="wsBaseUrl">Loading...</span>
+        </div>
+        <div class="test-item">
+            <strong>Current Host:</strong> <span id="currentHost">Loading...</span>
+        </div>
+    </div>
+
+    <script>
+        let logElement = document.getElementById('testLog');
+        let testResults = {
+            websocket: false,
+            polling: false,
+            api: false
+        };
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : 
+                             type === 'warning' ? 'warning' : 
+                             type === 'success' ? 'success' : 'info';
+            logElement.innerHTML += `<div class="test-item ${className}">[${timestamp}] ${message}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function clearLog() {
+            logElement.innerHTML = 'Connection test log cleared...';
+        }
+        
+        function updateStatus(component, isOnline, text) {
+            const statusEl = document.getElementById(component + 'Status');
+            const textEl = document.getElementById(component + 'StatusText');
+            
+            statusEl.className = `status-indicator ${isOnline ? 'status-online' : 'status-offline'}`;
+            textEl.textContent = text;
+        }
+        
+        function setTesting(component) {
+            const statusEl = document.getElementById(component + 'Status');
+            statusEl.className = 'status-indicator status-testing';
+        }
+        
+        // Configuration detection (simulated)
+        function loadConfigInfo() {
+            const isDev = window.location.hostname === 'localhost';
+            const currentHost = window.location.hostname;
+            
+            document.getElementById('envInfo').textContent = isDev ? 'Development' : 'Production';
+            document.getElementById('currentHost').textContent = currentHost;
+            
+            if (isDev) {
+                document.getElementById('apiBaseUrl').textContent = 'http://localhost:8787';
+                document.getElementById('wsBaseUrl').textContent = 'ws://localhost:8787';
+            } else {
+                document.getElementById('apiBaseUrl').textContent = 'Relative URLs (proxied)';
+                document.getElementById('wsBaseUrl').textContent = 'wss://corporatebingo.ryanwixon15.workers.dev';
+            }
+        }
+        
+        async function testAPI() {
+            log('🔍 Testing API backend connectivity...', 'info');
+            setTesting('api');
+            
+            try {
+                // Test local first
+                const localUrl = 'http://localhost:8787/api/health';
+                try {
+                    const response = await fetch(localUrl, { 
+                        method: 'GET',
+                        signal: AbortSignal.timeout(5000) // 5 second timeout
+                    });
+                    
+                    if (response.ok) {
+                        testResults.api = true;
+                        updateStatus('api', true, 'Local backend online');
+                        log('✅ Local API backend is responding', 'success');
+                        return;
+                    }
+                } catch (localError) {
+                    log(`⚠️ Local backend not available: ${localError.message}`, 'warning');
+                }
+                
+                // Test production fallback
+                const prodUrl = 'https://corporatebingo.ryanwixon15.workers.dev/api/health';
+                try {
+                    const response = await fetch(prodUrl, {
+                        method: 'GET',
+                        signal: AbortSignal.timeout(10000) // 10 second timeout for prod
+                    });
+                    
+                    if (response.ok) {
+                        testResults.api = true;
+                        updateStatus('api', true, 'Production backend online');
+                        log('✅ Production API backend is responding', 'success');
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                } catch (prodError) {
+                    testResults.api = false;
+                    updateStatus('api', false, 'Backend offline');
+                    log(`❌ Production backend failed: ${prodError.message}`, 'error');
+                }
+                
+            } catch (error) {
+                testResults.api = false;
+                updateStatus('api', false, 'Test failed');
+                log(`❌ API test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testWebSocket() {
+            log('🔌 Testing WebSocket connectivity...', 'info');
+            setTesting('ws');
+            
+            return new Promise((resolve) => {
+                try {
+                    const wsUrl = window.location.hostname === 'localhost' 
+                        ? 'ws://localhost:8787/api/room/TEST123/ws?playerId=test-player'
+                        : 'wss://corporatebingo.ryanwixon15.workers.dev/api/room/TEST123/ws?playerId=test-player';
+                    
+                    log(`🌐 Attempting WebSocket connection to: ${wsUrl}`, 'info');
+                    
+                    const ws = new WebSocket(wsUrl);
+                    const timeout = setTimeout(() => {
+                        ws.close();
+                        testResults.websocket = false;
+                        updateStatus('ws', false, 'Connection timeout');
+                        log('⏰ WebSocket connection timed out', 'error');
+                        resolve(false);
+                    }, 10000);
+                    
+                    ws.onopen = () => {
+                        clearTimeout(timeout);
+                        testResults.websocket = true;
+                        updateStatus('ws', true, 'Connected');
+                        log('✅ WebSocket connection established', 'success');
+                        
+                        // Send test message
+                        ws.send(JSON.stringify({
+                            type: 'PING',
+                            payload: {},
+                            timestamp: Date.now()
+                        }));
+                        
+                        setTimeout(() => {
+                            ws.close();
+                            resolve(true);
+                        }, 2000);
+                    };
+                    
+                    ws.onerror = (error) => {
+                        clearTimeout(timeout);
+                        testResults.websocket = false;
+                        updateStatus('ws', false, 'Connection failed');
+                        log(`❌ WebSocket error: ${error}`, 'error');
+                        resolve(false);
+                    };
+                    
+                    ws.onmessage = (event) => {
+                        log(`📩 WebSocket message: ${event.data}`, 'info');
+                    };
+                    
+                    ws.onclose = (event) => {
+                        if (event.code !== 1000) {
+                            log(`🚫 WebSocket closed: ${event.code} - ${event.reason}`, 'warning');
+                        }
+                    };
+                    
+                } catch (error) {
+                    testResults.websocket = false;
+                    updateStatus('ws', false, 'Test failed');
+                    log(`❌ WebSocket test failed: ${error.message}`, 'error');
+                    resolve(false);
+                }
+            });
+        }
+        
+        async function testPolling() {
+            log('🔄 Testing HTTP polling...', 'info');
+            setTesting('polling');
+            
+            try {
+                const baseUrl = window.location.hostname === 'localhost' 
+                    ? 'http://localhost:8787' 
+                    : '';
+                    
+                const pollUrl = baseUrl + '/api/room/TEST123/players';
+                log(`🌐 Polling endpoint: ${pollUrl}`, 'info');
+                
+                const response = await fetch(pollUrl, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Player-ID': 'test-player'
+                    },
+                    signal: AbortSignal.timeout(10000)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    testResults.polling = true;
+                    updateStatus('polling', true, 'Working');
+                    log(`✅ Polling successful: ${JSON.stringify(data)}`, 'success');
+                } else if (response.status === 404) {
+                    testResults.polling = true;
+                    updateStatus('polling', true, 'Endpoint found (404 expected)');
+                    log('✅ Polling endpoint reachable (404 for test room expected)', 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+            } catch (error) {
+                testResults.polling = false;
+                updateStatus('polling', false, 'Failed');
+                log(`❌ Polling test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function runFullTest() {
+            log('🚀 Running full connection test suite...', 'info');
+            log('=' .repeat(50), 'info');
+            
+            await testAPI();
+            await testWebSocket();
+            await testPolling();
+            
+            log('=' .repeat(50), 'info');
+            log('📊 Test Summary:', 'info');
+            log(`API Backend: ${testResults.api ? '✅ Pass' : '❌ Fail'}`, testResults.api ? 'success' : 'error');
+            log(`WebSocket: ${testResults.websocket ? '✅ Pass' : '❌ Fail'}`, testResults.websocket ? 'success' : 'error');
+            log(`HTTP Polling: ${testResults.polling ? '✅ Pass' : '❌ Fail'}`, testResults.polling ? 'success' : 'error');
+            
+            const passedTests = Object.values(testResults).filter(Boolean).length;
+            const totalTests = Object.keys(testResults).length;
+            
+            if (passedTests === totalTests) {
+                log('🎉 All connection tests passed!', 'success');
+            } else if (passedTests > 0) {
+                log(`⚠️ ${passedTests}/${totalTests} tests passed - partial connectivity`, 'warning');
+            } else {
+                log('❌ All connection tests failed - no backend connectivity', 'error');
+            }
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            loadConfigInfo();
+            log('🔧 Connection test tool loaded', 'success');
+            log('💡 Click "Run Full Test Suite" to test all connections', 'info');
+        });
+    </script>
+</body>
+</html>

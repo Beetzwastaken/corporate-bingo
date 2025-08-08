@@ -186,19 +186,40 @@ export const useConnectionStore = create<ConnectionStore>()(
           case MESSAGE_TYPES.PLAYER_JOINED:
           case MESSAGE_TYPES.PLAYER_LEFT:
           case MESSAGE_TYPES.ROOM_UPDATE:
-            if (message.players) {
+            if (message.players && Array.isArray(message.players)) {
+              console.log(`🏠 Room update received: ${message.players.length} players`);
               roomStore.updateRoomPlayers(message.players);
+            } else if (message.type === MESSAGE_TYPES.PLAYER_JOINED && message.player) {
+              // Handle single player join
+              const currentRoom = roomStore.currentRoom;
+              if (currentRoom) {
+                const updatedPlayers = [...currentRoom.players];
+                // Only add if not already in list
+                if (message.player && !updatedPlayers.find(p => p.id === message.player?.id)) {
+                  updatedPlayers.push(message.player);
+                  roomStore.updateRoomPlayers(updatedPlayers);
+                  console.log(`👋 Player joined: ${message.player?.name || 'Unknown'} (${updatedPlayers.length} total)`);
+                }
+              }
+            } else if (message.type === MESSAGE_TYPES.PLAYER_LEFT && message.playerId) {
+              // Handle single player leave
+              const currentRoom = roomStore.currentRoom;
+              if (currentRoom) {
+                const updatedPlayers = currentRoom.players.filter(p => p.id !== message.playerId);
+                roomStore.updateRoomPlayers(updatedPlayers);
+                console.log(`👋 Player left: ${message.playerId} (${updatedPlayers.length} remaining)`);
+              }
             }
             break;
             
           case MESSAGE_TYPES.SQUARE_MARKED:
-            if (message.squareIndex !== undefined) {
+            if (typeof message.squareIndex === 'number') {
               gameStore.markSquare(message.squareIndex);
             }
             break;
             
           case MESSAGE_TYPES.GAME_WON:
-            if (message.pattern) {
+            if (Array.isArray(message.pattern)) {
               gameStore.setGameWon(true, message.pattern);
             }
             break;
@@ -207,17 +228,22 @@ export const useConnectionStore = create<ConnectionStore>()(
             gameStore.resetGame();
             break;
             
-          case 'gameState':
+          case 'gameState': {
             // Handle polling game state updates
             const update = message as GameStateUpdate;
             if (update.players) {
+              console.log(`🔄 Polling update: ${update.players.length} players`);
               roomStore.updateRoomPlayers(update.players);
+            }
+            if (update.playerCount !== undefined) {
+              console.log(`🔢 Polling update: player count ${update.playerCount}`);
             }
             // Note: markedSquares sync would be handled here if needed
             break;
+          }
             
           case MESSAGE_TYPES.ERROR:
-            set({ connectionError: message.error || 'Connection error occurred' });
+            set({ connectionError: (typeof message.error === 'string' ? message.error : 'Connection error occurred') });
             break;
         }
       },

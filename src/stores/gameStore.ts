@@ -56,9 +56,15 @@ export const useGameStore = create<GameStore>()(
           const markedSquares = Array(25).fill(false);
           markedSquares[12] = true; // Free space
           
+          // Ensure board squares have correct isMarked properties
+          const boardWithMarkedState = newBoard.map((square, index) => ({
+            ...square,
+            isMarked: markedSquares[index] || false
+          }));
+          
           set({
             gameState: {
-              board: newBoard,
+              board: boardWithMarkedState,
               markedSquares,
               hasWon: false,
               winningPattern: undefined
@@ -72,9 +78,16 @@ export const useGameStore = create<GameStore>()(
           const newMarkedSquares = [...state.gameState.markedSquares];
           newMarkedSquares[index] = !newMarkedSquares[index];
           
+          // Also update the board's isMarked properties to keep both sources in sync
+          const newBoard = state.gameState.board.map((square, i) => ({
+            ...square,
+            isMarked: newMarkedSquares[i] || false
+          }));
+          
           set({
             gameState: {
               ...state.gameState,
+              board: newBoard,
               markedSquares: newMarkedSquares
             }
           });

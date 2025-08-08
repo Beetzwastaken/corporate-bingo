@@ -7,7 +7,7 @@ const puppeteer = require('puppeteer');
 const fs = require('fs').promises;
 const path = require('path');
 
-const BASE_URL = 'http://localhost:5179';
+const BASE_URL = 'https://corporate-bingo-ai.netlify.app';
 const SCREENSHOTS_DIR = 'F:/CC/Projects/Corporate Bingo/testing/screenshots';
 
 async function runValidation() {
@@ -61,7 +61,7 @@ async function runValidation() {
         if (squares.length > 5) {
             const testSquare = squares[5]; // Skip center square
             await testSquare.click();
-            await page.waitForTimeout(500);
+            await new Promise(resolve => setTimeout(resolve, 500));
             const isMarked = await testSquare.evaluate(el => el.classList.contains('marked'));
             results.regression.clickable = isMarked;
             console.log(`✓ Square interaction: ${results.regression.clickable}`);
@@ -99,7 +99,7 @@ async function runValidation() {
         // Test keyboard navigation
         await page.focus('.bingo-grid button:first-child');
         await page.keyboard.press('ArrowRight');
-        await page.waitForTimeout(200);
+        await new Promise(resolve => setTimeout(resolve, 200));
         
         const keyboardWorking = await page.evaluate(() => {
             return document.activeElement && document.activeElement.getAttribute('data-square-index') === '1';
@@ -120,7 +120,7 @@ async function runValidation() {
         // Test mobile viewport
         await page.setViewport({ width: 375, height: 667 });
         await page.goto(BASE_URL, { waitUntil: 'networkidle0' });
-        await page.waitForTimeout(1000);
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         const mobileLayout = await page.evaluate(() => {
             const body = document.body;
