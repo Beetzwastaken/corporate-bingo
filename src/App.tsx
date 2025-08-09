@@ -6,6 +6,7 @@ import { BingoCard } from './components/bingo/BingoCard';
 import { useBingoStore } from './utils/store';
 import { APP_VERSION } from './utils/version';
 import { BingoEngine } from './lib/bingoEngine';
+import { ToastContainer } from './components/shared/ToastNotification';
 import './App.css';
 
 // Lazy load non-critical components
@@ -27,6 +28,7 @@ function App() {
   
   const {
     currentRoom,
+    currentPlayer,
     gameState,
     gamesPlayed,
     wins,
@@ -147,6 +149,13 @@ function App() {
                     <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`}></div>
                     <span>{isConnected ? 'Connected' : 'Offline'}</span>
                   </div>
+                  {/* Current Player Score */}
+                  {currentPlayer && (
+                    <div className="flex items-center space-x-2 px-3 py-1 bg-apple-darkest rounded-md">
+                      <span className="text-apple-secondary">Your Score:</span>
+                      <span className="font-bold text-cyan-400">{currentPlayer.currentScore || 0}</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -296,6 +305,9 @@ function App() {
           </aside>
         )}
       </div>
+      
+      {/* Toast Notifications */}
+      <ToastContainer />
     </div>
   );
 }

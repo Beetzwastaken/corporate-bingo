@@ -50,7 +50,7 @@ export default {
         const body = await request.json();
         
         // Input validation
-        const { roomName, playerName } = validateRoomInput(body);
+        const { roomName, playerName, roomType } = validateRoomInput(body);
         if (!roomName || !playerName) {
           return new Response(JSON.stringify({ error: 'Invalid room name or player name' }), {
             status: 400,
@@ -58,8 +58,8 @@ export default {
           });
         }
         
-        // Generate secure unique room code
-        const roomCode = await generateRoomCode(env);
+        // Generate secure unique room code with type prefix
+        const roomCode = await generateRoomCode(env, roomType);
         
         // Create Durable Object for this room
         const roomId = env.ROOMS.idFromName(roomCode);
@@ -69,7 +69,7 @@ export default {
         const response = await roomObj.fetch(new Request('https://dummy/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ roomName, playerName, roomCode })
+          body: JSON.stringify({ roomName, playerName, roomCode, roomType })
         }));
         
         const result = await response.json();
@@ -134,7 +134,7 @@ export default {
       // HTTP Polling Endpoints for multiplayer sync when WebSocket fails
       
       // Get Room State - GET /api/room/:code/state
-      if (url.pathname.match(/^\/api\/room\/[A-Z0-9]{6}\/state$/) && request.method === 'GET') {
+      if (url.pathname.match(/^\/api\/room\/([A-Z0-9]{6}|(MTG|TEAM)-[A-Z0-9]{4})\/state$/) && request.method === 'GET') {
         const roomCode = url.pathname.split('/')[3];
         const playerId = request.headers.get('X-Player-ID');
         
@@ -161,7 +161,7 @@ export default {
       }
 
       // Get Room Players - GET /api/room/:code/players  
-      if (url.pathname.match(/^\/api\/room\/[A-Z0-9]{6}\/players$/) && request.method === 'GET') {
+      if (url.pathname.match(/^\/api\/room\/([A-Z0-9]{6}|(MTG|TEAM)-[A-Z0-9]{4})\/players$/) && request.method === 'GET') {
         const roomCode = url.pathname.split('/')[3];
         const playerId = request.headers.get('X-Player-ID');
         
@@ -188,7 +188,7 @@ export default {
       }
 
       // Send Player Action - POST /api/room/:code/action
-      if (url.pathname.match(/^\/api\/room\/[A-Z0-9]{6}\/action$/) && request.method === 'POST') {
+      if (url.pathname.match(/^\/api\/room\/([A-Z0-9]{6}|(MTG|TEAM)-[A-Z0-9]{4})\/action$/) && request.method === 'POST') {
         const roomCode = url.pathname.split('/')[3];
         const playerId = request.headers.get('X-Player-ID');
         const body = await request.json();
@@ -394,6 +394,8 @@ function validateRoomInput(body) {
   
   const roomName = typeof body.roomName === 'string' ? body.roomName.trim().slice(0, 50) : '';
   const playerName = typeof body.playerName === 'string' ? body.playerName.trim().slice(0, 30) : '';
+  const roomType = typeof body.roomType === 'string' && ['single', 'persistent'].includes(body.roomType) 
+    ? body.roomType : 'single';
   
   // Sanitize inputs - remove HTML tags and special characters
   const sanitizedRoomName = roomName.replace(/[<>'"&]/g, '');
@@ -401,7 +403,8 @@ function validateRoomInput(body) {
   
   return {
     roomName: sanitizedRoomName.length >= 1 ? sanitizedRoomName : null,
-    playerName: sanitizedPlayerName.length >= 1 ? sanitizedPlayerName : null
+    playerName: sanitizedPlayerName.length >= 1 ? sanitizedPlayerName : null,
+    roomType
   };
 }
 
@@ -411,8 +414,8 @@ function validateJoinInput(body) {
   const roomCode = typeof body.roomCode === 'string' ? body.roomCode.trim().toUpperCase() : '';
   const playerName = typeof body.playerName === 'string' ? body.playerName.trim().slice(0, 30) : '';
   
-  // Validate room code format (6 alphanumeric characters)
-  const sanitizedRoomCode = /^[A-Z0-9]{6}$/.test(roomCode) ? roomCode : null;
+  // Validate room code format (6 alphanumeric OR MTG-XXXX/TEAM-XXXX format)
+  const sanitizedRoomCode = (/^[A-Z0-9]{6}$/.test(roomCode) || /^(MTG|TEAM)-[A-Z0-9]{4}$/.test(roomCode)) ? roomCode : null;
   const sanitizedPlayerName = playerName.replace(/[<>'"&]/g, '');
   
   return {
@@ -421,19 +424,20 @@ function validateJoinInput(body) {
   };
 }
 
-// Generate secure 6-character room code (collision probability is extremely low with crypto random)
-async function generateRoomCode(env) {
+// Generate secure room code with type prefix (MTG- or TEAM-)
+async function generateRoomCode(env, roomType = 'single') {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const prefix = roomType === 'single' ? 'MTG' : 'TEAM';
   
   // Use crypto.getRandomValues for secure randomization
-  const array = new Uint8Array(6);
+  const array = new Uint8Array(4); // 4 characters after prefix
   crypto.getRandomValues(array);
   
-  const roomCode = Array.from(array, byte => 
+  const suffix = Array.from(array, byte => 
     chars[byte % chars.length]
   ).join('');
   
-  return roomCode;
+  return `${prefix}-${suffix}`;
 }
 
 // Fisher-Yates shuffle algorithm (proper randomization)
@@ -661,17 +665,41 @@ export class BingoRoom {
     this.gameState = {
       roomCode: '',
       roomName: '',
+      roomType: 'single', // 'single' or 'persistent'
       hostId: '',
       roundNumber: 1,
       isActive: true,
       created: Date.now(),
       lastActivity: Date.now(),
+      expiresAt: null, // For single meeting rooms
+      cumulativeScores: new Map(), // For persistent rooms
       pendingVerifications: new Map()
     };
     
     // Constants for rate limiting and verification management
     this.MAX_MESSAGES_PER_MINUTE = 30;
     this.MAX_PENDING_VERIFICATIONS_PER_PLAYER = 3;
+    
+    // Check if room should be cleaned up
+    this.shouldCleanup = () => {
+      const now = Date.now();
+      
+      // Check expiration for single meeting rooms
+      if (this.gameState.roomType === 'single' && this.gameState.expiresAt && now > this.gameState.expiresAt) {
+        return true;
+      }
+      
+      // Check inactivity cleanup for single rooms (2 hours)
+      if (this.gameState.roomType === 'single') {
+        const twoHoursAgo = now - (2 * 60 * 60 * 1000);
+        if (this.gameState.lastActivity < twoHoursAgo) {
+          return true;
+        }
+      }
+      
+      // Persistent rooms never auto-cleanup
+      return false;
+    };
   }
 
   async fetch(request) {
@@ -684,11 +712,17 @@ export class BingoRoom {
 
     // Handle room creation
     if (url.pathname === '/create' && request.method === 'POST') {
-      const { roomName, playerName, roomCode } = await request.json();
+      const { roomName, playerName, roomCode, roomType = 'single' } = await request.json();
       
       this.gameState.roomCode = roomCode;
       this.gameState.roomName = roomName;
+      this.gameState.roomType = roomType;
       this.gameState.hostId = generatePlayerId();
+      
+      // Set expiration for single meeting rooms (24 hours from creation)
+      if (roomType === 'single') {
+        this.gameState.expiresAt = Date.now() + (24 * 60 * 60 * 1000);
+      }
       
       // Create host player with unique board
       const hostPlayer = {

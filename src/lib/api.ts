@@ -62,10 +62,10 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
 }
 
 // Create a new bingo room
-export async function createBingoRoom(roomName: string, playerName: string): Promise<ApiResponse<CreateRoomResponse>> {
+export async function createBingoRoom(roomName: string, playerName: string, roomType: 'single' | 'persistent' = 'single'): Promise<ApiResponse<CreateRoomResponse>> {
   return apiRequest<CreateRoomResponse>('/api/room/create', {
     method: 'POST',
-    body: JSON.stringify({ roomName, playerName }),
+    body: JSON.stringify({ roomName, playerName, roomType }),
   });
 }
 
