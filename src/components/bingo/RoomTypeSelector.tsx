@@ -1,25 +1,106 @@
+import { useState, useEffect } from 'react';
 import type { RoomType } from '../../stores/multiRoomStore';
 
 interface RoomTypeSelectorProps {
   selectedType: RoomType;
   onTypeChange: (type: RoomType) => void;
   disabled?: boolean;
+  compact?: boolean;
 }
 
-export function RoomTypeSelector({ selectedType, onTypeChange, disabled = false }: RoomTypeSelectorProps) {
+export function RoomTypeSelector({ selectedType, onTypeChange, disabled = false, compact }: RoomTypeSelectorProps) {
+  const [isCompact, setIsCompact] = useState(false);
+
+  // Auto-detect compact mode based on viewport if compact prop not provided
+  useEffect(() => {
+    if (compact !== undefined) {
+      setIsCompact(compact);
+      return;
+    }
+
+    const checkViewport = () => {
+      setIsCompact(window.innerWidth >= 768);
+    };
+
+    checkViewport();
+    window.addEventListener('resize', checkViewport);
+    return () => window.removeEventListener('resize', checkViewport);
+  }, [compact]);
+
+  if (isCompact) {
+    return (
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-apple-secondary">
+          Room Type
+        </label>
+        
+        {/* Compact segmented control */}
+        <div className={`
+          flex rounded-lg border border-apple-border bg-apple-darkest overflow-hidden
+          ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+        `}>
+          {/* Single Meeting Option */}
+          <button
+            onClick={() => !disabled && onTypeChange('single')}
+            disabled={disabled}
+            className={`
+              room-type-compact-button flex-1 flex items-center justify-center px-3 py-2.5 text-sm font-medium 
+              transition-all duration-200 relative overflow-hidden
+              ${selectedType === 'single'
+                ? 'text-white room-type-selected-gradient shadow-sm' 
+                : 'text-apple-secondary hover:text-apple-text hover:bg-apple-hover'
+              }
+              ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+            `}
+          >
+            <span className="text-base mr-2">⏱️</span>
+            Meeting
+          </button>
+          
+          {/* Persistent Team Option */}
+          <button
+            onClick={() => !disabled && onTypeChange('persistent')}
+            disabled={disabled}
+            className={`
+              room-type-compact-button flex-1 flex items-center justify-center px-3 py-2.5 text-sm font-medium 
+              transition-all duration-200 relative overflow-hidden border-l border-apple-border
+              ${selectedType === 'persistent'
+                ? 'text-white room-type-selected-gradient shadow-sm' 
+                : 'text-apple-secondary hover:text-apple-text hover:bg-apple-hover'
+              }
+              ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+            `}
+          >
+            <span className="text-base mr-2">♾️</span>
+            Team
+          </button>
+        </div>
+        
+        {/* Brief description */}
+        <p className="text-xs text-apple-secondary leading-relaxed">
+          {selectedType === 'single' 
+            ? 'One-time meeting room that auto-expires after 24 hours'
+            : 'Persistent team room with cumulative scoring and leaderboards'
+          }
+        </p>
+      </div>
+    );
+  }
+
+  // Mobile/expanded mode - keep original card design
   return (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-apple-secondary mb-2">
         Room Type
       </label>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="space-y-3">
         {/* Single Meeting Room Option */}
         <div 
           className={`
             relative p-4 rounded-lg border cursor-pointer transition-all duration-200
             ${selectedType === 'single' 
-              ? 'border-apple-accent bg-apple-accent/10' 
+              ? 'border-cyan-500 bg-cyan-500/10' 
               : 'border-apple-border bg-apple-darkest hover:bg-apple-darkest/80'
             }
             ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
@@ -30,7 +111,7 @@ export function RoomTypeSelector({ selectedType, onTypeChange, disabled = false 
           <div className={`
             absolute top-3 right-3 w-4 h-4 rounded-full border-2 transition-all
             ${selectedType === 'single' 
-              ? 'border-apple-accent bg-apple-accent' 
+              ? 'border-cyan-500 bg-cyan-500' 
               : 'border-apple-border bg-transparent'
             }
           `}>
@@ -67,7 +148,7 @@ export function RoomTypeSelector({ selectedType, onTypeChange, disabled = false 
           className={`
             relative p-4 rounded-lg border cursor-pointer transition-all duration-200
             ${selectedType === 'persistent' 
-              ? 'border-apple-accent bg-apple-accent/10' 
+              ? 'border-cyan-500 bg-cyan-500/10' 
               : 'border-apple-border bg-apple-darkest hover:bg-apple-darkest/80'
             }
             ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
@@ -78,7 +159,7 @@ export function RoomTypeSelector({ selectedType, onTypeChange, disabled = false 
           <div className={`
             absolute top-3 right-3 w-4 h-4 rounded-full border-2 transition-all
             ${selectedType === 'persistent' 
-              ? 'border-apple-accent bg-apple-accent' 
+              ? 'border-cyan-500 bg-cyan-500' 
               : 'border-apple-border bg-transparent'
             }
           `}>
