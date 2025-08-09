@@ -50,11 +50,11 @@ interface MultiRoomStore {
   setCurrentPlayer: (player: BingoPlayer | null) => void;
 }
 
-// Generate room code with type prefix
-export const generateRoomCode = (roomType: RoomType): string => {
-  const prefix = roomType === 'single' ? 'MTG' : 'TEAM';
+// Generate simple random room code (no prefixes)
+export const generateRoomCode = (): string => {
+  // Generate 4-character alphanumeric code
   const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `${prefix}-${randomPart}`;
+  return randomPart;
 };
 
 // Check if a room is expired (for single meeting rooms)
@@ -65,8 +65,9 @@ export const isRoomExpired = (room: MultiRoom): boolean => {
 
 // Check if a room should be cleaned up due to inactivity
 export const shouldCleanupRoom = (room: MultiRoom): boolean => {
-  if (room.roomType === 'persistent') return false; // Persistent rooms never cleanup
+  if (room.roomType === 'persistent') return false; // Continuous rooms NEVER cleanup
   
+  // Only single meeting rooms cleanup after 2 hours of inactivity
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
   return room.lastActivity < twoHoursAgo;
 };
@@ -83,8 +84,8 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
         // Create a new room with specified type
         createRoom: async (roomName: string, playerName: string, roomType: RoomType) => {
           try {
-            // Generate room code with appropriate prefix
-            const roomCode = generateRoomCode(roomType);
+            // Generate simple room code
+            const roomCode = generateRoomCode();
             
             // Create room via API (updated to include roomType)
             const response = await createBingoRoom(roomName, playerName, roomType);
@@ -115,7 +116,8 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
               lastActivity: now,
               roomType,
               maxPlayers: 10,
-              // Set expiration for single meeting rooms (24 hours from creation)
+              // Set expiration ONLY for single meeting rooms (24 hours from creation)
+              // Continuous rooms NEVER expire
               expiresAt: roomType === 'single' ? new Date(now.getTime() + 24 * 60 * 60 * 1000) : undefined,
               // Initialize empty cumulative scores for persistent rooms
               cumulativeScores: roomType === 'persistent' ? {} : undefined,
@@ -175,8 +177,9 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
               joinedAt: Date.now()
             };
             
-            // Determine room type from code prefix
-            const roomType: RoomType = roomCode.startsWith('MTG-') ? 'single' : 'persistent';
+            // Since we removed prefixes, we need to get room type from server response
+            // For now, default to 'single' - server should provide room type in response
+            const roomType: RoomType = (response.data.roomType === 'persistent' ? 'persistent' : 'single') as RoomType;
             
             const room: MultiRoom = {
               id: roomCode,
@@ -188,6 +191,7 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
               lastActivity: now,
               roomType,
               maxPlayers: 10,
+              // Continuous rooms NEVER expire, only single meeting rooms do
               expiresAt: roomType === 'single' ? new Date(now.getTime() + 24 * 60 * 60 * 1000) : undefined,
               cumulativeScores: roomType === 'persistent' ? {} : undefined,
               weeklyLeaderboard: roomType === 'persistent' ? [] : undefined,

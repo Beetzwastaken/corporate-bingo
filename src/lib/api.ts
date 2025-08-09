@@ -23,6 +23,7 @@ export interface JoinRoomResponse {
   roomName: string;
   playerCount: number;
   roundNumber: number;
+  roomType?: string;
 }
 
 import { getApiBaseUrl } from './config';

@@ -72,7 +72,7 @@ export function RoomTypeSelector({ selectedType, onTypeChange, disabled = false,
             `}
           >
             <span className="text-base mr-2">♾️</span>
-            Team
+            Continuous
           </button>
         </div>
         
@@ -80,7 +80,7 @@ export function RoomTypeSelector({ selectedType, onTypeChange, disabled = false,
         <p className="text-xs text-apple-secondary leading-relaxed">
           {selectedType === 'single' 
             ? 'One-time meeting room that auto-expires after 24 hours'
-            : 'Persistent team room with cumulative scoring and leaderboards'
+            : 'Continuous room that stays open indefinitely'
           }
         </p>
       </div>
@@ -127,14 +127,14 @@ export function RoomTypeSelector({ selectedType, onTypeChange, disabled = false,
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-apple-text text-sm mb-1">
-                Single Meeting
+                Meeting
               </h3>
               <p className="text-xs text-apple-secondary leading-relaxed">
                 One-time use for specific meetings. Auto-expires after 24 hours or 2 hours of inactivity.
               </p>
               <div className="mt-2 flex items-center space-x-2 text-xs text-apple-secondary">
                 <span className="px-2 py-1 bg-blue-500/20 rounded text-blue-400 font-mono">
-                  MTG-XXXX
+                  A4B7
                 </span>
                 <span>•</span>
                 <span>Perfect for one-off meetings</span>
@@ -175,14 +175,14 @@ export function RoomTypeSelector({ selectedType, onTypeChange, disabled = false,
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-apple-text text-sm mb-1">
-                Persistent Team
+                Continuous
               </h3>
               <p className="text-xs text-apple-secondary leading-relaxed">
-                Long-running room for teams. Maintains cumulative scores and leaderboards over time.
+                Long-running room that stays open indefinitely. Perfect for ongoing games.
               </p>
               <div className="mt-2 flex items-center space-x-2 text-xs text-apple-secondary">
                 <span className="px-2 py-1 bg-green-500/20 rounded text-green-400 font-mono">
-                  TEAM-XXXX
+                  X9K2
                 </span>
                 <span>•</span>
                 <span>Never expires</span>
@@ -220,19 +220,19 @@ export function RoomTypeSelector({ selectedType, onTypeChange, disabled = false,
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-1 h-1 bg-green-400 rounded-full"></span>
               <span className="text-apple-secondary">
-                Room persists indefinitely with cumulative scoring
+                Room stays open indefinitely - never expires
               </span>
             </div>
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-1 h-1 bg-green-400 rounded-full"></span>
               <span className="text-apple-secondary">
-                Weekly and monthly leaderboards track long-term performance
+                Maintains game state and player progress over time
               </span>
             </div>
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-1 h-1 bg-green-400 rounded-full"></span>
               <span className="text-apple-secondary">
-                Ideal for teams, departments, or ongoing groups
+                Perfect for continuous play and long-term games
               </span>
             </div>
           </div>

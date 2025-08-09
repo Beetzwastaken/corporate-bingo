@@ -7,6 +7,7 @@ import { useBingoStore } from './utils/store';
 import { APP_VERSION } from './utils/version';
 import { BingoEngine } from './lib/bingoEngine';
 import { ToastContainer } from './components/shared/ToastNotification';
+import corporateBingoLogo from './assets/corporate-bingo-logo.svg';
 import './App.css';
 
 // Lazy load non-critical components
@@ -119,15 +120,12 @@ function App() {
                     <rect width="40" height="40" fill="url(#grid)" />
                   </svg>
                 </div>
-                {/* Stylized B with bingo card elements */}
-                <svg className="w-6 h-6 text-white relative z-10" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M6 2h8c1.1 0 2 .9 2 2v3c0 .55-.22 1.05-.59 1.41.37.36.59.86.59 1.41v3c0 1.1-.9 2-2 2H6V2zm2 5h6V4H8v3zm0 5h6v-3H8v3z"/>
-                  {/* Small dots representing bingo markers */}
-                  <circle cx="9.5" cy="5.5" r="0.8" fill="rgba(255,255,255,0.8)"/>
-                  <circle cx="12.5" cy="5.5" r="0.8" fill="rgba(255,255,255,0.8)"/>
-                  <circle cx="9.5" cy="11.5" r="0.8" fill="rgba(255,255,255,0.8)"/>
-                  <circle cx="12.5" cy="11.5" r="0.8" fill="rgba(255,255,255,0.8)"/>
-                </svg>
+                {/* Professional Corporate Bingo Logo */}
+                <img 
+                  src={corporateBingoLogo} 
+                  alt="Corporate Bingo" 
+                  className="w-6 h-6 relative z-10"
+                />
                 {/* Subtle highlight */}
                 <div className="absolute top-1 left-1 right-1 h-3 bg-gradient-to-b from-white/20 to-transparent rounded-lg"></div>
               </div>

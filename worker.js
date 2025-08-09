@@ -58,7 +58,7 @@ export default {
           });
         }
         
-        // Generate secure unique room code with type prefix
+        // Generate secure unique room code (no prefixes)
         const roomCode = await generateRoomCode(env, roomType);
         
         // Create Durable Object for this room
@@ -134,7 +134,7 @@ export default {
       // HTTP Polling Endpoints for multiplayer sync when WebSocket fails
       
       // Get Room State - GET /api/room/:code/state
-      if (url.pathname.match(/^\/api\/room\/([A-Z0-9]{6}|(MTG|TEAM)-[A-Z0-9]{4})\/state$/) && request.method === 'GET') {
+      if (url.pathname.match(/^\/api\/room\/([A-Z0-9]{4})\/state$/) && request.method === 'GET') {
         const roomCode = url.pathname.split('/')[3];
         const playerId = request.headers.get('X-Player-ID');
         
@@ -161,7 +161,7 @@ export default {
       }
 
       // Get Room Players - GET /api/room/:code/players  
-      if (url.pathname.match(/^\/api\/room\/([A-Z0-9]{6}|(MTG|TEAM)-[A-Z0-9]{4})\/players$/) && request.method === 'GET') {
+      if (url.pathname.match(/^\/api\/room\/([A-Z0-9]{4})\/players$/) && request.method === 'GET') {
         const roomCode = url.pathname.split('/')[3];
         const playerId = request.headers.get('X-Player-ID');
         
@@ -188,7 +188,7 @@ export default {
       }
 
       // Send Player Action - POST /api/room/:code/action
-      if (url.pathname.match(/^\/api\/room\/([A-Z0-9]{6}|(MTG|TEAM)-[A-Z0-9]{4})\/action$/) && request.method === 'POST') {
+      if (url.pathname.match(/^\/api\/room\/([A-Z0-9]{4})\/action$/) && request.method === 'POST') {
         const roomCode = url.pathname.split('/')[3];
         const playerId = request.headers.get('X-Player-ID');
         const body = await request.json();
@@ -414,8 +414,8 @@ function validateJoinInput(body) {
   const roomCode = typeof body.roomCode === 'string' ? body.roomCode.trim().toUpperCase() : '';
   const playerName = typeof body.playerName === 'string' ? body.playerName.trim().slice(0, 30) : '';
   
-  // Validate room code format (6 alphanumeric OR MTG-XXXX/TEAM-XXXX format)
-  const sanitizedRoomCode = (/^[A-Z0-9]{6}$/.test(roomCode) || /^(MTG|TEAM)-[A-Z0-9]{4}$/.test(roomCode)) ? roomCode : null;
+  // Validate room code format (4 alphanumeric)
+  const sanitizedRoomCode = /^[A-Z0-9]{4}$/.test(roomCode) ? roomCode : null;
   const sanitizedPlayerName = playerName.replace(/[<>'"&]/g, '');
   
   return {
@@ -424,20 +424,19 @@ function validateJoinInput(body) {
   };
 }
 
-// Generate secure room code with type prefix (MTG- or TEAM-)
+// Generate secure random room code (no prefixes)
 async function generateRoomCode(env, roomType = 'single') {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  const prefix = roomType === 'single' ? 'MTG' : 'TEAM';
   
   // Use crypto.getRandomValues for secure randomization
-  const array = new Uint8Array(4); // 4 characters after prefix
+  const array = new Uint8Array(4); // 4-character code
   crypto.getRandomValues(array);
   
-  const suffix = Array.from(array, byte => 
+  const code = Array.from(array, byte => 
     chars[byte % chars.length]
   ).join('');
   
-  return `${prefix}-${suffix}`;
+  return code;
 }
 
 // Fisher-Yates shuffle algorithm (proper randomization)

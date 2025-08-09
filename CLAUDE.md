@@ -1,19 +1,48 @@
 # Corporate Bingo Project Context
 
 **Project Type**: Corporate Humor Web Application  
-**Current Status**: ✅ PRODUCTION READY - Fully Functional Live Application  
+**Current Status**: ✅ PRODUCTION READY - Advanced Multiplayer Platform  
 **Live URL**: https://corporate-bingo-ai.netlify.app  
 **Last Updated**: January 8, 2025
 
+## 🚨 MANDATORY: ALWAYS USE SPECIALIZED AGENTS 🚨
+**NEVER work directly on Corporate Bingo tasks - Always delegate to specialized agents first**
+
+### Required Agent Delegation:
+- **Frontend/React/TypeScript** → Frontend Developer Agent via Task tool
+- **Backend/worker.js/API/WebSocket** → Backend Developer Agent via Task tool  
+- **Testing/QA/Screenshots/Validation** → QA Engineer Agent via Task tool
+- **Multi-step workflows/Coordination** → Project Manager Agent via Task tool
+- **Content/Visual/Corporate Humor** → Content Manager Agent via Task tool
+- **Deployment/Infrastructure** → DevOps Agent via Task tool
+
+### Agent Auto-Activation Rules:
+- ANY React component updates → Frontend Developer Agent
+- ANY worker.js modifications → Backend Developer Agent
+- ANY testing or validation → QA Engineer Agent
+- ANY multi-step task coordination → Project Manager Agent
+- ALL tasks require Task tool delegation before direct work
+
+## Available Specialized Agents
+@include docs/reports/agent_task_briefs.md
+
+### Agent Collaboration Standards
+- 95%+ autonomous agent operation expected
+- TodoWrite integration for progress tracking
+- Cross-agent dependency resolution via Project Manager
+- Professional engineering standards (95%+ compliance)
+
 ## Project Overview
 
-**Corporate Bingo & Buzzword Entertainment Platform** - A real-time multiplayer web application that transforms corporate meetings into interactive entertainment. Features professional-grade architecture with 369+ curated buzzwords, democratic verification system, and anti-cheat detection for authentic corporate humor.
+**Corporate Bingo & Buzzword Entertainment Platform** - A sophisticated real-time multiplayer web application that transforms corporate meetings into interactive entertainment. Features professional-grade architecture with 369+ curated buzzwords, comprehensive scoring system, and advanced room management for authentic corporate humor.
 
 **Core Features**: 
 - **Real-time Multiplayer Bingo**: Room-based gameplay with unique boards per player
+- **Advanced Scoring System**: Live points tracking with animations and leaderboards
+- **Multi-Room Support**: Users can join multiple rooms simultaneously with tab navigation
+- **Dual Room Types**: Single meeting rooms (auto-expire) and persistent team rooms
 - **Corporate Humor Focus**: Meeting-oriented buzzwords and corporate humor
 - **Professional Architecture**: Enterprise-grade security and performance
-- **Solo & Multiplayer Modes**: Instant play or room-based social gaming
 
 ## Technology Stack
 
@@ -41,9 +70,10 @@
 ## File Structure
 
 ### Frontend Source (`/src/`)
-- `App.tsx` - Main single-page application with sidebar
-- `components/bingo/` - BingoCard, RoomManager, BingoStats components
-- `stores/` - Zustand stores (connectionStore, gameStore, roomStore, playerStore)
+- `App.tsx` - Main single-page application with sidebar and toast system
+- `components/bingo/` - BingoCard, RoomManager, Leaderboard, ScoreDisplay components
+- `components/shared/` - ToastNotification system for scoring feedback
+- `stores/` - Zustand stores (connectionStore, gameStore, roomStore, playerStore, multiRoomStore)
 - `lib/` - WebSocket, polling, and game engine utilities
 - `types/` - TypeScript interfaces
 - `data/buzzwords.ts` - Single source of truth for all 369+ buzzwords
@@ -70,21 +100,23 @@
 - **Project Root**: `F:/CC/Projects/Corporate Bingo/`
 - **Test before operations**: `ls "F:/CC/Projects/Corporate Bingo/"`
 
-## Agent-Enhanced Development Workflow
+## MANDATORY Agent-Enhanced Development Workflow
 
-### Proven Agent Activation Patterns
-Based on successful implementation experience:
+### Required Agent Activation Patterns
+**All development work must use these patterns - direct work is prohibited:**
 
-- **Frontend Issues**: `Task(frontend-dev-agent)` - React/TypeScript UI, responsive design, component fixes
-- **Backend Issues**: `Task(backend-dev-agent)` - WebSocket, multiplayer sync, performance optimization  
-- **Quality Assurance**: `Task(qa-engineer-agent)` - Comprehensive testing, validation, edge cases
-- **Multi-Agent Coordination**: Use TodoWrite for progress tracking across agents
+- **Frontend Issues**: `Task(subagent_type: "general-purpose", prompt: "Use Frontend Developer Agent expertise for...")` - React/TypeScript UI, responsive design, component fixes
+- **Backend Issues**: `Task(subagent_type: "general-purpose", prompt: "Use Backend Developer Agent expertise for...")` - WebSocket, multiplayer sync, performance optimization  
+- **Quality Assurance**: `Task(subagent_type: "general-purpose", prompt: "Use QA Engineer Agent expertise for...")` - Comprehensive testing, validation, edge cases
+- **Multi-Agent Coordination**: `Task(subagent_type: "general-purpose", prompt: "Use Project Manager Agent for...")` - TodoWrite management, cross-agent coordination
+- **Content/Visual**: `Task(subagent_type: "general-purpose", prompt: "Use Content Manager Agent for...")` - Corporate humor, visual standards, presentation
+- **Infrastructure**: `Task(subagent_type: "general-purpose", prompt: "Use DevOps Agent for...")` - Deployment, monitoring, infrastructure
 
-### Successful Agent Applications
-- **UI/UX Improvements**: Frontend agent fixed button positioning, star overlays, 3D effects
-- **TypeScript Issues**: Backend agent resolved ESLint errors and type compatibility  
-- **Testing & Validation**: QA agent performed visual regression testing and performance analysis
-- **Cross-Agent Coordination**: TodoWrite successfully managed multi-step workflows
+### Agent Delegation Success Examples
+- **UI/UX Improvements**: Frontend Developer Agent fixed button positioning, star overlays, 3D effects
+- **TypeScript Issues**: Backend Developer Agent resolved ESLint errors and type compatibility  
+- **Testing & Validation**: QA Engineer Agent performed visual regression testing and performance analysis
+- **Cross-Agent Coordination**: Project Manager Agent successfully managed multi-step workflows with TodoWrite
 
 ## MCP Server Integration
 
@@ -121,13 +153,15 @@ Based on successful implementation experience:
 - **Democratic verification system** with majority voting
 - **Anti-cheat detection** preventing self-claims
 - **Auto-reshuffle** generating new boards after wins
+- **Comprehensive Scoring System**: 10 points per square, bonus for lines (50/100), BINGO bonus (200)
+- **Real-time Leaderboards**: Live player rankings with crown indicators
 
 ## Architecture Highlights
 
 ### Real-time Multiplayer
 - **Primary**: WebSocket connections via Cloudflare Workers
 - **Fallback**: HTTP polling (3-second intervals) for reliability
-- **State Management**: Zustand with 4 focused store modules
+- **State Management**: Zustand with 5 focused store modules (including multiRoomStore)
 - **Performance**: <200ms response time, global edge deployment
 
 ### Security & Reliability  
@@ -141,6 +175,61 @@ Based on successful implementation experience:
 - **Mobile-first responsive design** with touch optimization
 - **Accessibility compliance** with keyboard navigation and screen reader support
 - **Performance optimization** with lazy loading and GPU acceleration
+
+## Advanced Features & Components
+
+### Points & Scoring System
+**Complete real-time scoring with visual feedback:**
+
+- **ScoreDisplay Component**: Live score counter with floating animations (+10, +50, etc.)
+- **Leaderboard Component**: Real-time sorted player rankings with crown emoji (👑) for leaders
+- **Toast Notifications**: Animated score change notifications with point values
+- **Scoring Logic**: 10 points per verified square, 50/100 bonus for 3/4-in-a-row, 200 for BINGO
+- **Anti-cheat Penalties**: -50 points for self-claims with visual feedback
+
+### Room Management System
+**Sophisticated multi-room architecture:**
+
+#### Single Meeting Rooms (MTG-XXXX)
+- **Purpose**: One-time use for specific meetings or events
+- **Expiration**: Auto-expire after 24 hours from creation
+- **Cleanup**: Auto-remove after 2 hours of inactivity
+- **Use Cases**: Stand-ups, all-hands meetings, workshops, training sessions
+
+#### Persistent Team Rooms (TEAM-XXXX) 
+- **Purpose**: Long-running rooms for teams, departments, or ongoing groups
+- **Duration**: Never expire automatically
+- **Cumulative Scoring**: Maintains total scores across multiple game sessions
+- **Leaderboards**: Weekly/monthly performance tracking (framework implemented)
+- **Use Cases**: Department teams, project groups, regular meeting attendees
+
+#### Multi-Room Support
+- **Simultaneous Participation**: Users can join and actively play in multiple rooms
+- **Tab Navigation**: Browser-style tabs for seamless room switching
+- **Independent State**: Each room maintains separate game state and player data
+- **WebSocket Multiplexing**: Efficient connection management for multiple rooms
+
+### Responsive Design System
+**Optimized layouts for all screen sizes:**
+
+#### Desktop Sidebar (≥768px)
+- **Compact Room Selector**: iOS-style segmented control (70px height vs 200px+ before)
+- **Efficient Space Usage**: Reduced padding, grid layouts, horizontal organization
+- **Professional Animations**: Smooth hover states and selection feedback
+
+#### Mobile Interface (<768px)
+- **Touch-Friendly Cards**: Large room type selection with 44px+ touch targets
+- **Rich Descriptions**: Full feature explanations and visual hierarchy
+- **Tab Optimization**: Mobile-responsive room switching with scroll indicators
+
+### Visual Design Elements
+**Professional Apple-inspired aesthetic:**
+
+- **New Logo**: CB monogram with grid pattern and cyan accents
+- **Dark Theme**: Consistent #0a0a0a backgrounds with #00d4ff accents  
+- **Score Animations**: Hardware-accelerated floating point notifications
+- **Crown Effects**: Bouncing animation for leaderboard winners
+- **Toast System**: Elegant slide-in notifications with progress bars
 
 ## Development Best Practices
 
