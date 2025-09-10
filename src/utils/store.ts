@@ -29,6 +29,7 @@ export const useBingoStore = () => {
     wins: gameStore.wins,
     totalSquares: gameStore.totalSquares,
     currentScore: gameStore.currentScore,
+    recentBonuses: gameStore.recentBonuses,
     
     // Room state
     currentRoom: roomStore.currentRoom,
@@ -48,10 +49,12 @@ export const useBingoStore = () => {
     // Game actions
     markSquare: gameStore.markSquare,
     resetGame: gameStore.resetGame,
+    resetScore: gameStore.resetScore,
     setGameWon: gameStore.setGameWon,
     incrementGamesPlayed: gameStore.incrementGamesPlayed,
     incrementWins: gameStore.incrementWins,
     incrementTotalSquares: gameStore.incrementTotalSquares,
+    clearRecentBonuses: gameStore.clearRecentBonuses,
     
     // Player actions
     setPlayerName: (name: string) => {

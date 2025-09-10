@@ -40,6 +40,7 @@ function App() {
     connectionError,
     markSquare,
     resetGame,
+    resetScore,
     incrementGamesPlayed,
     incrementWins,
     incrementTotalSquares,
@@ -190,6 +191,20 @@ function App() {
                   className="px-4 py-1.5 text-sm bg-apple-accent hover:bg-apple-accent-hover text-white rounded-md transition-colors font-medium"
                 >
                   New Game
+                </button>
+              )}
+
+              {/* Reset Score button for solo mode */}
+              {!currentRoom && currentScore > 0 && (
+                <button
+                  onClick={() => {
+                    if (confirm('Reset your score to 0?')) {
+                      resetScore();
+                    }
+                  }}
+                  className="px-4 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors font-medium"
+                >
+                  Reset Score
                 </button>
               )}
 

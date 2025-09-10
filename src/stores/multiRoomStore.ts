@@ -131,7 +131,8 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
                 board: [],
                 markedSquares: Array(25).fill(false),
                 hasWon: false,
-                winningPattern: undefined
+                winningPattern: undefined,
+                appliedBonuses: []
               },
               isActive: true,
               lastSync: now
@@ -204,7 +205,8 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
                 board: [],
                 markedSquares: Array(25).fill(false),
                 hasWon: false,
-                winningPattern: undefined
+                winningPattern: undefined,
+                appliedBonuses: []
               },
               isActive: true,
               lastSync: now

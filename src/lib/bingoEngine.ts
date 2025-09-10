@@ -14,6 +14,20 @@ export interface BingoResult {
   winningCells?: number[];
 }
 
+export interface LineBonus {
+  type: '3-in-row' | '4-in-row' | 'bingo';
+  points: number;
+  pattern: 'row' | 'column' | 'diagonal';
+  lineIndex: number;
+  cells: number[];
+}
+
+export interface BingoAnalysis {
+  bingoResult: BingoResult;
+  lineBonuses: LineBonus[];
+  totalBonusPoints: number;
+}
+
 export class BingoEngine {
   /**
    * Generate a new bingo card with random buzzwords
@@ -98,6 +112,156 @@ export class BingoEngine {
     }
     
     return { hasWon: false };
+  }
+
+  /**
+   * Analyze board for line bonuses (3-in-row, 4-in-row, BINGO)
+   */
+  static analyzeBoardForBonuses(squares: BingoSquare[]): BingoAnalysis {
+    const lineBonuses: LineBonus[] = [];
+    
+    // Check rows for bonuses
+    for (let row = 0; row < 5; row++) {
+      const rowStart = row * 5;
+      const rowSquares = squares.slice(rowStart, rowStart + 5);
+      const markedCount = rowSquares.filter(s => s.isMarked).length;
+      const cells = Array.from({ length: 5 }, (_, i) => rowStart + i);
+      
+      if (markedCount === 5) {
+        lineBonuses.push({
+          type: 'bingo',
+          points: 5,
+          pattern: 'row',
+          lineIndex: row,
+          cells
+        });
+      } else if (markedCount === 4) {
+        lineBonuses.push({
+          type: '4-in-row',
+          points: 3,
+          pattern: 'row',
+          lineIndex: row,
+          cells: cells.filter(i => squares[i].isMarked)
+        });
+      } else if (markedCount === 3) {
+        lineBonuses.push({
+          type: '3-in-row',
+          points: 1,
+          pattern: 'row',
+          lineIndex: row,
+          cells: cells.filter(i => squares[i].isMarked)
+        });
+      }
+    }
+    
+    // Check columns for bonuses
+    for (let col = 0; col < 5; col++) {
+      const colSquares = squares.filter((_, index) => index % 5 === col);
+      const markedCount = colSquares.filter(s => s.isMarked).length;
+      const cells = Array.from({ length: 5 }, (_, i) => i * 5 + col);
+      
+      if (markedCount === 5) {
+        lineBonuses.push({
+          type: 'bingo',
+          points: 5,
+          pattern: 'column',
+          lineIndex: col,
+          cells
+        });
+      } else if (markedCount === 4) {
+        lineBonuses.push({
+          type: '4-in-row',
+          points: 3,
+          pattern: 'column',
+          lineIndex: col,
+          cells: cells.filter(i => squares[i].isMarked)
+        });
+      } else if (markedCount === 3) {
+        lineBonuses.push({
+          type: '3-in-row',
+          points: 1,
+          pattern: 'column',
+          lineIndex: col,
+          cells: cells.filter(i => squares[i].isMarked)
+        });
+      }
+    }
+    
+    // Check diagonals for bonuses
+    const diagonal1Indices = [0, 6, 12, 18, 24];
+    const diagonal2Indices = [4, 8, 12, 16, 20];
+    
+    // Diagonal 1 (top-left to bottom-right)
+    const diagonal1Squares = diagonal1Indices.map(i => squares[i]);
+    const diagonal1MarkedCount = diagonal1Squares.filter(s => s.isMarked).length;
+    
+    if (diagonal1MarkedCount === 5) {
+      lineBonuses.push({
+        type: 'bingo',
+        points: 5,
+        pattern: 'diagonal',
+        lineIndex: 0,
+        cells: diagonal1Indices
+      });
+    } else if (diagonal1MarkedCount === 4) {
+      lineBonuses.push({
+        type: '4-in-row',
+        points: 3,
+        pattern: 'diagonal',
+        lineIndex: 0,
+        cells: diagonal1Indices.filter(i => squares[i].isMarked)
+      });
+    } else if (diagonal1MarkedCount === 3) {
+      lineBonuses.push({
+        type: '3-in-row',
+        points: 1,
+        pattern: 'diagonal',
+        lineIndex: 0,
+        cells: diagonal1Indices.filter(i => squares[i].isMarked)
+      });
+    }
+    
+    // Diagonal 2 (top-right to bottom-left)
+    const diagonal2Squares = diagonal2Indices.map(i => squares[i]);
+    const diagonal2MarkedCount = diagonal2Squares.filter(s => s.isMarked).length;
+    
+    if (diagonal2MarkedCount === 5) {
+      lineBonuses.push({
+        type: 'bingo',
+        points: 5,
+        pattern: 'diagonal',
+        lineIndex: 1,
+        cells: diagonal2Indices
+      });
+    } else if (diagonal2MarkedCount === 4) {
+      lineBonuses.push({
+        type: '4-in-row',
+        points: 3,
+        pattern: 'diagonal',
+        lineIndex: 1,
+        cells: diagonal2Indices.filter(i => squares[i].isMarked)
+      });
+    } else if (diagonal2MarkedCount === 3) {
+      lineBonuses.push({
+        type: '3-in-row',
+        points: 1,
+        pattern: 'diagonal',
+        lineIndex: 1,
+        cells: diagonal2Indices.filter(i => squares[i].isMarked)
+      });
+    }
+    
+    // Calculate total bonus points
+    const totalBonusPoints = lineBonuses.reduce((sum, bonus) => sum + bonus.points, 0);
+    
+    // Get standard BINGO result
+    const bingoResult = this.checkBingo(squares);
+    
+    return {
+      bingoResult,
+      lineBonuses,
+      totalBonusPoints
+    };
   }
 
   /**

@@ -1,7 +1,7 @@
 // Game Store - Manages game state, board, and win conditions
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import { BingoEngine } from '../lib/bingoEngine';
+import { BingoEngine, type LineBonus } from '../lib/bingoEngine';
 
 export interface BingoSquare {
   id: string;
@@ -15,6 +15,7 @@ export interface GameState {
   markedSquares: boolean[];
   hasWon: boolean;
   winningPattern?: number[];
+  appliedBonuses: string[]; // Track applied bonuses to prevent duplicates
 }
 
 interface GameStore {
@@ -24,16 +25,19 @@ interface GameStore {
   wins: number;
   totalSquares: number;
   currentScore: number;
+  recentBonuses: LineBonus[];
   
   // Actions
   initializeGame: () => void;
   markSquare: (index: number) => void;
   resetGame: () => void;
+  resetScore: () => void;
   setGameWon: (won: boolean, pattern?: number[]) => void;
   incrementGamesPlayed: () => void;
   incrementWins: () => void;
   incrementTotalSquares: () => void;
   clearStats: () => void;
+  clearRecentBonuses: () => void;
 }
 
 export const useGameStore = create<GameStore>()(
@@ -45,14 +49,16 @@ export const useGameStore = create<GameStore>()(
           board: [],
           markedSquares: Array(25).fill(false),
           hasWon: false,
-          winningPattern: undefined
+          winningPattern: undefined,
+          appliedBonuses: []
         },
         gamesPlayed: 0,
         wins: 0,
         totalSquares: 0,
         currentScore: 0,
+        recentBonuses: [],
         
-        // Initialize a new game
+        // Initialize a new game (preserve currentScore)
         initializeGame: () => {
           const newBoard = BingoEngine.generateCard();
           const markedSquares = Array(25).fill(false);
@@ -69,9 +75,10 @@ export const useGameStore = create<GameStore>()(
               board: boardWithMarkedState,
               markedSquares,
               hasWon: false,
-              winningPattern: undefined
-            },
-            currentScore: 0
+              winningPattern: undefined,
+              appliedBonuses: [] // Reset bonus tracking for new game
+            }
+            // Note: currentScore is preserved through BINGOs
           });
         },
         
@@ -88,7 +95,7 @@ export const useGameStore = create<GameStore>()(
             isMarked: newMarkedSquares[i] || false
           }));
           
-          // Update score: +1 for marking, -1 for unmarking (but don't go below 0)
+          // Base score: +1 for marking, -1 for unmarking (but don't go below 0)
           let newScore = state.currentScore;
           if (!wasMarked && newMarkedSquares[index]) {
             // Marking a square
@@ -98,13 +105,58 @@ export const useGameStore = create<GameStore>()(
             newScore = Math.max(0, newScore - 1);
           }
           
+          // Check for bonus points
+          const analysis = BingoEngine.analyzeBoardForBonuses(newBoard);
+          let bonusPoints = 0;
+          const newAppliedBonuses = [...state.gameState.appliedBonuses];
+          
+          // Apply new bonuses that haven't been applied yet
+          const newBonuses: LineBonus[] = [];
+          for (const bonus of analysis.lineBonuses) {
+            const bonusId = `${bonus.pattern}-${bonus.lineIndex}-${bonus.type}`;
+            if (!newAppliedBonuses.includes(bonusId)) {
+              bonusPoints += bonus.points;
+              newAppliedBonuses.push(bonusId);
+              newBonuses.push(bonus);
+            }
+          }
+          
+          // Remove bonuses for lines that no longer qualify (when unmarking)
+          if (wasMarked && !newMarkedSquares[index]) {
+            // When unmarking, need to check what bonuses should be removed
+            const filteredBonuses: string[] = [];
+            for (const bonusId of newAppliedBonuses) {
+              const [, , type] = bonusId.split('-');
+              
+              // Check if this bonus still applies
+              const stillQualifies = analysis.lineBonuses.some(bonus => 
+                `${bonus.pattern}-${bonus.lineIndex}-${bonus.type}` === bonusId
+              );
+              
+              if (stillQualifies) {
+                filteredBonuses.push(bonusId);
+              } else {
+                // Remove bonus points when line no longer qualifies
+                const bonusType = type as '3-in-row' | '4-in-row' | 'bingo';
+                const points = bonusType === '3-in-row' ? 1 : bonusType === '4-in-row' ? 3 : 5;
+                bonusPoints -= points;
+              }
+            }
+            newAppliedBonuses.splice(0, newAppliedBonuses.length, ...filteredBonuses);
+          }
+          
+          // Apply bonus points to score
+          newScore = Math.max(0, newScore + bonusPoints);
+          
           set({
             gameState: {
               ...state.gameState,
               board: newBoard,
-              markedSquares: newMarkedSquares
+              markedSquares: newMarkedSquares,
+              appliedBonuses: newAppliedBonuses
             },
-            currentScore: newScore
+            currentScore: newScore,
+            recentBonuses: newBonuses
           });
         },
         
@@ -137,6 +189,16 @@ export const useGameStore = create<GameStore>()(
             wins: 0,
             totalSquares: 0
           });
+        },
+        
+        // Reset current score (separate from game reset)
+        resetScore: () => {
+          set({ currentScore: 0 });
+        },
+        
+        // Clear recent bonuses (for animation tracking)
+        clearRecentBonuses: () => {
+          set({ recentBonuses: [] });
         }
       }),
       {

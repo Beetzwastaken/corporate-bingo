@@ -356,6 +356,7 @@ export class BingoRoom {
       board: this.generateUniqueBoard(),
       markedSquares: new Set(),
       score: 0,
+      appliedBonuses: [],
       joinedAt: new Date()
     };
 
@@ -417,6 +418,7 @@ export class BingoRoom {
       board: this.generateUniqueBoard(),
       markedSquares: new Set(),
       score: 0,
+      appliedBonuses: [],
       joinedAt: new Date()
     };
 
@@ -518,18 +520,38 @@ export class BingoRoom {
       
       if (player.board[squareIndex] === buzzword) {
         player.markedSquares.add(squareIndex);
+        
+        // Base score: +1 for marking square
         player.score += 1;
+        
+        // Check for bonus points
+        const analysis = this.analyzeBoardForBonuses(player);
+        let bonusPoints = 0;
+        
+        // Apply new bonuses that haven't been applied yet
+        for (const bonus of analysis.lineBonuses) {
+          const bonusId = `${bonus.pattern}-${bonus.lineIndex}-${bonus.type}`;
+          if (!player.appliedBonuses.includes(bonusId)) {
+            bonusPoints += bonus.points;
+            player.appliedBonuses.push(bonusId);
+          }
+        }
+        
+        // Apply bonus points to score
+        player.score += bonusPoints;
         
         this.room.lastActivity = new Date();
         await this.state.storage.put('room', this.room);
         
-        // Broadcast to room
+        // Broadcast to room with bonus info
         this.broadcastToRoom({
           type: 'square_marked',
           player: { id: player.id, name: player.name },
           squareIndex,
           buzzword,
-          newScore: player.score
+          newScore: player.score,
+          bonusPoints: bonusPoints > 0 ? bonusPoints : undefined,
+          bonusType: bonusPoints > 0 ? analysis.lineBonuses[analysis.lineBonuses.length - 1]?.type : undefined
         });
         
         // Check for win condition
@@ -602,6 +624,144 @@ export class BingoRoom {
     }
     
     return false;
+  }
+
+  // Analyze board for line bonuses (3-in-row, 4-in-row, BINGO)
+  analyzeBoardForBonuses(player) {
+    const marked = Array.from(player.markedSquares);
+    marked.push(12); // FREE SPACE always marked
+    const lineBonuses = [];
+    
+    // Check rows for bonuses
+    for (let row = 0; row < 5; row++) {
+      const rowSquares = [row * 5, row * 5 + 1, row * 5 + 2, row * 5 + 3, row * 5 + 4];
+      const markedCount = rowSquares.filter(square => marked.includes(square)).length;
+      
+      if (markedCount === 5) {
+        lineBonuses.push({
+          type: 'bingo',
+          points: 5,
+          pattern: 'row',
+          lineIndex: row,
+          cells: rowSquares
+        });
+      } else if (markedCount === 4) {
+        lineBonuses.push({
+          type: '4-in-row',
+          points: 3,
+          pattern: 'row',
+          lineIndex: row,
+          cells: rowSquares.filter(square => marked.includes(square))
+        });
+      } else if (markedCount === 3) {
+        lineBonuses.push({
+          type: '3-in-row',
+          points: 1,
+          pattern: 'row',
+          lineIndex: row,
+          cells: rowSquares.filter(square => marked.includes(square))
+        });
+      }
+    }
+    
+    // Check columns for bonuses
+    for (let col = 0; col < 5; col++) {
+      const colSquares = [col, col + 5, col + 10, col + 15, col + 20];
+      const markedCount = colSquares.filter(square => marked.includes(square)).length;
+      
+      if (markedCount === 5) {
+        lineBonuses.push({
+          type: 'bingo',
+          points: 5,
+          pattern: 'column',
+          lineIndex: col,
+          cells: colSquares
+        });
+      } else if (markedCount === 4) {
+        lineBonuses.push({
+          type: '4-in-row',
+          points: 3,
+          pattern: 'column',
+          lineIndex: col,
+          cells: colSquares.filter(square => marked.includes(square))
+        });
+      } else if (markedCount === 3) {
+        lineBonuses.push({
+          type: '3-in-row',
+          points: 1,
+          pattern: 'column',
+          lineIndex: col,
+          cells: colSquares.filter(square => marked.includes(square))
+        });
+      }
+    }
+    
+    // Check diagonals for bonuses
+    const diagonal1 = [0, 6, 12, 18, 24];
+    const diagonal2 = [4, 8, 12, 16, 20];
+    
+    // Diagonal 1 (top-left to bottom-right)
+    const diagonal1MarkedCount = diagonal1.filter(square => marked.includes(square)).length;
+    if (diagonal1MarkedCount === 5) {
+      lineBonuses.push({
+        type: 'bingo',
+        points: 5,
+        pattern: 'diagonal',
+        lineIndex: 0,
+        cells: diagonal1
+      });
+    } else if (diagonal1MarkedCount === 4) {
+      lineBonuses.push({
+        type: '4-in-row',
+        points: 3,
+        pattern: 'diagonal',
+        lineIndex: 0,
+        cells: diagonal1.filter(square => marked.includes(square))
+      });
+    } else if (diagonal1MarkedCount === 3) {
+      lineBonuses.push({
+        type: '3-in-row',
+        points: 1,
+        pattern: 'diagonal',
+        lineIndex: 0,
+        cells: diagonal1.filter(square => marked.includes(square))
+      });
+    }
+    
+    // Diagonal 2 (top-right to bottom-left)
+    const diagonal2MarkedCount = diagonal2.filter(square => marked.includes(square)).length;
+    if (diagonal2MarkedCount === 5) {
+      lineBonuses.push({
+        type: 'bingo',
+        points: 5,
+        pattern: 'diagonal',
+        lineIndex: 1,
+        cells: diagonal2
+      });
+    } else if (diagonal2MarkedCount === 4) {
+      lineBonuses.push({
+        type: '4-in-row',
+        points: 3,
+        pattern: 'diagonal',
+        lineIndex: 1,
+        cells: diagonal2.filter(square => marked.includes(square))
+      });
+    } else if (diagonal2MarkedCount === 3) {
+      lineBonuses.push({
+        type: '3-in-row',
+        points: 1,
+        pattern: 'diagonal',
+        lineIndex: 1,
+        cells: diagonal2.filter(square => marked.includes(square))
+      });
+    }
+    
+    const totalBonusPoints = lineBonuses.reduce((sum, bonus) => sum + bonus.points, 0);
+    
+    return {
+      lineBonuses,
+      totalBonusPoints
+    };
   }
 
   broadcastToRoom(message) {
