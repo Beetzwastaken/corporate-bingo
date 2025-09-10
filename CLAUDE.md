@@ -35,7 +35,7 @@
 
 ## Project Overview
 
-**Corporate Bingo & Buzzword Entertainment Platform** - A sophisticated real-time multiplayer web application that transforms corporate meetings into interactive entertainment. Features professional-grade architecture with 369+ curated buzzwords, comprehensive scoring system, and advanced room management for authentic corporate humor.
+**Corporate Bingo & Buzzword Entertainment Platform** - A sophisticated real-time multiplayer web application that transforms corporate meetings into interactive entertainment. Features professional-grade architecture with 171 professionally curated buzzwords, comprehensive scoring system, and advanced room management for authentic corporate humor.
 
 **Core Features**: 
 - **Real-time Multiplayer Bingo**: Room-based gameplay with unique boards per player
@@ -77,10 +77,10 @@
 - `stores/` - Zustand stores (connectionStore, gameStore, roomStore, playerStore, multiRoomStore)
 - `lib/` - WebSocket, polling, and game engine utilities
 - `types/` - TypeScript interfaces
-- `data/buzzwords.ts` - Single source of truth for all 369+ buzzwords
+- `data/buzzwords.ts` - Single source of truth for all 171 professionally curated buzzwords
 
 ### Backend & Configuration
-- `worker.js` - Complete multiplayer backend (1037 lines, 369+ buzzwords)
+- `worker.js` - Complete multiplayer backend (1037 lines, 171 buzzwords)
 - `package.json`, `vite.config.ts`, `tsconfig.json`, `eslint.config.js`
 - `netlify.toml` - Proxy setup, `wrangler.toml` - Cloudflare config
 - `/dist/` - Build output directory
@@ -135,7 +135,7 @@
 
 ## Corporate Humor Domain
 
-### Buzzword Library Strategy (369+ Terms)
+### Buzzword Library Strategy (171 Terms)
 - **Meeting-focused humor** over technical accuracy
 - **Universal corporate recognition** for broad appeal  
 - **Professional appropriateness** for workplace use

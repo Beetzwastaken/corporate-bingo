@@ -122,7 +122,7 @@ case MESSAGE_TYPES.PLAYER_JOINED:
 - ✅ Store architecture: Refactored and stable
 
 ### Backend Infrastructure
-- **Cloudflare Workers**: `worker.js` (1037 lines, 369+ buzzwords)
+- **Cloudflare Workers**: `worker.js` (1037 lines, 171 buzzwords)
 - **Durable Objects**: Persistent room state management  
 - **Hybrid connectivity**: WebSocket + HTTP polling
 - **Rate limiting**: 30 messages/minute protection

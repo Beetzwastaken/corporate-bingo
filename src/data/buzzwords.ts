@@ -1,10 +1,10 @@
-// Corporate Bingo Buzzwords - Refined Curated List
+// Corporate Bingo Buzzwords - Professional Curated List
 // Updated: January 2025 - Focused on high-impact corporate humor
-// Total: 174 professionally selected buzzwords
+// Total: 171 professionally selected buzzwords (spoken phrases + observable actions)
 
-export const CORPORATE_BUZZWORDS = [
+export const CORPORATE_BINGO = [
   "Circle Back",
-  "Touch Base",
+  "Touch Base", 
   "Take This Offline",
   "You're Muted",
   "Can You Hear Me?",
@@ -104,18 +104,15 @@ export const CORPORATE_BUZZWORDS = [
   "Core Competency",
   "Game Plan",
   "Roadmap",
-  "Journey",
   "Ecosystem",
   "Holistic Approach",
   "30,000 Foot View",
   "Big Picture",
-  "Eating on Mute",
-  "Heavy Breathing",
-  "Dog Barking",
-  "Kids in Background",
-  "Typing Loudly",
-  "Echo on the Line",
-  "Name Dropping",
+  "HEAVY BREATHING INTO MIC",
+  "DOG BARKING IN BACKGROUND",
+  "KIDS SCREAMING IN BACKGROUND",
+  "AGGRESSIVE KEYBOARD TYPING",
+  "PAINFUL ECHO FEEDBACK",
   "Actually...",
   "Great Question!",
   "To Piggyback",
@@ -142,7 +139,6 @@ export const CORPORATE_BUZZWORDS = [
   "Level Up",
   "Ramp Up",
   "Spin Up",
-  "Lean In",
   "Reach Out",
   "Ping Me",
   "Streamline",

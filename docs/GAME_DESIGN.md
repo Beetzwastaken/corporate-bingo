@@ -45,7 +45,7 @@ Transform the tedium of corporate meetings into an engaging social game where pl
 
 ### Board Generation
 - **5x5 grid** with center FREE SPACE
-- **24 unique buzzwords** per player from 369+ term library
+- **24 unique buzzwords** per player from 174 term library
 - **Fisher-Yates shuffle** ensures true randomization
 - **No duplicate boards** - every player gets different terms
 
@@ -151,7 +151,7 @@ The core innovation that prevents cheating and creates social interaction:
 
 ## Content Design
 
-### Buzzword Categories (369 total terms)
+### Buzzword Categories (174 total terms)
 
 #### 1. Classic Corporate Speak (20 terms)
 **Philosophy**: The absolute worst traditional business jargon
@@ -280,7 +280,7 @@ The core innovation that prevents cheating and creates social interaction:
 ### Phase 1: MVP (Completed)
 - ✅ Real multiplayer functionality
 - ✅ Verification system with anti-cheat  
-- ✅ 369+ buzzword library
+- ✅ 174 buzzword library
 - ✅ Responsive web interface
 - ✅ Room-based gameplay
 

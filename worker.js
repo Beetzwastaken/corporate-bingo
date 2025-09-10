@@ -2,8 +2,8 @@
 // Handles real multiplayer rooms with unique boards per player
 
 // Import buzzwords from shared TypeScript constants
-import { CORPORATE_BUZZWORDS } from './src/data/buzzwords.js';
-const BUZZWORDS = CORPORATE_BUZZWORDS;
+import { CORPORATE_BINGO } from './src/data/buzzwords.js';
+const BUZZWORDS = CORPORATE_BINGO;
 
 // CORS helper with security improvements
 function corsHeaders(origin) {

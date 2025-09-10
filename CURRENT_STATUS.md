@@ -48,7 +48,7 @@ Corporate Bingo is **LIVE and FULLY OPERATIONAL** as a production-ready real-tim
 
 ### **Solo Play Mode**
 - ✅ **Instant startup**: Playable 5x5 bingo grid loads immediately
-- ✅ **369+ buzzwords**: Enhanced corporate humor content
+- ✅ **171 buzzwords**: Professionally curated corporate humor content
 - ✅ **No barriers**: Start playing without account creation or setup
 - ✅ **Auto-reshuffle**: New boards generated after each BINGO
 
@@ -126,7 +126,7 @@ Corporate Bingo is **LIVE and FULLY OPERATIONAL** as a production-ready real-tim
 
 ## 🎯 Content & Humor
 
-### **Buzzword Library (369+ Terms)**
+### **Buzzword Library (171 Terms)**
 - **Meeting Theater**: "Let's Take This Offline", "Run it by Legal", "Circle Back"
 - **Virtual Call Chaos**: "You're Muted", "Can Everyone See My Screen?", "Dog is Barking"
 - **Corporate Speak**: "Synergy", "Deep Dive", "At the End of the Day"
@@ -169,7 +169,7 @@ Corporate Bingo is **LIVE and FULLY OPERATIONAL** as a production-ready real-tim
 ### **User Experience**
 - ✅ **Instant Engagement**: Play immediately without barriers
 - ✅ **Multiplayer Fun**: Reliable room-based team gameplay  
-- ✅ **Corporate Humor**: 369+ professionally curated buzzwords
+- ✅ **Corporate Humor**: 171 professionally curated buzzwords
 - ✅ **Meeting Enhancement**: Transform boring meetings into interactive entertainment
 
 ### **Business Impact**

@@ -1,5 +1,5 @@
 // Bingo game engine for corporate buzzword bingo
-import { CORPORATE_BUZZWORDS } from '../data/buzzwords';
+import { CORPORATE_BINGO } from '../data/buzzwords';
 
 export interface BingoSquare {
   id: string;
@@ -19,7 +19,7 @@ export class BingoEngine {
    * Generate a new bingo card with random buzzwords
    */
   static generateCard(): BingoSquare[] {
-    const shuffled = [...CORPORATE_BUZZWORDS].sort(() => Math.random() - 0.5);
+    const shuffled = [...CORPORATE_BINGO].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, 24); // 24 + 1 free space = 25
     
     const card: BingoSquare[] = [];

@@ -12,14 +12,14 @@
 
 ### **Real Multiplayer Game**
 - **Room-based gameplay**: Create or join rooms with 6-character codes
-- **Unique boards per player**: Each person gets different buzzwords (369+ terms)
+- **Unique boards per player**: Each person gets different buzzwords (171 terms)
 - **HTTP Polling Backup**: Reliable multiplayer sync even with SSL issues
 - **Real-time updates**: Player lists and room status sync every 3 seconds
 - **Anti-cheat detection**: Players can't claim words they said themselves
 - **Auto-reshuffle**: New boards generated after each bingo win
 
 ### **Corporate Comedy Gold**
-- **369+ Buzzwords**: Enhanced collection of corporate speak, meeting theater, virtual call chaos
+- **171 Buzzwords**: Professionally curated collection of corporate speak, meeting theater, virtual call chaos
 - **Meeting-focused**: "You're Muted", "Can You See My Screen?", "Let's Take This Offline"
 - **Humor over technical**: Funny corporate terms rather than engineering jargon
 - **Curated content**: Professional appropriateness with maximum humor impact
@@ -124,7 +124,7 @@ npm run lint
 ### **People & Culture Comedy**
 "Culture Fit", "Self-starter", "Go-getter", "Servant Leader", "Executive Presence"
 
-*...and 350+ more ridiculous corporate terms!*
+*...and many more ridiculous corporate terms for quality entertainment!*
 
 ## 🛠️ Technical Implementation
 
@@ -170,13 +170,13 @@ Made with 😅 by developers who've survived too many "synergistic deep dives". 
 - **Production stability**: Comprehensive testing and quality assurance
 - **Star positioning centered**: FREE SPACE star perfectly centered across all breakpoints
 - **Mobile responsiveness enhanced**: Improved screen space utilization and touch targets
-- **Buzzword consolidation**: Single source of truth with 369+ curated terms
+- **Buzzword consolidation**: Single source of truth with 171 professionally curated terms
 
 ### 🚀 Version History
 - **v1.3.0** - Multiplayer reliability + Mobile UX improvements
 - **v1.2.0** - React 19 + TypeScript migration + Apple design
 - **v1.1.0** - Real-time multiplayer with Durable Objects
-- **v1.0.0** - Initial release with 369+ buzzwords
+- **v1.0.0** - Initial release with 171 professionally curated buzzwords
 
 ---
 

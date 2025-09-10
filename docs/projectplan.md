@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-Successfully transformed a single-player meme generator into a real-time multiplayer Corporate Buzzword Bingo game. The system features professional-grade architecture with Cloudflare Workers + Durable Objects, real-time verification system, anti-cheat detection, and 369+ curated corporate buzzwords focused on meeting humor.
+Successfully transformed a single-player meme generator into a real-time multiplayer Corporate Buzzword Bingo game. The system features professional-grade architecture with Cloudflare Workers + Durable Objects, real-time verification system, anti-cheat detection, and 171 curated corporate buzzwords focused on meeting humor.
 
 ## Project Scope
 
@@ -17,7 +17,7 @@ Successfully transformed a single-player meme generator into a real-time multipl
 - **Anti-cheat detection** preventing self-claims (-50 point penalty)
 - **Auto-reshuffle** generating new boards after wins
 - **Professional security** including input validation and rate limiting
-- **369+ corporate buzzwords** across 12 humor-focused categories
+- **171 corporate buzzwords** across 12 humor-focused categories
 - **WebSocket real-time communication** for instant updates
 - **Responsive web interface** optimized for mobile/desktop
 
@@ -151,7 +151,7 @@ GET  /api/test            - Health check and system status
 
 ## Content Strategy
 
-### Buzzword Library (369 terms)
+### Buzzword Library (171 terms)
 **Design Philosophy**: Humor over technical accuracy, meeting-focused content
 
 #### Primary Categories:
