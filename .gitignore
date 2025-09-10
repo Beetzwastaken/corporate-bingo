@@ -54,3 +54,6 @@ coverage/
 
 # Local Netlify folder
 .netlify
+
+# Wrangler temporary files
+.wrangler/
