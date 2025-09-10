@@ -47,15 +47,37 @@ export default {
     }
 
     try {
-      // Analytics requests - delegate to analytics worker
+      // Analytics requests - delegate to analytics worker with graceful fallback
       if (url.pathname === '/api/performance' || 
           url.pathname === '/api/buzzwords' ||
           url.pathname === '/api/analytics/players' ||
           url.pathname.startsWith('/api/ingest') ||
           url.pathname.startsWith('/ws/dashboard')) {
-        const analyticsId = env.ANALYTICS.idFromName('dashboard-analytics');
-        const analyticsObj = env.ANALYTICS.get(analyticsId);
-        return analyticsObj.fetch(request, env);
+        try {
+          // Check if ANALYTICS binding exists
+          if (!env.ANALYTICS) {
+            return new Response(JSON.stringify({ 
+              error: 'Analytics service temporarily unavailable',
+              message: 'Analytics features are being deployed'
+            }), { 
+              status: 503,
+              headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) }
+            });
+          }
+          
+          const analyticsId = env.ANALYTICS.idFromName('dashboard-analytics');
+          const analyticsObj = env.ANALYTICS.get(analyticsId);
+          return analyticsObj.fetch(request, env);
+        } catch (error) {
+          console.error('Analytics delegation failed:', error);
+          return new Response(JSON.stringify({ 
+            error: 'Analytics service temporarily unavailable',
+            details: error.message
+          }), { 
+            status: 503,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) }
+          });
+        }
       }
 
       // Create Room - POST /api/room/create
@@ -207,12 +229,13 @@ export default {
         });
       }
 
-      // Health check
-      if (url.pathname === '/api/health') {
+      // Health check - support both old and new endpoints for backward compatibility
+      if (url.pathname === '/api/health' || url.pathname === '/health') {
         return new Response(JSON.stringify({ 
           status: 'healthy', 
           timestamp: Date.now(),
-          version: '1.3.1'
+          version: '1.3.1',
+          endpoint: url.pathname
         }), {
           headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) }
         });
