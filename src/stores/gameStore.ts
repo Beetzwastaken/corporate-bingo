@@ -23,6 +23,7 @@ interface GameStore {
   gamesPlayed: number;
   wins: number;
   totalSquares: number;
+  currentScore: number;
   
   // Actions
   initializeGame: () => void;
@@ -49,6 +50,7 @@ export const useGameStore = create<GameStore>()(
         gamesPlayed: 0,
         wins: 0,
         totalSquares: 0,
+        currentScore: 0,
         
         // Initialize a new game
         initializeGame: () => {
@@ -68,7 +70,8 @@ export const useGameStore = create<GameStore>()(
               markedSquares,
               hasWon: false,
               winningPattern: undefined
-            }
+            },
+            currentScore: 0
           });
         },
         
@@ -76,6 +79,7 @@ export const useGameStore = create<GameStore>()(
         markSquare: (index: number) => {
           const state = get();
           const newMarkedSquares = [...state.gameState.markedSquares];
+          const wasMarked = newMarkedSquares[index];
           newMarkedSquares[index] = !newMarkedSquares[index];
           
           // Also update the board's isMarked properties to keep both sources in sync
@@ -84,12 +88,23 @@ export const useGameStore = create<GameStore>()(
             isMarked: newMarkedSquares[i] || false
           }));
           
+          // Update score: +1 for marking, -1 for unmarking (but don't go below 0)
+          let newScore = state.currentScore;
+          if (!wasMarked && newMarkedSquares[index]) {
+            // Marking a square
+            newScore += 1;
+          } else if (wasMarked && !newMarkedSquares[index]) {
+            // Unmarking a square
+            newScore = Math.max(0, newScore - 1);
+          }
+          
           set({
             gameState: {
               ...state.gameState,
               board: newBoard,
               markedSquares: newMarkedSquares
-            }
+            },
+            currentScore: newScore
           });
         },
         

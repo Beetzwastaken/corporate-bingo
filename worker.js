@@ -518,7 +518,7 @@ export class BingoRoom {
       
       if (player.board[squareIndex] === buzzword) {
         player.markedSquares.add(squareIndex);
-        player.score += 10;
+        player.score += 1;
         
         this.room.lastActivity = new Date();
         await this.state.storage.put('room', this.room);

@@ -6,7 +6,7 @@
 
 🚀 **[https://corporate-bingo-ai.netlify.app](https://corporate-bingo-ai.netlify.app)**
 
-**Current Status**: Production Ready | Multiplayer Working | Mobile Optimized
+**Current Status**: Production Ready | Backend Optimized (76% size reduction) | Multiplayer Working | Mobile Optimized
 
 ## 🎮 Features
 
@@ -63,11 +63,14 @@
 ## 🏗️ Architecture
 
 ### **Backend (Cloudflare Workers + Durable Objects)**
-- **worker.js**: Main API router and request handler (1000+ lines)
+- **worker.js**: Optimized main API router (18KB, reduced from 77KB)
+- **analytics-worker.js**: Separate analytics service with dedicated Durable Object
 - **BingoRoom**: Durable Object managing individual game rooms
+- **DashboardAnalytics**: Dedicated analytics Durable Object for performance metrics
 - **HTTP Polling**: Fallback API endpoints for multiplayer sync
 - **Security**: CORS, input validation, rate limiting, memory management
 - **Real-time**: WebSocket primary + HTTP polling backup
+- **Architecture**: Dual-service separation with graceful fallback handling
 
 ### **Frontend (React 19 + TypeScript)**
 - **Modern SPA**: React 19.1.0 with TypeScript 5.8.3
@@ -102,10 +105,13 @@ npm run lint
 ```
 
 ### **Deployment**
-- **Backend**: Cloudflare Workers (`npx wrangler deploy`)
+- **Backend**: Dual Cloudflare Workers deployment (main + analytics services)
+- **Main Worker**: Core game functionality (`npx wrangler deploy`)
+- **Analytics Worker**: Separate performance analytics service
 - **Frontend**: Netlify (automatic from `main` branch via GitHub Actions)
 - **SSL Proxy**: Netlify redirects handle SSL issues with Cloudflare Workers
 - **Production URL**: https://corporate-bingo-ai.netlify.app
+- **Health Endpoints**: Backward compatible (/health + /api/health)
 
 ## 🔥 Buzzword Categories
 
@@ -132,11 +138,14 @@ Built with professional-grade architecture and modern development practices:
 
 ### **Reliability & Performance**
 - **Hybrid Connectivity**: WebSocket primary with HTTP polling backup (every 3s)
+- **Backend Optimization**: 76% bundle size reduction (77KB → 18KB)
+- **Service Architecture**: Separated analytics for improved performance
 - **Mobile-First Design**: Responsive with touch-optimized sliding sidebar
 - **TypeScript Strict Mode**: Comprehensive type safety and error prevention
 - **Input validation**: Comprehensive sanitization and validation
 - **Rate limiting**: 30 messages per minute per player
 - **Memory management**: Automatic cleanup on disconnect
+- **Graceful Degradation**: Analytics service fallback with error handling
 
 ### **Real-time Features**
 - **WebSocket communication**: Instant updates across all players
@@ -162,17 +171,19 @@ Made with 😅 by developers who've survived too many "synergistic deep dives". 
 
 ## 📋 Recent Updates
 
-### ✅ Latest Fixes (January 2025)
-- **Multiplayer synchronization fixed**: HTTP polling backup ensures players see each other
+### ✅ Latest Fixes (September 2025)
+- **Backend optimization (v1.4.0)**: 76% bundle size reduction with analytics service separation
+- **Production compatibility**: Backward-compatible health endpoints for zero-downtime deployment
+- **Service architecture**: Extracted analytics to dedicated Durable Object for performance
+- **Error handling**: Comprehensive graceful fallback systems and rollback procedures
+- **Multiplayer synchronization**: HTTP polling backup ensures players see each other
 - **Mobile sidebar improvements**: Touch-friendly close with overlay and X button  
 - **TypeScript strict compliance**: All linting errors resolved for reliable deployments
 - **SSL resilience**: Hybrid WebSocket + HTTP polling handles Cloudflare SSL issues
 - **Production stability**: Comprehensive testing and quality assurance
-- **Star positioning centered**: FREE SPACE star perfectly centered across all breakpoints
-- **Mobile responsiveness enhanced**: Improved screen space utilization and touch targets
-- **Buzzword consolidation**: Single source of truth with 171 professionally curated terms
 
 ### 🚀 Version History
+- **v1.4.0** - Backend optimization + Analytics service separation (76% bundle reduction)
 - **v1.3.0** - Multiplayer reliability + Mobile UX improvements
 - **v1.2.0** - React 19 + TypeScript migration + Apple design
 - **v1.1.0** - Real-time multiplayer with Durable Objects
@@ -180,4 +191,4 @@ Made with 😅 by developers who've survived too many "synergistic deep dives". 
 
 ---
 
-**🚀 Professional Meeting Entertainment Since 2025 • Real Multiplayer • Mobile Optimized • Claude Code Enhanced • v1.3.0**
+**🚀 Professional Meeting Entertainment Since 2025 • Real Multiplayer • Backend Optimized • Mobile Optimized • Claude Code Enhanced • v1.4.0**

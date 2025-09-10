@@ -4,7 +4,7 @@
 **Current Status**: ✅ PRODUCTION READY - Advanced Multiplayer Platform  
 **Live URL**: https://corporate-bingo-ai.netlify.app  
 **Last Updated**: September 10, 2025
-**Latest Deployment**: September 10, 2025 - Build assets updated and production synchronized
+**Latest Deployment**: September 10, 2025 - Backend optimized with 76% bundle reduction, analytics service separated
 
 ## 🚨 MANDATORY: ALWAYS USE SPECIALIZED AGENTS 🚨
 **NEVER work directly on Corporate Bingo tasks - Always delegate to specialized agents first**
@@ -49,7 +49,7 @@
 
 - **Frontend**: React 19.1.0, TypeScript, Vite 7.0.4, Tailwind CSS 4.1.11
 - **State Management**: Zustand 5.0.7 (4 focused store modules)
-- **Backend**: Cloudflare Workers, Durable Objects, WebSocket real-time communication
+- **Backend**: Cloudflare Workers with dual-service architecture, Durable Objects, WebSocket real-time communication
 - **Development**: ESLint 9.30.1, TypeScript 5.8.3, PostCSS, Autoprefixer
 - **Deployment**: Netlify (frontend), Cloudflare Workers (backend)
 
@@ -57,7 +57,8 @@
 
 ### Development
 - `npm run dev` - Start Vite development server (port 5175)
-- `npx wrangler dev --port 8787` - Local Cloudflare Workers development
+- `npx wrangler dev --port 8787` - Local main worker development
+- `npx wrangler dev --port 8788` - Local analytics worker development (if needed)
 
 ### Quality & Build
 - `npm run build` - TypeScript compilation + Vite production build
@@ -65,8 +66,10 @@
 - `npm run preview` - Test production build locally
 
 ### Deployment
-- `npx wrangler deploy` - Deploy to Cloudflare Workers production
+- `npx wrangler deploy` - Deploy main worker to Cloudflare Workers production
+- `npx wrangler deploy --config wrangler-analytics.toml` - Deploy analytics service
 - **Frontend**: Automatic via Netlify Git integration on push to main
+- **Health Endpoints**: Backward compatible deployment (/health + /api/health)
 
 ## File Structure
 
@@ -80,9 +83,10 @@
 - `data/buzzwords.ts` - Single source of truth for all 171 professionally curated buzzwords
 
 ### Backend & Configuration
-- `worker.js` - Complete multiplayer backend (1037 lines, 171 buzzwords)
+- `worker.js` - Optimized main backend (18KB, reduced from 77KB)
+- `analytics-worker.js` - Separate analytics service with DashboardAnalytics Durable Object
 - `package.json`, `vite.config.ts`, `tsconfig.json`, `eslint.config.js`
-- `netlify.toml` - Proxy setup, `wrangler.toml` - Cloudflare config
+- `netlify.toml` - Proxy setup, `wrangler.toml` - Cloudflare config with dual service deployment
 - `/dist/` - Build output directory
 
 ### Documentation & Testing

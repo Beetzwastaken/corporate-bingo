@@ -207,7 +207,7 @@ export function Leaderboard({
             <div 
               className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 transition-all duration-500"
               style={{ 
-                width: `${Math.min((leadingScore / 200) * 100, 100)}%` // Assume 200 is max reasonable score
+                width: `${Math.min((leadingScore / 25) * 100, 100)}%` // Assume 25 is max reasonable score
               }}
             />
           </div>

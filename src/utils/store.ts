@@ -28,6 +28,7 @@ export const useBingoStore = () => {
     gamesPlayed: gameStore.gamesPlayed,
     wins: gameStore.wins,
     totalSquares: gameStore.totalSquares,
+    currentScore: gameStore.currentScore,
     
     // Room state
     currentRoom: roomStore.currentRoom,

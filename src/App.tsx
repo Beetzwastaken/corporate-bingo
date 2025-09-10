@@ -3,6 +3,7 @@
 
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { BingoCard } from './components/bingo/BingoCard';
+import { SoloScoreDisplay } from './components/bingo/SoloScoreDisplay';
 import { useBingoStore } from './utils/store';
 import { APP_VERSION } from './utils/version';
 import { BingoEngine } from './lib/bingoEngine';
@@ -34,6 +35,7 @@ function App() {
     gamesPlayed,
     wins,
     totalSquares,
+    currentScore,
     isConnected,
     connectionError,
     markSquare,
@@ -252,10 +254,17 @@ function App() {
               <div className="max-w-2xl mx-auto">
                 {/* Solo Play Mode - Always Ready */}
                 {!currentRoom && (
-                  <div className="text-center mb-6">
-                    <h2 className="text-xl font-medium text-apple-text mb-2">Solo Play Mode</h2>
-                    <p className="text-apple-secondary text-sm">Play solo or create/join a room for multiplayer</p>
-                  </div>
+                  <>
+                    <div className="text-center mb-6">
+                      <h2 className="text-xl font-medium text-apple-text mb-2">Solo Play Mode</h2>
+                      <p className="text-apple-secondary text-sm">Play solo or create/join a room for multiplayer</p>
+                    </div>
+                    
+                    {/* Solo Score Display */}
+                    <div className="mb-8">
+                      <SoloScoreDisplay score={currentScore || 0} className="py-6" />
+                    </div>
+                  </>
                 )}
                 
                 <BingoCard 

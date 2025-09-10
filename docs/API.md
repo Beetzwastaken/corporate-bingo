@@ -3,8 +3,8 @@
 Complete API reference for the Corporate Buzzword Bingo multiplayer backend.
 
 ## Base URL
-- **Development**: `http://localhost:8787`
-- **Production**: `https://buzzword-bingo.your-worker.workers.dev`
+- **Development**: `http://localhost:8787` (main worker), `http://localhost:8788` (analytics worker)
+- **Production**: `https://corporate-bingo-api.ryanwixon15.workers.dev` (main), analytics service available separately
 
 ## Authentication
 No authentication required. Rooms are secured by 6-character codes.
@@ -85,13 +85,30 @@ Real-time communication for gameplay.
 ### Health Check
 Test API connectivity and get system status.
 
-**Endpoint**: `GET /api/test`
+**Endpoints**: 
+- `GET /health` (legacy compatibility)
+- `GET /api/health` (current standard)
+- `GET /api/test` (detailed system info)
 
-**Response** (200):
+**Health Response** (200):
+```json
+{
+  "status": "healthy",
+  "timestamp": 1704067200000,
+  "endpoint": "/health",
+  "service": "main-worker"
+}
+```
+
+**Test Response** (200):
 ```json
 {
   "message": "API is working",
-  "buzzwordCount": 414
+  "buzzwordCount": 414,
+  "services": {
+    "main": "operational",
+    "analytics": "available"
+  }
 }
 ```
 
@@ -292,6 +309,20 @@ Response to ping message.
   "timestamp": 1704067200000
 }
 ```
+
+## Backend Architecture
+
+### Service Separation
+- **Main Worker**: Core game functionality (18KB optimized bundle)
+- **Analytics Worker**: Performance metrics and dashboard analytics
+- **Health Endpoints**: Backward compatible (/health + /api/health)
+- **Graceful Degradation**: Analytics service with 503 fallback handling
+
+### Bundle Optimization
+- **Original Size**: 77KB
+- **Optimized Size**: 18KB (76% reduction)
+- **Analytics Extraction**: Separate Durable Object service
+- **Production Compatibility**: Zero-downtime deployment support
 
 ## Rate Limits
 
