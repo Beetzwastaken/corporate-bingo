@@ -1,8 +1,8 @@
-// Corporate Bingo Buzzwords - Ultimate Curated List
+// Corporate Bingo Buzzwords - Professional Curated List
 // Updated: January 2025 - Focused on high-impact corporate humor
 // Total: 171 professionally selected buzzwords (spoken phrases + observable actions)
 
-export const ULTIMATE_CORPORATE_BINGO = [
+export const CORPORATE_BINGO = [
   "Circle Back",
   "Touch Base", 
   "Take This Offline",
@@ -177,4 +177,4 @@ export const ULTIMATE_CORPORATE_BINGO = [
 ];
 
 // For backward compatibility
-export const CORPORATE_BUZZWORDS = ULTIMATE_CORPORATE_BINGO;
+export const CORPORATE_BUZZWORDS = CORPORATE_BINGO;
