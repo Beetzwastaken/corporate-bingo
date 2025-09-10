@@ -4,6 +4,9 @@
 import { CORPORATE_BINGO } from './src/data/buzzwords.js';
 const BUZZWORDS = CORPORATE_BINGO;
 
+// Import and re-export DashboardAnalytics for wrangler
+export { DashboardAnalytics } from './analytics-worker.js';
+
 // CORS helper
 function corsHeaders(origin) {
   const allowedOrigins = [
@@ -45,7 +48,11 @@ export default {
 
     try {
       // Analytics requests - delegate to analytics worker
-      if (url.pathname.startsWith('/api/dashboard/') || url.pathname.startsWith('/ws/dashboard')) {
+      if (url.pathname === '/api/performance' || 
+          url.pathname === '/api/buzzwords' ||
+          url.pathname === '/api/analytics/players' ||
+          url.pathname.startsWith('/api/ingest') ||
+          url.pathname.startsWith('/ws/dashboard')) {
         const analyticsId = env.ANALYTICS.idFromName('dashboard-analytics');
         const analyticsObj = env.ANALYTICS.get(analyticsId);
         return analyticsObj.fetch(request, env);
