@@ -1,33 +1,10 @@
-import { useEffect, useState } from 'react';
-
 interface BingoModalProps {
   show: boolean;
   onBingo: () => void;
+  onCancel: () => void;
 }
 
-export function BingoModal({ show, onBingo }: BingoModalProps) {
-  const [countdown, setCountdown] = useState(3);
-
-  useEffect(() => {
-    if (show) {
-      setCountdown(3); // Reset countdown when modal opens
-
-      // Start countdown timer
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            onBingo(); // Auto-close after countdown
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
-    }
-  }, [show, onBingo]);
-
+export function BingoModal({ show, onBingo, onCancel }: BingoModalProps) {
   if (!show) {
     return null;
   }
@@ -37,7 +14,7 @@ export function BingoModal({ show, onBingo }: BingoModalProps) {
       {/* Backdrop with blur */}
       <div
         className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm z-[1000] animate-fadeIn"
-        onClick={onBingo}
+        onClick={onCancel}
       />
 
       {/* Centered Modal */}
@@ -53,20 +30,25 @@ export function BingoModal({ show, onBingo }: BingoModalProps) {
             </p>
           </div>
 
-          {/* Action Button */}
-          <button
-            onClick={onBingo}
-            className="w-full px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold text-xl rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
-          >
-            Get New Board
-          </button>
+          {/* Action Buttons */}
+          <div className="flex gap-4">
+            <button
+              onClick={onCancel}
+              className="flex-1 px-6 py-4 bg-gray-600 hover:bg-gray-700 text-white font-bold text-lg rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onBingo}
+              className="flex-1 px-6 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold text-lg rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              Confirm BINGO
+            </button>
+          </div>
 
-          {/* Countdown Text */}
-          <p className="text-center text-apple-secondary text-lg mt-4 font-semibold">
-            New round in {countdown}...
-          </p>
-          <p className="text-center text-apple-tertiary text-sm mt-2">
-            Click anywhere to skip
+          {/* Hint Text */}
+          <p className="text-center text-apple-tertiary text-sm mt-4">
+            Click backdrop or Cancel if this was a mistake
           </p>
         </div>
       </div>

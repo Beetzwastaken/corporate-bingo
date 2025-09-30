@@ -110,6 +110,10 @@ function App() {
     handleNewGame();
   };
 
+  const handleCancelBingo = () => {
+    setGameWon(false);
+  };
+
   const gameStats = {
     gamesPlayed,
     wins,
@@ -351,7 +355,7 @@ function App() {
 
 
       {/* BINGO Modal */}
-      <BingoModal show={gameState.hasWon} onBingo={handleBingo} />
+      <BingoModal show={gameState.hasWon} onBingo={handleBingo} onCancel={handleCancelBingo} />
 
       {/* Verification Modal */}
       <VerificationModal />
