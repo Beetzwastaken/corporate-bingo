@@ -53,7 +53,7 @@ interface ConnectionStore {
   connect: () => Promise<void>;
   disconnect: () => void;
   sendMessage: (type: string, payload?: Record<string, unknown>) => Promise<void>;
-  handleMessage: (message: IncomingMessage) => void;
+  handleMessage: (message: IncomingMessage) => Promise<void>;
   setConnectionError: (error: string | null) => void;
   clearConnection: () => void;
 }
@@ -234,7 +234,7 @@ export const useConnectionStore = create<ConnectionStore>()(
       },
       
       // Handle incoming messages
-      handleMessage: (message: IncomingMessage) => {
+      handleMessage: async (message: IncomingMessage) => {
         const roomStore = useRoomStore.getState();
         const gameStore = useGameStore.getState();
         
@@ -323,6 +323,79 @@ export const useConnectionStore = create<ConnectionStore>()(
             break;
           }
             
+          case 'verification_request': {
+            // Someone wants to claim a square - show verification modal
+            const { useVerificationStore } = await import('./verificationStore');
+            const verificationStore = useVerificationStore.getState();
+
+            if (message.verification) {
+              const verification = message.verification as {
+                id: string;
+                playerId: string;
+                playerName: string;
+                squareIndex: number;
+                buzzword: string;
+                expiresAt: number;
+              };
+
+              // Add to pending verifications
+              verificationStore.addVerification({
+                id: verification.id,
+                playerId: verification.playerId,
+                playerName: verification.playerName,
+                squareIndex: verification.squareIndex,
+                buzzword: verification.buzzword,
+                votes: new Map(),
+                createdAt: Date.now(),
+                expiresAt: verification.expiresAt,
+                resolved: false
+              });
+
+              // Show modal immediately
+              verificationStore.setActiveVerification({
+                id: verification.id,
+                playerName: verification.playerName,
+                buzzword: verification.buzzword,
+                squareIndex: verification.squareIndex,
+                expiresAt: verification.expiresAt
+              });
+
+              console.log(`📋 Verification request from ${verification.playerName} for "${verification.buzzword}"`);
+            }
+            break;
+          }
+
+          case 'verification_resolved': {
+            // Verification complete - update UI
+            const { useVerificationStore } = await import('./verificationStore');
+            const verificationStore = useVerificationStore.getState();
+
+            if (message.verificationId) {
+              verificationStore.resolveVerification(message.verificationId as string);
+
+              if (message.approved) {
+                // Square was approved - mark it and show success
+                if (typeof message.squareIndex === 'number') {
+                  gameStore.markSquare(message.squareIndex);
+                  console.log(`✅ Claim approved: ${message.player?.name} scored ${message.score} points`);
+
+                  // Show success toast
+                  if (message.player?.name && message.bonusPoints) {
+                    console.log(`🎉 +${message.bonusPoints} bonus points!`);
+                  }
+                }
+              } else {
+                // Square was rejected
+                console.log(`❌ Claim rejected: ${message.message}`);
+                if (message.voteBreakdown && typeof message.voteBreakdown === 'object') {
+                  const breakdown = message.voteBreakdown as { approves: number; rejects: number; missing: number };
+                  console.log(`  Votes: ${breakdown.approves} approve, ${breakdown.rejects} reject, ${breakdown.missing} missing`);
+                }
+              }
+            }
+            break;
+          }
+
           case MESSAGE_TYPES.ERROR:
             set({ connectionError: (typeof message.error === 'string' ? message.error : 'Connection error occurred') });
             break;

@@ -5,6 +5,7 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { BingoCard } from './components/bingo/BingoCard';
 import { SoloScoreDisplay } from './components/bingo/SoloScoreDisplay';
 import { BingoModal } from './components/bingo/BingoModal';
+import { VerificationModal } from './components/bingo/VerificationModal';
 import { useBingoStore } from './utils/store';
 import { APP_VERSION } from './utils/version';
 import { BingoEngine } from './lib/bingoEngine';
@@ -65,10 +66,38 @@ function App() {
     }
   }, [gameState.markedSquares, gameState.hasWon, gameState.board, setGameWon]);
 
-  const handleSquareClick = (squareId: string) => {
+  const handleSquareClick = async (squareId: string) => {
     const squareIndex = parseInt(squareId.split('-')[1]);
-    markSquare(squareIndex);
-    incrementTotalSquares();
+
+    // In multiplayer mode, request verification from other players
+    if (currentRoom && currentRoom.players.length > 1) {
+      const square = gameState.board[squareIndex];
+      if (!square) return;
+
+      try {
+        // Import connectionStore dynamically to avoid circular dependencies
+        const { useConnectionStore } = await import('./stores/connectionStore');
+        const sendMessage = useConnectionStore.getState().sendMessage;
+
+        // Request verification via WebSocket
+        await sendMessage('request_verification', {
+          squareIndex,
+          buzzword: square.text
+        });
+
+        // Show toast notification
+        const { showGameToast } = await import('./components/shared/ToastNotification');
+        showGameToast('Verification Requested', `Waiting for votes on "${square.text}"`, 'info');
+      } catch (error) {
+        console.error('Failed to request verification:', error);
+        const { showGameToast } = await import('./components/shared/ToastNotification');
+        showGameToast('Verification Failed', 'Failed to request verification', 'error');
+      }
+    } else {
+      // Solo mode: mark directly without verification
+      markSquare(squareIndex);
+      incrementTotalSquares();
+    }
   };
 
   const handleNewGame = () => {
@@ -319,10 +348,14 @@ function App() {
           </aside>
         )}
       </div>
-      
-      
+
+
       {/* BINGO Modal */}
       <BingoModal show={gameState.hasWon} onBingo={handleBingo} />
+
+      {/* Verification Modal */}
+      <VerificationModal />
+
       {/* Toast Notifications */}
       <ToastContainer />
     </div>

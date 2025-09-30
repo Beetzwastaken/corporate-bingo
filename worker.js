@@ -301,6 +301,7 @@ export class BingoRoom {
     this.env = env;
     this.sessions = new Map();
     this.room = null;
+    this.pendingVerifications = new Map(); // verificationId -> { playerId, playerName, squareIndex, buzzword, votes, createdAt, resolved }
   }
 
   async fetch(request) {
@@ -565,6 +566,75 @@ export class BingoRoom {
       }
     }
 
+    // Handle verification request (multiplayer only)
+    if (action.type === 'request_verification') {
+      const { squareIndex, buzzword } = action;
+      const verificationId = crypto.randomUUID();
+
+      // Create verification request
+      const verification = {
+        id: verificationId,
+        playerId: player.id,
+        playerName: player.name,
+        squareIndex,
+        buzzword,
+        votes: new Map(), // playerId -> boolean (approve/reject)
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 30000, // 30 seconds
+        resolved: false
+      };
+
+      this.pendingVerifications.set(verificationId, verification);
+
+      // Broadcast to OTHER players only (not the claiming player)
+      this.broadcastToRoom({
+        type: 'verification_request',
+        verification: {
+          id: verificationId,
+          playerId: player.id,
+          playerName: player.name,
+          squareIndex,
+          buzzword,
+          expiresAt: verification.expiresAt
+        }
+      }, player.id); // Exclude claiming player
+
+      // Set timeout for auto-resolution (30s)
+      setTimeout(() => this.resolveVerification(verificationId), 30000);
+
+      return new Response(JSON.stringify({ success: true, verificationId }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Handle vote casting
+    if (action.type === 'cast_vote') {
+      const { verificationId, approved } = action;
+      const verification = this.pendingVerifications.get(verificationId);
+
+      if (!verification || verification.resolved) {
+        return new Response(JSON.stringify({ error: 'Verification not found or already resolved' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Record vote
+      verification.votes.set(playerId, approved);
+
+      // Check if all players (except claimer) have voted
+      const totalPlayers = this.room.players.length - 1; // Exclude claimer
+      const votesReceived = verification.votes.size;
+
+      if (votesReceived >= totalPlayers) {
+        await this.resolveVerification(verificationId);
+      }
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     return new Response(JSON.stringify({ success: true }), {
       headers: { 'Content-Type': 'application/json' }
     });
@@ -761,10 +831,15 @@ export class BingoRoom {
     };
   }
 
-  broadcastToRoom(message) {
+  broadcastToRoom(message, excludePlayerId = null) {
     const messageString = JSON.stringify(message);
-    
+
     this.sessions.forEach((session, playerId) => {
+      // Skip excluded player if specified
+      if (excludePlayerId && playerId === excludePlayerId) {
+        return;
+      }
+
       try {
         session.send(messageString);
       } catch (error) {
@@ -772,5 +847,85 @@ export class BingoRoom {
         this.sessions.delete(playerId);
       }
     });
+  }
+
+  // Resolve verification (called when all votes in or timeout)
+  async resolveVerification(verificationId) {
+    const verification = this.pendingVerifications.get(verificationId);
+    if (!verification || verification.resolved) return;
+
+    verification.resolved = true;
+
+    // Count votes (missing votes count as approve - benefit of doubt)
+    const totalPlayers = this.room.players.length - 1;
+    const approveVotes = Array.from(verification.votes.values()).filter(v => v === true).length;
+    const rejectVotes = verification.votes.size - approveVotes;
+    const missingVotes = totalPlayers - verification.votes.size;
+    const totalApproves = approveVotes + missingVotes;
+
+    const approved = totalApproves > (totalPlayers / 2); // Majority rule
+
+    const player = this.room.players.find(p => p.id === verification.playerId);
+    if (!player) {
+      this.pendingVerifications.delete(verificationId);
+      return;
+    }
+
+    if (approved) {
+      // APPROVED: Mark square and award points
+      player.markedSquares.add(verification.squareIndex);
+      player.score += 1;
+
+      // Check for bonuses
+      const analysis = this.analyzeBoardForBonuses(player);
+      let bonusPoints = 0;
+      for (const bonus of analysis.lineBonuses) {
+        const bonusId = `${bonus.pattern}-${bonus.lineIndex}-${bonus.type}`;
+        if (!player.appliedBonuses.includes(bonusId)) {
+          bonusPoints += bonus.points;
+          player.appliedBonuses.push(bonusId);
+        }
+      }
+      player.score += bonusPoints;
+
+      await this.state.storage.put('room', this.room);
+
+      // Broadcast approval
+      this.broadcastToRoom({
+        type: 'verification_resolved',
+        verificationId,
+        approved: true,
+        player: { id: player.id, name: player.name },
+        squareIndex: verification.squareIndex,
+        score: player.score,
+        bonusPoints: bonusPoints > 0 ? bonusPoints : undefined
+      });
+
+      // Check for win condition
+      if (this.checkWinCondition(player)) {
+        this.broadcastToRoom({
+          type: 'player_won',
+          player: { id: player.id, name: player.name },
+          finalScore: player.score
+        });
+      }
+    } else {
+      // REJECTED: No points, no marking
+      this.broadcastToRoom({
+        type: 'verification_resolved',
+        verificationId,
+        approved: false,
+        player: { id: player.id, name: player.name },
+        squareIndex: verification.squareIndex,
+        message: `${player.name}'s claim was rejected by the group`,
+        voteBreakdown: {
+          approves: approveVotes,
+          rejects: rejectVotes,
+          missing: missingVotes
+        }
+      });
+    }
+
+    this.pendingVerifications.delete(verificationId);
   }
 }
