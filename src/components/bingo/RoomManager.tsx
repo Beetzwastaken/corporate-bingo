@@ -99,8 +99,10 @@ export function RoomManager() {
 
   const validateRoomCode = (code: string): boolean => {
     const cleaned = code.trim().toUpperCase();
-    // Accept both old format (6 chars) and new format (MTG-XXXX or TEAM-XXXX)
-    return /^[A-Z0-9]{6}$/.test(cleaned) || /^(MTG|TEAM)-[A-Z0-9]{4}$/.test(cleaned);
+    // Accept 4-character codes (current format), 6-char legacy, and prefixed formats
+    return /^[A-Z0-9]{4}$/.test(cleaned) ||
+           /^[A-Z0-9]{6}$/.test(cleaned) ||
+           /^(MTG|TEAM)-[A-Z0-9]{4}$/.test(cleaned);
   };
 
   const handleSetPlayerName = () => {
