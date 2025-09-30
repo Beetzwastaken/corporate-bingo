@@ -31,6 +31,7 @@ interface GameStore {
   initializeGame: () => void;
   markSquare: (index: number) => void;
   resetGame: () => void;
+  resetBoard: () => void; // Phase 4: Reset board but keep score
   resetScore: () => void;
   setGameWon: (won: boolean, pattern?: number[]) => void;
   incrementGamesPlayed: () => void;
@@ -169,6 +170,12 @@ export const useGameStore = create<GameStore>()(
         // Reset the game
         resetGame: () => {
           get().initializeGame();
+        },
+
+        // Phase 4: Reset board but keep score (for multiplayer room resets)
+        resetBoard: () => {
+          get().initializeGame();
+          // currentScore is automatically preserved (not reset by initializeGame)
         },
         
         // Set game won status

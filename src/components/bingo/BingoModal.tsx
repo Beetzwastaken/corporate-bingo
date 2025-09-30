@@ -7,12 +7,28 @@ interface BingoModalProps {
 
 export function BingoModal({ show, onBingo }: BingoModalProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
     if (show) {
       setIsVisible(true);
+      setCountdown(3); // Reset countdown when modal opens
+
+      // Start countdown timer
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            onBingo(); // Auto-close after countdown
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
     }
-  }, [show]);
+  }, [show, onBingo]);
 
   if (!isVisible) {
     return null;
@@ -47,9 +63,12 @@ export function BingoModal({ show, onBingo }: BingoModalProps) {
             Get New Board
           </button>
 
-          {/* Hint Text */}
-          <p className="text-center text-apple-tertiary text-sm mt-4">
-            Click anywhere to continue
+          {/* Countdown Text */}
+          <p className="text-center text-apple-secondary text-lg mt-4 font-semibold">
+            New round in {countdown}...
+          </p>
+          <p className="text-center text-apple-tertiary text-sm mt-2">
+            Click anywhere to skip
           </p>
         </div>
       </div>

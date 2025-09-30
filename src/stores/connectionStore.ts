@@ -396,6 +396,25 @@ export const useConnectionStore = create<ConnectionStore>()(
             break;
           }
 
+          case 'board_reset': {
+            // Phase 4: Room-wide board reset after BINGO
+            if (message.winner && typeof message.finalScore === 'number') {
+              const winner = message.winner as { id: string; name: string };
+
+              // Show toast notification
+              const { showGameToast } = await import('../components/shared/ToastNotification');
+              showGameToast(
+                `${winner.name} Won!`,
+                `Scored ${message.finalScore} points. New round starting...`,
+                'success'
+              );
+
+              // Reset game board (keep score)
+              gameStore.resetBoard();
+            }
+            break;
+          }
+
           case MESSAGE_TYPES.ERROR:
             set({ connectionError: (typeof message.error === 'string' ? message.error : 'Connection error occurred') });
             break;

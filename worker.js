@@ -562,6 +562,11 @@ export class BingoRoom {
             player: { id: player.id, name: player.name },
             finalScore: player.score
           });
+
+          // Phase 4: Reset all boards after 3-second delay (let winner see modal)
+          setTimeout(async () => {
+            await this.resetRoomBoards(player);
+          }, 3000);
         }
       }
     }
@@ -908,6 +913,11 @@ export class BingoRoom {
           player: { id: player.id, name: player.name },
           finalScore: player.score
         });
+
+        // Phase 4: Reset all boards after 3-second delay (let winner see modal)
+        setTimeout(async () => {
+          await this.resetRoomBoards(player);
+        }, 3000);
       }
     } else {
       // REJECTED: No points, no marking
@@ -927,5 +937,25 @@ export class BingoRoom {
     }
 
     this.pendingVerifications.delete(verificationId);
+  }
+
+  // Reset all players' boards after BINGO (Phase 4)
+  async resetRoomBoards(winnerPlayer) {
+    // Clear all players' marked squares
+    for (const player of this.room.players) {
+      player.markedSquares.clear();
+      // Scores are preserved (not modified)
+    }
+
+    // Broadcast reset to all players
+    this.broadcastToRoom({
+      type: 'board_reset',
+      winner: { id: winnerPlayer.id, name: winnerPlayer.name },
+      finalScore: winnerPlayer.score,
+      timestamp: Date.now()
+    });
+
+    // Save updated room state
+    await this.state.storage.put('room', this.room);
   }
 }
