@@ -144,7 +144,7 @@ export function RoomManager() {
     }
     
     if (!validateRoomCode(joinCode)) {
-      setError('Code must be 6 characters or MTG-/TEAM- format');
+      setError('Enter a 4-character room code');
       return;
     }
     
@@ -370,13 +370,13 @@ export function RoomManager() {
                     value={joinCode}
                     onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                     className="apple-input w-full text-center font-mono tracking-wider"
-                    placeholder="MTG-A1B2 or TEAM-C3D4"
-                    maxLength={9}
+                    placeholder="e.g. A1B2"
+                    maxLength={4}
                     disabled={isConnecting}
                     onKeyPress={(e) => e.key === 'Enter' && handleJoinRoom()}
                   />
                   <p className="text-xs text-apple-secondary mt-1">
-                    Enter a meeting code (MTG-XXXX) or team code (TEAM-XXXX)
+                    Enter the 4-character room code
                   </p>
                 </div>
                 <button
