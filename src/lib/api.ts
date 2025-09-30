@@ -15,6 +15,23 @@ export interface CreateRoomResponse {
   isHost: boolean;
 }
 
+// Backend player data structure
+export interface BackendPlayer {
+  id: string;
+  name: string;
+  isHost: boolean;
+  joinedAt: string;
+  score?: number;
+}
+
+// Backend room data structure
+export interface BackendRoom {
+  name: string;
+  type: 'single' | 'persistent';
+  createdAt: string;
+  players: BackendPlayer[];
+}
+
 // Room join response from backend
 export interface JoinRoomResponse {
   success: boolean;
@@ -24,6 +41,7 @@ export interface JoinRoomResponse {
   playerCount: number;
   roundNumber: number;
   roomType?: string;
+  room?: BackendRoom; // Nested room object with full details
 }
 
 import { getApiBaseUrl } from './config';
@@ -91,7 +109,7 @@ export async function suggestBuzzwords(): Promise<ApiResponse<{ suggestions: str
       'Low-hanging Fruit', 'Move the Needle', 'Paradigm Shift', 'Think Outside the Box',
       'Best Practice', 'Core Competency', 'Value-add', 'Game Changer', 'Win-win'
     ];
-    
+
     return {
       success: true,
       data: { suggestions }

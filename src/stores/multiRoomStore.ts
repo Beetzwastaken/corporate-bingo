@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { BingoPlayer, BingoRoom } from './roomStore';
 import type { GameState } from './gameStore';
-import { createBingoRoom, joinBingoRoom } from '../lib/api';
+import { createBingoRoom, joinBingoRoom, type BackendRoom, type BackendPlayer } from '../lib/api';
 
 // Room type enumeration
 export type RoomType = 'single' | 'persistent';
@@ -179,12 +179,12 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
             };
             
             // Extract room type from nested room object (backend sends response.data.room.type)
-            const backendRoom = (response.data as any).room;
+            const backendRoom = response.data.room as BackendRoom | undefined;
             const roomType: RoomType = (backendRoom?.type === 'persistent' ? 'persistent' : 'single') as RoomType;
 
             // Extract all existing players from backend response
             const existingPlayers = Array.isArray(backendRoom?.players)
-              ? backendRoom.players.map((p: any) => ({
+              ? backendRoom.players.map((p: BackendPlayer) => ({
                   id: p.id,
                   name: p.name,
                   isHost: p.isHost || false,
@@ -196,7 +196,7 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
 
             const room: MultiRoom = {
               id: roomCode,
-              name: response.data.roomName || backendRoom?.name,
+              name: response.data.roomName || backendRoom?.name || roomCode,
               code: roomCode,
               players: existingPlayers, // Use all players from backend
               isActive: true,
