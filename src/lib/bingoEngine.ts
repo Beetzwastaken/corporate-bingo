@@ -5,7 +5,6 @@ export interface BingoSquare {
   id: string;
   text: string;
   isMarked: boolean;
-  isFree?: boolean;
 }
 
 export interface BingoResult {
@@ -34,28 +33,17 @@ export class BingoEngine {
    */
   static generateCard(): BingoSquare[] {
     const shuffled = [...CORPORATE_BINGO].sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, 24); // 24 + 1 free space = 25
+    const selected = shuffled.slice(0, 25); // 25 buzzwords, no free space
     
     const card: BingoSquare[] = [];
     
     for (let i = 0; i < 25; i++) {
-      if (i === 12) { // Center square (free space)
-        card.push({
-          id: `square-${i}`,
-          text: 'FREE SPACE',
-          isMarked: true,
-          isFree: true
-        });
-      } else {
-        const textIndex = i < 12 ? i : i - 1;
-        card.push({
-          id: `square-${i}`,
-          text: selected[textIndex],
-          isMarked: false
-        });
-      }
+      card.push({
+        id: `square-${i}`,
+        text: selected[i],
+        isMarked: false
+      });
     }
-    
     return card;
   }
 
@@ -312,8 +300,8 @@ export class BingoEngine {
    * Get statistics about marked squares
    */
   static getSquareStats(squares: BingoSquare[]) {
-    const marked = squares.filter(s => s.isMarked && !s.isFree);
-    const total = squares.filter(s => !s.isFree).length;
+    const marked = squares.filter(s => s.isMarked);
+    const total = squares.length;
     
     return {
       marked: marked.length,
@@ -328,7 +316,7 @@ export class BingoEngine {
    */
   static getSuggestedSquares(squares: BingoSquare[]): string[] {
     const markedTexts = squares
-      .filter(s => s.isMarked && !s.isFree)
+      .filter(s => s.isMarked)
       .map(s => s.text);
     
     // Common combinations in corporate meetings

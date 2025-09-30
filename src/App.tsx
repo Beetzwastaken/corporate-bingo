@@ -4,6 +4,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { BingoCard } from './components/bingo/BingoCard';
 import { SoloScoreDisplay } from './components/bingo/SoloScoreDisplay';
+import { BingoModal } from './components/bingo/BingoModal';
 import { useBingoStore } from './utils/store';
 import { APP_VERSION } from './utils/version';
 import { BingoEngine } from './lib/bingoEngine';
@@ -77,7 +78,6 @@ function App() {
 
   const handleBingo = () => {
     incrementWins();
-    alert('🎉 BINGO!');
     handleNewGame();
   };
 
@@ -208,14 +208,6 @@ function App() {
                 </button>
               )}
 
-              {gameState.hasWon && (
-                <button
-                  onClick={handleBingo}
-                  className="px-4 py-1.5 text-sm bg-yellow-500 hover:bg-yellow-600 text-white rounded-md font-medium animate-pulse"
-                >
-                  BINGO!
-                </button>
-              )}
 
               <button
                 onClick={() => {
@@ -328,6 +320,9 @@ function App() {
         )}
       </div>
       
+      
+      {/* BINGO Modal */}
+      <BingoModal show={gameState.hasWon} onBingo={handleBingo} />
       {/* Toast Notifications */}
       <ToastContainer />
     </div>

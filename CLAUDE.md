@@ -160,6 +160,8 @@
 - **Auto-reshuffle** generating new boards after wins
 - **Advanced Scoring System**: 1 point per square, BINGO bonuses (3-in-a-row: +1, 4-in-a-row: +3, BINGO: +5)
 - **Solo Score Persistence**: Scores maintained through BINGOs with manual reset option
+- **Bonus Stacking Prevention**: Smart Map-based tracking prevents duplicate bonuses per line
+- **Progressive Bonuses**: Upgrading from 3→4→BINGO adds only the point difference
 - **Real-time Leaderboards**: Live player rankings with crown indicators
 - **⚠️ NEXT FEATURE - Board Locking**: Prevent square marking after BINGO unless BINGO-line square unmarked first (anti-cheat enhancement)
 
@@ -203,13 +205,13 @@
 ### Room Management System
 **Sophisticated multi-room architecture:**
 
-#### Single Meeting Rooms (MTG-XXXX)
+#### Single Meeting Rooms (4-char codes (e.g., A4B7))
 - **Purpose**: One-time use for specific meetings or events
 - **Expiration**: Auto-expire after 24 hours from creation
 - **Cleanup**: Auto-remove after 2 hours of inactivity
 - **Use Cases**: Stand-ups, all-hands meetings, workshops, training sessions
 
-#### Persistent Team Rooms (TEAM-XXXX) 
+#### Persistent Team Rooms (4-char codes (e.g., X9K2)) 
 - **Purpose**: Long-running rooms for teams, departments, or ongoing groups
 - **Duration**: Never expire automatically
 - **Cumulative Scoring**: Maintains total scores across multiple game sessions

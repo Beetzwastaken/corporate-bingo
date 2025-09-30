@@ -589,14 +589,12 @@ export class BingoRoom {
 
   generateUniqueBoard() {
     const shuffled = [...BUZZWORDS].sort(() => Math.random() - 0.5);
-    const board = shuffled.slice(0, 24);
-    board.splice(12, 0, 'FREE SPACE');
+    const board = shuffled.slice(0, 25);
     return board;
   }
 
   checkWinCondition(player) {
     const marked = Array.from(player.markedSquares);
-    marked.push(12); // FREE SPACE always marked
     
     // Check rows
     for (let row = 0; row < 5; row++) {
@@ -629,7 +627,6 @@ export class BingoRoom {
   // Analyze board for line bonuses (3-in-row, 4-in-row, BINGO)
   analyzeBoardForBonuses(player) {
     const marked = Array.from(player.markedSquares);
-    marked.push(12); // FREE SPACE always marked
     const lineBonuses = [];
     
     // Check rows for bonuses

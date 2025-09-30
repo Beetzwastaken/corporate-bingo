@@ -6,12 +6,12 @@
 
 🚀 **[https://corporate-bingo-ai.netlify.app](https://corporate-bingo-ai.netlify.app)**
 
-**Current Status**: Production Ready | Backend Optimized (76% size reduction) | Multiplayer Working | Mobile Optimized
+**Current Status**: Production Ready | Advanced Scoring System | Streamlined 4-Char Room Codes | v1.5.0
 
 ## 🎮 Features
 
 ### **Real Multiplayer Game**
-- **Room-based gameplay**: Create or join rooms with 6-character codes
+- **Room-based gameplay**: Create or join rooms with 4-character codes (e.g., A4B7, X9K2)
 - **Unique boards per player**: Each person gets different buzzwords (171 terms)
 - **HTTP Polling Backup**: Reliable multiplayer sync even with SSL issues
 - **Real-time updates**: Player lists and room status sync every 3 seconds
@@ -42,7 +42,7 @@
 ### **Host a Multiplayer Game**
 1. Click "Rooms" → Enter your name and room name
 2. Click "Create Room" 
-3. Share the 6-character room code with teammates
+3. Share the 4-character room code with teammates
 4. Start your meeting and play during corporate speak!
 
 ### **Join a Multiplayer Game**
@@ -171,6 +171,10 @@ Made with 😅 by developers who've survived too many "synergistic deep dives". 
 
 ## 📋 Recent Updates
 
+- **Advanced scoring system (v1.5.0)**: Consecutive square bonuses (3-in-row: +1, 4-in-row: +3, BINGO: +5) with smart tracking
+- **Streamlined room codes (v1.5.0)**: Simple 4-character alphanumeric codes (A4B7, X9K2) replace prefixed format
+- **Score persistence (v1.5.0)**: Solo scores maintained through multiple BINGOs with manual reset option
+- **Critical bug fixes (v1.5.0)**: 5 major fixes for bonus stacking, consecutive detection, and score calculations
 ### ✅ Latest Fixes (September 2025)
 - **Backend optimization (v1.4.0)**: 76% bundle size reduction with analytics service separation
 - **Production compatibility**: Backward-compatible health endpoints for zero-downtime deployment
@@ -183,6 +187,7 @@ Made with 😅 by developers who've survived too many "synergistic deep dives". 
 - **Production stability**: Comprehensive testing and quality assurance
 
 ### 🚀 Version History
+- **v1.5.0** - Advanced scoring system with consecutive square bonuses + Streamlined 4-character room codes + 5 critical bug fixes
 - **v1.4.0** - Backend optimization + Analytics service separation (76% bundle reduction)
 - **v1.3.0** - Multiplayer reliability + Mobile UX improvements
 - **v1.2.0** - React 19 + TypeScript migration + Apple design
@@ -191,4 +196,4 @@ Made with 😅 by developers who've survived too many "synergistic deep dives". 
 
 ---
 
-**🚀 Professional Meeting Entertainment Since 2025 • Real Multiplayer • Backend Optimized • Mobile Optimized • Claude Code Enhanced • v1.4.0**
+**🚀 Professional Meeting Entertainment Since 2025 • Real Multiplayer • Backend Optimized • Mobile Optimized • Claude Code Enhanced • v1.5.0**
