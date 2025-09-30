@@ -113,7 +113,7 @@ export const useGameStore = create<GameStore>()(
           // Apply new bonuses that haven't been applied yet
           const newBonuses: LineBonus[] = [];
           for (const bonus of analysis.lineBonuses) {
-            const bonusId = `${bonus.pattern}-${bonus.lineIndex}-${bonus.type}`;
+            const bonusId = `${bonus.pattern}|${bonus.lineIndex}|${bonus.type}`;
             if (!newAppliedBonuses.includes(bonusId)) {
               bonusPoints += bonus.points;
               newAppliedBonuses.push(bonusId);

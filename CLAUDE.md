@@ -4,7 +4,7 @@
 **Current Status**: ✅ PRODUCTION READY - Advanced Multiplayer Platform  
 **Live URL**: https://corporate-bingo-ai.netlify.app  
 **Last Updated**: September 10, 2025
-**Latest Deployment**: September 10, 2025 - Backend optimized with 76% bundle reduction, analytics service separated
+**Latest Deployment**: September 10, 2025 - Complete BINGO bonus system implemented with solo score persistence, backend authenticated and deployed
 
 ## 🚨 MANDATORY: ALWAYS USE SPECIALIZED AGENTS 🚨
 **NEVER work directly on Corporate Bingo tasks - Always delegate to specialized agents first**
@@ -158,8 +158,10 @@
 - **Democratic verification system** with majority voting
 - **Anti-cheat detection** preventing self-claims
 - **Auto-reshuffle** generating new boards after wins
-- **Comprehensive Scoring System**: 10 points per square, bonus for lines (50/100), BINGO bonus (200)
+- **Advanced Scoring System**: 1 point per square, BINGO bonuses (3-in-a-row: +1, 4-in-a-row: +3, BINGO: +5)
+- **Solo Score Persistence**: Scores maintained through BINGOs with manual reset option
 - **Real-time Leaderboards**: Live player rankings with crown indicators
+- **⚠️ NEXT FEATURE - Board Locking**: Prevent square marking after BINGO unless BINGO-line square unmarked first (anti-cheat enhancement)
 
 ## Architecture Highlights
 
@@ -186,11 +188,17 @@
 ### Points & Scoring System
 **Complete real-time scoring with visual feedback:**
 
-- **ScoreDisplay Component**: Live score counter with floating animations (+10, +50, etc.)
+- **SoloScoreDisplay Component**: Large centered score display (6xl font) with real-time bonus animations
+- **ScoreDisplay Component**: Live score counter with floating animations (+1, +3, +5, etc.)
 - **Leaderboard Component**: Real-time sorted player rankings with crown emoji (👑) for leaders
 - **Toast Notifications**: Animated score change notifications with point values
-- **Scoring Logic**: 10 points per verified square, 50/100 bonus for 3/4-in-a-row, 200 for BINGO
+- **Advanced Scoring Logic**: 
+  - **Base**: 1 point per verified square (scaled down from 10)
+  - **Line Bonuses**: 3-in-a-row (+1), 4-in-a-row (+3), BINGO (+5)
+  - **Solo Persistence**: Scores maintained through multiple BINGOs
+  - **Manual Reset**: User-controlled score reset with confirmation dialog
 - **Anti-cheat Penalties**: -50 points for self-claims with visual feedback
+- **⚠️ PLANNED**: Board locking after BINGO to prevent additional square marking (unless BINGO line broken)
 
 ### Room Management System
 **Sophisticated multi-room architecture:**
