@@ -1,7 +1,7 @@
 // Corporate Bingo - Single-page Apple Dark Mode Experience  
 // Version: 2.0.1 - Performance optimized with accessibility enhancements
 
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { BingoCard } from './components/bingo/BingoCard';
 import { SoloScoreDisplay } from './components/bingo/SoloScoreDisplay';
 import { BingoModal } from './components/bingo/BingoModal';
@@ -29,6 +29,7 @@ function ComponentLoader() {
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<'rooms' | 'stats' | null>(null);
+  const dismissedPatternRef = useRef<string | null>(null);
   
   const {
     currentRoom,
@@ -57,12 +58,21 @@ function App() {
       ...square,
       isMarked: gameState.markedSquares[index] || false
     }));
-    
+
     const result = BingoEngine.checkBingo(boardSquares);
+
     if (result.hasWon && !gameState.hasWon) {
-      setGameWon(true, result.winningCells);
+      // Create a unique identifier for this winning pattern
+      const patternKey = result.winningCells?.sort().join(',') || '';
+
+      // Only show modal if this pattern hasn't been dismissed
+      if (patternKey !== dismissedPatternRef.current) {
+        setGameWon(true, result.winningCells);
+        dismissedPatternRef.current = null; // Clear dismissed state when showing new BINGO
+      }
     } else if (!result.hasWon && gameState.hasWon) {
       setGameWon(false);
+      dismissedPatternRef.current = null; // Clear dismissed state when pattern is broken
     }
   }, [gameState.markedSquares, gameState.hasWon, gameState.board, setGameWon]);
 
@@ -103,6 +113,7 @@ function App() {
   const handleNewGame = () => {
     resetGame();
     incrementGamesPlayed();
+    dismissedPatternRef.current = null; // Clear dismissed pattern on new game
   };
 
   const handleBingo = () => {
@@ -111,6 +122,9 @@ function App() {
   };
 
   const handleCancelBingo = () => {
+    // Store the current winning pattern so it doesn't re-trigger
+    const patternKey = gameState.winningPattern?.sort().join(',') || '';
+    dismissedPatternRef.current = patternKey;
     setGameWon(false);
   };
 
