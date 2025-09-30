@@ -126,19 +126,20 @@ export const useGameStore = create<GameStore>()(
             // When unmarking, need to check what bonuses should be removed
             const filteredBonuses: string[] = [];
             for (const bonusId of newAppliedBonuses) {
-              const [, , type] = bonusId.split('-');
-              
+              const parts = bonusId.split('|');
+              if (parts.length < 3) continue;
+              const bonusType = parts.slice(2).join('|'); // Handle types with dashes like '3-in-row'
+
               // Check if this bonus still applies
-              const stillQualifies = analysis.lineBonuses.some(bonus => 
-                `${bonus.pattern}-${bonus.lineIndex}-${bonus.type}` === bonusId
+              const stillQualifies = analysis.lineBonuses.some(bonus =>
+                `${bonus.pattern}|${bonus.lineIndex}|${bonus.type}` === bonusId
               );
-              
+
               if (stillQualifies) {
                 filteredBonuses.push(bonusId);
               } else {
                 // Remove bonus points when line no longer qualifies
-                const bonusType = type as '3-in-row' | '4-in-row' | 'bingo';
-                const points = bonusType === '3-in-row' ? 1 : bonusType === '4-in-row' ? 3 : 5;
+                const points = bonusType === '3-in-row' ? 1 : bonusType === '4-in-row' ? 3 : bonusType === 'bingo' ? 5 : 0;
                 bonusPoints -= points;
               }
             }
