@@ -6,12 +6,10 @@ interface BingoModalProps {
 }
 
 export function BingoModal({ show, onBingo }: BingoModalProps) {
-  const [isVisible, setIsVisible] = useState(false);
   const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
     if (show) {
-      setIsVisible(true);
       setCountdown(3); // Reset countdown when modal opens
 
       // Start countdown timer
@@ -30,7 +28,7 @@ export function BingoModal({ show, onBingo }: BingoModalProps) {
     }
   }, [show, onBingo]);
 
-  if (!isVisible) {
+  if (!show) {
     return null;
   }
 
