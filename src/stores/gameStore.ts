@@ -15,7 +15,7 @@ export interface GameState {
   markedSquares: boolean[];
   hasWon: boolean;
   winningPattern?: number[];
-  appliedBonuses: string[]; // Track applied bonuses to prevent duplicates
+  appliedBonuses: Map<string, { type: string; points: number }>; // Track bonuses by line (pattern|lineIndex)
 }
 
 interface GameStore {
@@ -50,7 +50,7 @@ export const useGameStore = create<GameStore>()(
           markedSquares: Array(25).fill(false),
           hasWon: false,
           winningPattern: undefined,
-          appliedBonuses: []
+          appliedBonuses: new Map()
         },
         gamesPlayed: 0,
         wins: 0,
@@ -76,7 +76,7 @@ export const useGameStore = create<GameStore>()(
               markedSquares,
               hasWon: false,
               winningPattern: undefined,
-              appliedBonuses: [] // Reset bonus tracking for new game
+              appliedBonuses: new Map() // Reset bonus tracking for new game
             }
             // Note: currentScore is preserved through BINGOs
           });
@@ -108,13 +108,10 @@ export const useGameStore = create<GameStore>()(
           // Check for bonus points
           const analysis = BingoEngine.analyzeBoardForBonuses(newBoard);
           let bonusPoints = 0;
-          const newAppliedBonuses = [...state.gameState.appliedBonuses];
-
-          // Apply new bonuses that haven't been applied yet
-          // IMPORTANT: Only apply the HIGHEST tier bonus per line (bingo > 4-in-row > 3-in-row)
+          const newAppliedBonuses = new Map(state.gameState.appliedBonuses);
           const newBonuses: LineBonus[] = [];
 
-          // Group bonuses by line (pattern + lineIndex)
+          // Group bonuses by line (pattern + lineIndex) and keep only the highest tier
           const bonusByLine = new Map<string, LineBonus>();
           for (const bonus of analysis.lineBonuses) {
             const lineKey = `${bonus.pattern}|${bonus.lineIndex}`;
@@ -126,41 +123,34 @@ export const useGameStore = create<GameStore>()(
             }
           }
 
-          // Apply bonuses from the highest tier only
-          for (const bonus of bonusByLine.values()) {
-            const bonusId = `${bonus.pattern}|${bonus.lineIndex}|${bonus.type}`;
-            if (!newAppliedBonuses.includes(bonusId)) {
-              bonusPoints += bonus.points;
-              newAppliedBonuses.push(bonusId);
-              newBonuses.push(bonus);
+          // Process each line: compare current bonus with previously applied bonus
+          for (const [lineKey, currentBonus] of bonusByLine.entries()) {
+            const previousBonus = newAppliedBonuses.get(lineKey);
+
+            if (!previousBonus) {
+              // New bonus line - add full points
+              bonusPoints += currentBonus.points;
+              newAppliedBonuses.set(lineKey, { type: currentBonus.type, points: currentBonus.points });
+              newBonuses.push(currentBonus);
+            } else if (currentBonus.type !== previousBonus.type) {
+              // Upgraded bonus (e.g., 3-in-row → 4-in-row) - add only the difference
+              const pointDifference = currentBonus.points - previousBonus.points;
+              bonusPoints += pointDifference;
+              newAppliedBonuses.set(lineKey, { type: currentBonus.type, points: currentBonus.points });
+              newBonuses.push(currentBonus);
             }
+            // If same bonus type, do nothing (already counted)
           }
-          
+
           // Remove bonuses for lines that no longer qualify (when unmarking)
-          if (wasMarked && !newMarkedSquares[index]) {
-            // When unmarking, need to check what bonuses should be removed
-            const filteredBonuses: string[] = [];
-            for (const bonusId of newAppliedBonuses) {
-              const parts = bonusId.split('|');
-              if (parts.length < 3) continue;
-              const bonusType = parts.slice(2).join('|'); // Handle types with dashes like '3-in-row'
-
-              // Check if this bonus still applies
-              const stillQualifies = analysis.lineBonuses.some(bonus =>
-                `${bonus.pattern}|${bonus.lineIndex}|${bonus.type}` === bonusId
-              );
-
-              if (stillQualifies) {
-                filteredBonuses.push(bonusId);
-              } else {
-                // Remove bonus points when line no longer qualifies
-                const points = bonusType === '3-in-row' ? 1 : bonusType === '4-in-row' ? 3 : bonusType === 'bingo' ? 5 : 0;
-                bonusPoints -= points;
-              }
+          for (const [lineKey, previousBonus] of newAppliedBonuses.entries()) {
+            if (!bonusByLine.has(lineKey)) {
+              // Line no longer qualifies - subtract the points
+              bonusPoints -= previousBonus.points;
+              newAppliedBonuses.delete(lineKey);
             }
-            newAppliedBonuses.splice(0, newAppliedBonuses.length, ...filteredBonuses);
           }
-          
+
           // Apply bonus points to score
           newScore = Math.max(0, newScore + bonusPoints);
           

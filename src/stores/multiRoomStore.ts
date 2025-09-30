@@ -132,7 +132,7 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
                 markedSquares: Array(25).fill(false),
                 hasWon: false,
                 winningPattern: undefined,
-                appliedBonuses: []
+                appliedBonuses: new Map()
               },
               isActive: true,
               lastSync: now
@@ -218,7 +218,7 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
                 markedSquares: Array(25).fill(false),
                 hasWon: false,
                 winningPattern: undefined,
-                appliedBonuses: []
+                appliedBonuses: new Map()
               },
               isActive: true,
               lastSync: now
