@@ -109,10 +109,25 @@ export const useGameStore = create<GameStore>()(
           const analysis = BingoEngine.analyzeBoardForBonuses(newBoard);
           let bonusPoints = 0;
           const newAppliedBonuses = [...state.gameState.appliedBonuses];
-          
+
           // Apply new bonuses that haven't been applied yet
+          // IMPORTANT: Only apply the HIGHEST tier bonus per line (bingo > 4-in-row > 3-in-row)
           const newBonuses: LineBonus[] = [];
+
+          // Group bonuses by line (pattern + lineIndex)
+          const bonusByLine = new Map<string, LineBonus>();
           for (const bonus of analysis.lineBonuses) {
+            const lineKey = `${bonus.pattern}|${bonus.lineIndex}`;
+            const existing = bonusByLine.get(lineKey);
+
+            // Keep only the highest tier bonus for each line
+            if (!existing || bonus.points > existing.points) {
+              bonusByLine.set(lineKey, bonus);
+            }
+          }
+
+          // Apply bonuses from the highest tier only
+          for (const bonus of bonusByLine.values()) {
             const bonusId = `${bonus.pattern}|${bonus.lineIndex}|${bonus.type}`;
             if (!newAppliedBonuses.includes(bonusId)) {
               bonusPoints += bonus.points;
