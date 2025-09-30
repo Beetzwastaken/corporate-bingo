@@ -178,17 +178,29 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
               joinedAt: Date.now()
             };
             
-            // Since we removed prefixes, we need to get room type from server response
-            // For now, default to 'single' - server should provide room type in response
-            const roomType: RoomType = (response.data.roomType === 'persistent' ? 'persistent' : 'single') as RoomType;
-            
+            // Extract room type from nested room object (backend sends response.data.room.type)
+            const backendRoom = (response.data as any).room;
+            const roomType: RoomType = (backendRoom?.type === 'persistent' ? 'persistent' : 'single') as RoomType;
+
+            // Extract all existing players from backend response
+            const existingPlayers = Array.isArray(backendRoom?.players)
+              ? backendRoom.players.map((p: any) => ({
+                  id: p.id,
+                  name: p.name,
+                  isHost: p.isHost || false,
+                  isConnected: true,
+                  joinedAt: p.joinedAt ? new Date(p.joinedAt).getTime() : Date.now(),
+                  currentScore: p.score || 0
+                }))
+              : [player];
+
             const room: MultiRoom = {
               id: roomCode,
-              name: response.data.roomName,
+              name: response.data.roomName || backendRoom?.name,
               code: roomCode,
-              players: [player], // Will be updated by sync
+              players: existingPlayers, // Use all players from backend
               isActive: true,
-              createdAt: now, // Will be updated by sync if known
+              createdAt: backendRoom?.createdAt ? new Date(backendRoom.createdAt) : now,
               lastActivity: now,
               roomType,
               maxPlayers: 10,
