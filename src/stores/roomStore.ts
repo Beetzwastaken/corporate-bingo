@@ -139,12 +139,25 @@ export const useRoomStore = create<RoomStore>()(
               joinedAt: Date.now()
             };
             
-            // Initialize with minimal room data - real-time sync will populate other players
+            // Extract all existing players from backend response (like multiRoomStore does)
+            const backendRoom = response.data.room as { players?: Array<{ id: string; name: string; isHost?: boolean; joinedAt?: string; score?: number }> } | undefined;
+            const existingPlayers = Array.isArray(backendRoom?.players)
+              ? backendRoom.players.map((p) => ({
+                  id: p.id,
+                  name: p.name,
+                  isHost: p.isHost || false,
+                  isConnected: true,
+                  joinedAt: p.joinedAt ? new Date(p.joinedAt).getTime() : Date.now(),
+                  currentScore: p.score || 0
+                }))
+              : [player];
+
+            // Initialize with all players from backend
             const room: BingoRoom = {
               id: roomCode,
               name: response.data.roomName,
               code: roomCode,
-              players: [player], // Start with joining player, sync will update this
+              players: existingPlayers, // Use all players from backend
               isActive: true
             };
             
