@@ -1,14 +1,20 @@
 # Phase 4: Room-Wide Board Reset After BINGO - Deployment Summary
 
 **Deployment Date**: January 2025
-**Status**: ✅ LIVE IN PRODUCTION
+**Status**: ✅ LIVE IN PRODUCTION (with critical bug fixes)
 **Backend Version**: 50c9de48-bf2f-46bf-9bb9-9875d025e763
-**Frontend Bundle**: index-BANzDmJP.js
-**Commit**: 167f7eb
+**Frontend Bundle**: index-B_UZ5bZf.js
+**Latest Commit**: f43c286
 
 ## Overview
 
-Phase 4 implements automatic room-wide board reset after a player achieves BINGO. All players receive fresh boards simultaneously after a 3-second countdown, while maintaining their cumulative scores across rounds.
+Phase 4 implements automatic room-wide board reset after a player achieves BINGO. All players receive fresh boards simultaneously while maintaining their cumulative scores across rounds.
+
+**Key Features:**
+- Room-wide board synchronization after BINGO
+- Manual BINGO confirmation with cancel option
+- Score persistence across rounds
+- Toast notifications for winner announcements
 
 ## Implementation Summary
 
@@ -56,12 +62,21 @@ Added `resetBoard()` method:
 - Clears `markedSquares` and `appliedBonuses`
 - Automatically preserves `currentScore` (not reset by `initializeGame`)
 
-**3. BingoModal.tsx** (lines 10-31, 67-72)
-Enhanced with countdown timer:
-- 3-second countdown state
-- Auto-close after countdown completes
-- Visual countdown display: "New round in 3... 2... 1..."
-- Skip button: "Click anywhere to skip"
+**3. BingoModal.tsx**
+Enhanced with manual confirmation:
+- **Cancel button** (gray): Dismiss modal if BINGO was a misclick
+- **Confirm BINGO button** (yellow): Proceed with win and board reset
+- Backdrop click cancels modal
+- No auto-countdown (user-controlled)
+
+**4. App.tsx - Pattern Tracking System**
+Added anti-retrigger logic:
+- `dismissedPatternRef`: Tracks canceled BINGO patterns
+- Prevents modal from re-showing after cancel
+- Clears dismissed state when:
+  - User unmarks a winning square (pattern broken)
+  - New game starts
+  - User confirms BINGO
 
 ## Game Flow
 
@@ -69,51 +84,85 @@ Enhanced with countdown timer:
 
 1. **Player achieves BINGO**:
    - `player_won` message broadcast to all players
-   - Winner sees BINGO modal with countdown
+   - Winner sees BINGO modal with Cancel/Confirm buttons
    - Backend waits 3 seconds
 
-2. **Board reset broadcast**:
+2. **User decision**:
+   - **Cancel**: Modal closes, dismissed pattern tracked, game continues
+   - **Confirm BINGO**: Proceeds to step 3
+   - **Backdrop click**: Same as Cancel
+
+3. **Board reset broadcast** (only if confirmed):
    - All players receive `board_reset` message
    - Winner info and final score included
    - Toast notification shows: "[Winner] Won! Scored [X] points. New round starting..."
 
-3. **Client-side reset**:
+4. **Client-side reset**:
    - Each player's `gameStore.resetBoard()` called
    - New boards generated independently
    - Scores preserved across reset
-   - Modal auto-closes after countdown
+   - Modal closes
 
 ### Solo Mode
 
-- No change to existing behavior
-- Winner sees modal with countdown
-- Manual "Get New Board" button still functional
-- Score persists through BINGOs
+- Winner sees BINGO modal with Cancel/Confirm buttons
+- **Cancel**: Close modal, continue playing with current board
+- **Confirm BINGO**: Get new board, increment wins, increment games played
+- Score persists through BINGOs (unless manually reset)
+- Pattern tracking prevents modal re-triggering after cancel
 
 ## Key Features
 
-- ✅ **Synchronized Reset**: All players get new boards simultaneously
+- ✅ **Synchronized Reset**: All players get new boards simultaneously (multiplayer)
 - ✅ **Score Persistence**: Cumulative scores maintained across rounds
-- ✅ **Winner Recognition**: Toast notification shows winner and final score
-- ✅ **3-Second Countdown**: Visual feedback before reset
-- ✅ **Skip Option**: Players can click to skip countdown
-- ✅ **Solo Mode Unaffected**: Existing solo gameplay preserved
+- ✅ **Winner Recognition**: Toast notification shows winner and final score (multiplayer)
+- ✅ **Manual Confirmation**: Cancel or confirm BINGO with clear buttons
+- ✅ **Misclick Protection**: Cancel button prevents accidental board resets
+- ✅ **Pattern Tracking**: Anti-retrigger system prevents modal spam
+- ✅ **Solo Mode Enhanced**: Cancel option works in solo play
+
+## Critical Bug Fixes
+
+### Bug 1: Modal Showing on Page Load (commit 78421f5)
+**Symptom**: BINGO modal appeared immediately when opening the page, couldn't be dismissed
+**Root Cause**: Separate `isVisible` state was set to `true` but never reset to `false`
+**Fix**: Removed redundant `isVisible` state, now uses `show` prop directly
+**Result**: Modal only appears when BINGO is actually achieved
+
+### Bug 2: Cancel Button Not Working (commit f43c286)
+**Symptom**: Clicking Cancel closed modal, but it immediately re-appeared
+**Root Cause**: `useEffect` auto-detected BINGO pattern and re-triggered modal
+**Fix**: Added `dismissedPatternRef` to track canceled patterns, prevents re-trigger
+**Result**: Cancel properly dismisses modal and keeps it closed until pattern changes
+
+## Commit History
+
+- **167f7eb**: Initial Phase 4 implementation (room reset, countdown timer)
+- **78421f5**: Fixed modal showing on page load (removed isVisible bug)
+- **414a018**: Added cancel option to BINGO modal (removed auto-countdown)
+- **f43c286**: Fixed cancel button auto-retrigger (pattern tracking system)
 
 ## Testing Checklist
 
 ### Functional Tests
-- [ ] **3+ Player Room**: All players receive new boards after BINGO
+- [x] **Page Load**: No BINGO modal on initial page load
+- [x] **BINGO Detection**: Modal appears when BINGO is achieved
+- [x] **Cancel Button**: Closes modal and prevents re-trigger
+- [x] **Confirm Button**: Proceeds with win and board reset
+- [x] **Pattern Tracking**: Modal doesn't re-show after cancel
+- [x] **Pattern Change**: Unmarking/remarking allows BINGO to trigger again
+- [ ] **3+ Player Room**: All players receive new boards after BINGO confirmation
 - [ ] **Score Persistence**: Winner's score maintained through reset
-- [ ] **Countdown Timer**: 3-second countdown displays correctly
-- [ ] **Toast Notification**: Shows winner name and final score
-- [ ] **Skip Functionality**: Clicking modal skips countdown
-- [ ] **Solo Mode**: No room reset, existing behavior intact
+- [ ] **Toast Notification**: Shows winner name and final score (multiplayer)
+- [x] **Solo Mode**: Cancel and Confirm work in solo play
 
 ### Edge Cases
+- [x] **Misclick Protection**: Cancel button prevents accidental resets
+- [x] **Modal Re-trigger**: Pattern tracking prevents spam
 - [ ] **Player Disconnects**: Room continues with remaining players
 - [ ] **Multiple Simultaneous BINGOs**: First detected triggers reset
-- [ ] **Rapid Consecutive BINGOs**: Countdown doesn't stack
-- [ ] **2-Player Room**: Both players get fresh boards
+- [ ] **Cancel During Multiplayer**: Other players wait for confirmation
+- [ ] **2-Player Room**: Both players get fresh boards after confirmation
 
 ### Performance
 - [ ] **Reset Latency**: < 500ms after 3-second delay
@@ -130,21 +179,27 @@ curl https://corporate-bingo-api.ryanwixon15.workers.dev/health
 
 ### Frontend Code Presence
 ```bash
-curl -s https://corporate-bingo-ai.netlify.app/assets/index-BANzDmJP.js | grep -c "board_reset"
+# Verify Cancel button
+curl -s https://corporate-bingo-ai.netlify.app/assets/index-B_UZ5bZf.js | grep -c "Cancel"
+# Expected: 3
+
+# Verify Confirm button
+curl -s https://corporate-bingo-ai.netlify.app/assets/index-B_UZ5bZf.js | grep -c "Confirm BINGO"
 # Expected: 1
 
-curl -s https://corporate-bingo-ai.netlify.app/assets/index-BANzDmJP.js | grep -c "New round in"
-# Expected: 1
+# Verify board_reset handler
+curl -s https://corporate-bingo-ai.netlify.app/assets/index-B_UZ5bZf.js | grep -c "board_reset"
+# Expected: 1 (minified code)
 ```
 
-**Verification Result**: ✅ Both checks passed
+**Verification Result**: ✅ All checks passed (bundle: index-B_UZ5bZf.js)
 
 ## Known Limitations
 
-1. **No Individual Opt-Out**: All players in room reset together
-2. **Fixed 3-Second Delay**: Not configurable per room
-3. **No Board State Sync**: Players generate new boards independently (intended behavior)
-4. **No Reset Animation**: Instant board replacement (could add fade transition)
+1. **Multiplayer Reset Delay**: Winner must confirm BINGO before other players' boards reset
+2. **No Board State Sync**: Players generate new boards independently (intended behavior - each player gets unique board)
+3. **Pattern Tracking Per Session**: Dismissed patterns cleared on page refresh
+4. **No Reset Animation**: Instant board replacement (could add fade transition for polish)
 
 ## Technical Notes
 
@@ -156,10 +211,16 @@ curl -s https://corporate-bingo-ai.netlify.app/assets/index-BANzDmJP.js | grep -
 - Vite warnings about dynamic imports are informational only
 - No impact on functionality or performance
 
-### Countdown Implementation
-- Uses `setInterval` with `useState` for countdown
-- Auto-cleans up interval on unmount
-- Triggers `onBingo` callback after countdown completes
+### Pattern Tracking Implementation
+- Uses `useRef` to persist dismissed pattern across re-renders
+- Pattern key created from sorted winning cell indices
+- Cleared on: pattern broken, new game, or BINGO confirmation
+- Prevents modal spam without blocking legitimate BINGO detections
+
+### State Management
+- Modal visibility controlled by `gameState.hasWon` prop
+- No internal visibility state to prevent sync issues
+- Pattern tracking is session-scoped (cleared on refresh)
 
 ## Next Steps
 
@@ -169,14 +230,32 @@ curl -s https://corporate-bingo-ai.netlify.app/assets/index-BANzDmJP.js | grep -
 
 ## Rollback Plan
 
-If issues arise:
+If issues arise, revert commits in reverse order:
+
+### Revert All Phase 4 Changes
 ```bash
 cd "F:/CC/Projects/Corporate Bingo"
-git revert 167f7eb
+git revert f43c286 414a018 78421f5 167f7eb --no-commit
+git commit -m "Revert Phase 4: Room reset and BINGO confirmation"
 git push origin main
 npx wrangler deploy
 # Wait for Netlify rebuild
 ```
+
+### Revert Only Bug Fixes (Keep Phase 4 Core)
+```bash
+cd "F:/CC/Projects/Corporate Bingo"
+git revert f43c286 414a018 78421f5 --no-commit
+git commit -m "Revert bug fixes, restore auto-countdown"
+git push origin main
+# Wait for Netlify rebuild
+```
+
+### Individual Commit Rollback
+- **f43c286**: Revert pattern tracking (brings back modal re-trigger bug)
+- **414a018**: Revert cancel button (brings back auto-countdown)
+- **78421f5**: Revert isVisible fix (brings back page load bug)
+- **167f7eb**: Revert entire Phase 4 (no room reset)
 
 ## Production URLs
 
