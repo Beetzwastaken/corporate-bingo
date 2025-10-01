@@ -661,6 +661,11 @@ export class BingoRoom {
     if (playerId) {
       this.sessions.set(playerId, server);
 
+      // Load room from storage if not in memory
+      if (!this.room) {
+        this.room = await this.state.storage.get('room');
+      }
+
       // Send initial room state immediately upon connection
       if (this.room) {
         try {
