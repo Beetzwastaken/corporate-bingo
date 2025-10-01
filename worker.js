@@ -425,14 +425,21 @@ export class BingoRoom {
 
     this.room.players.push(player);
     this.room.lastActivity = new Date();
-    
+
     await this.state.storage.put('room', this.room);
-    
-    // Notify existing players
+
+    // Notify existing players with full player list for synchronization
     this.broadcastToRoom({
-      type: 'player_joined',
-      player: { id: player.id, name: player.name },
-      playerCount: this.room.players.length
+      type: 'room_update',
+      players: this.room.players.map(p => ({
+        id: p.id,
+        name: p.name,
+        isHost: p.isHost,
+        isConnected: this.sessions.has(p.id),
+        currentScore: p.score || 0
+      })),
+      playerCount: this.room.players.length,
+      joinedPlayer: { id: player.id, name: player.name }
     });
 
     return new Response(JSON.stringify({
@@ -647,13 +654,33 @@ export class BingoRoom {
 
   async handleWebSocket(request) {
     const { 0: client, 1: server } = new WebSocketPair();
-    
+
     server.accept();
-    
+
     const playerId = new URL(request.url).searchParams.get('playerId');
     if (playerId) {
       this.sessions.set(playerId, server);
-      
+
+      // Send initial room state immediately upon connection
+      if (this.room) {
+        try {
+          server.send(JSON.stringify({
+            type: 'room_update',
+            players: this.room.players.map(p => ({
+              id: p.id,
+              name: p.name,
+              isHost: p.isHost,
+              isConnected: this.sessions.has(p.id),
+              currentScore: p.score || 0
+            })),
+            playerCount: this.room.players.length,
+            timestamp: Date.now()
+          }));
+        } catch (error) {
+          console.error('Failed to send initial room state:', error);
+        }
+      }
+
       server.addEventListener('close', () => {
         this.sessions.delete(playerId);
       });
