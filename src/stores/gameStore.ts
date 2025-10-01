@@ -63,7 +63,6 @@ export const useGameStore = create<GameStore>()(
         initializeGame: () => {
           const newBoard = BingoEngine.generateCard();
           const markedSquares = Array(25).fill(false);
-          markedSquares[12] = true; // Free space
           
           // Ensure board squares have correct isMarked properties
           const boardWithMarkedState = newBoard.map((square, index) => ({
@@ -220,7 +219,24 @@ export const useGameStore = create<GameStore>()(
           gamesPlayed: state.gamesPlayed,
           wins: state.wins,
           totalSquares: state.totalSquares
-        })
+        }),
+        onRehydrateStorage: () => (state) => {
+          // Migration: Fix boards with incorrectly checked middle square (old FREE SPACE bug)
+          if (state && state.gameState.markedSquares[12] === true) {
+            console.log('[Migration] Detected old FREE SPACE bug, clearing middle square');
+            const newMarkedSquares = [...state.gameState.markedSquares];
+            newMarkedSquares[12] = false;
+
+            // Also update board's isMarked property
+            const newBoard = state.gameState.board.map((square, i) => ({
+              ...square,
+              isMarked: newMarkedSquares[i] || false
+            }));
+
+            state.gameState.markedSquares = newMarkedSquares;
+            state.gameState.board = newBoard;
+          }
+        }
       }
     )
   )

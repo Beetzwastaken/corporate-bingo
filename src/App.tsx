@@ -70,9 +70,12 @@ function App() {
         setGameWon(true, result.winningCells);
         dismissedPatternRef.current = null; // Clear dismissed state when showing new BINGO
       }
-    } else if (!result.hasWon && gameState.hasWon) {
-      setGameWon(false);
-      dismissedPatternRef.current = null; // Clear dismissed state when pattern is broken
+    } else if (!result.hasWon) {
+      // Pattern is broken - always clear dismissed pattern and update state if needed
+      if (gameState.hasWon) {
+        setGameWon(false);
+      }
+      dismissedPatternRef.current = null; // Always clear dismissed state when pattern is broken
     }
   }, [gameState.markedSquares, gameState.hasWon, gameState.board, setGameWon]);
 
