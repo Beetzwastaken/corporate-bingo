@@ -5,6 +5,7 @@ import type { BingoPlayer, BingoRoom } from './roomStore';
 import type { GameState } from './gameStore';
 import { createBingoRoom, joinBingoRoom, type BackendRoom, type BackendPlayer } from '../lib/api';
 
+import { useConnectionStore } from './connectionStore';
 // Room type enumeration
 export type RoomType = 'single' | 'persistent';
 
@@ -147,6 +148,11 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
               currentPlayer: player
             }));
             
+            
+            // Connect to WebSocket after successful room creation
+            const connectionStore = useConnectionStore.getState();
+            await connectionStore.connect();
+            
             return { success: true, roomCode: room.code };
           } catch (error) {
             console.error('Create room error:', error);
@@ -232,6 +238,11 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
               activeRoomCode: roomCode,
               currentPlayer: state.currentPlayer || player // Keep existing player if set
             }));
+            
+            
+            // Connect to WebSocket after successful room join
+            const connectionStore = useConnectionStore.getState();
+            await connectionStore.connect();
             
             return { success: true };
           } catch (error) {

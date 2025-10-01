@@ -1,0 +1,6 @@
+            
+            // Connect to WebSocket after successful room creation
+            const connectionStore = useConnectionStore.getState();
+            await connectionStore.connect();
+            
+            return { success: true, roomCode: room.code };
