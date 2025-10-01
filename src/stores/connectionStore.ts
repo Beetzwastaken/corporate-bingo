@@ -70,15 +70,17 @@ export const useConnectionStore = create<ConnectionStore>()(
       
       // Connect to room (WebSocket with polling fallback)
       connect: async () => {
+        console.log('🔌 [ConnectionStore] connect() called');
         const roomStore = useRoomStore.getState();
         const gameStore = useGameStore.getState();
-        
+
         if (!roomStore.currentRoom || !roomStore.currentPlayer) {
-          console.error('No room or player to connect');
+          console.error('❌ [ConnectionStore] No room or player to connect');
           return;
         }
-        
+
         const { currentRoom, currentPlayer } = roomStore;
+        console.log('✅ [ConnectionStore] Room and player found:', { roomCode: currentRoom.code, playerId: currentPlayer.id });
         
         // Clear any existing connections
         get().disconnect();
@@ -103,23 +105,26 @@ export const useConnectionStore = create<ConnectionStore>()(
         
         try {
           // Try WebSocket first
-          console.log('Attempting WebSocket connection...');
+          console.log('🌐 [ConnectionStore] Attempting WebSocket connection...');
+          console.log('🌐 [ConnectionStore] Room code:', currentRoom.code, 'Player ID:', currentPlayer.id);
           const wsClient = createWebSocketClient({
             roomCode: currentRoom.code,
             playerId: currentPlayer.id,
             onMessage: handleMessage,
             onConnect: () => {
-              console.log('WebSocket connected');
+              console.log('✅ [WebSocket] Connected successfully');
             },
             onDisconnect: () => {
-              console.log('WebSocket disconnected');
+              console.log('🔌 [WebSocket] Disconnected');
             },
             onError: (error) => {
-              console.error('WebSocket error:', error);
+              console.error('❌ [WebSocket] Error:', error);
             }
           });
-          
+
+          console.log('🌐 [ConnectionStore] WebSocket client created, calling connect()...');
           await wsClient.connect();
+          console.log('✅ [ConnectionStore] WebSocket connect() completed');
           
           set({
             wsClient,
