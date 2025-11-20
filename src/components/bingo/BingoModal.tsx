@@ -1,10 +1,54 @@
+import { useState } from 'react';
+import { generateEmojiGrid, copyToClipboard } from '../../utils/shareUtils';
+
+interface BoardSquare {
+  text: string;
+  isMarked?: boolean;
+}
+
 interface BingoModalProps {
   show: boolean;
   onBingo: () => void;
   onCancel: () => void;
+  board: BoardSquare[];
+  markedSquares: boolean[];
+  winningCells?: number[];
+  score: number;
+  gamesPlayed: number;
 }
 
-export function BingoModal({ show, onBingo, onCancel }: BingoModalProps) {
+export function BingoModal({
+  show,
+  onBingo,
+  onCancel,
+  board = [],
+  markedSquares = [],
+  winningCells = [],
+  score = 0,
+  gamesPlayed = 1
+}: BingoModalProps) {
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+
+  const handleShare = async () => {
+    const shareText = generateEmojiGrid({
+      board,
+      markedSquares,
+      winningCells,
+      score,
+      gamesPlayed
+    });
+
+    const success = await copyToClipboard(shareText);
+
+    if (success) {
+      setShareStatus('copied');
+      setTimeout(() => setShareStatus('idle'), 2000);
+    } else {
+      setShareStatus('error');
+      setTimeout(() => setShareStatus('idle'), 2000);
+    }
+  };
+
   if (!show) {
     return null;
   }
@@ -27,6 +71,36 @@ export function BingoModal({ show, onBingo, onCancel }: BingoModalProps) {
             </h2>
             <p className="text-apple-secondary mt-4 text-lg">
               Congratulations! You got a BINGO!
+            </p>
+          </div>
+
+          {/* Share Button - Primary Action */}
+          <div className="mb-4">
+            <button
+              onClick={handleShare}
+              className="w-full px-6 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold text-lg rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+            >
+              {shareStatus === 'idle' && (
+                <>
+                  <span>📋</span>
+                  <span>Share Result</span>
+                </>
+              )}
+              {shareStatus === 'copied' && (
+                <>
+                  <span>✓</span>
+                  <span>Copied to Clipboard!</span>
+                </>
+              )}
+              {shareStatus === 'error' && (
+                <>
+                  <span>✗</span>
+                  <span>Copy Failed</span>
+                </>
+              )}
+            </button>
+            <p className="text-center text-apple-tertiary text-xs mt-2">
+              Share your BINGO with friends & coworkers!
             </p>
           </div>
 

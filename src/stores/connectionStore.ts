@@ -4,7 +4,7 @@ import { devtools } from 'zustand/middleware';
 import { BingoWebSocketClient, createWebSocketClient } from '../lib/websocket';
 import { BingoPollingClient, createPollingClient, type GameStateUpdate } from '../lib/polling';
 import { MESSAGE_TYPES } from '../lib/messageTypes';
-import { useRoomStore } from './roomStore';
+import { useMultiRoomStore } from './multiRoomStore';
 import { useGameStore } from './gameStore';
 
 // Message type definitions - Compatible with WebSocketMessage
@@ -71,15 +71,19 @@ export const useConnectionStore = create<ConnectionStore>()(
       // Connect to room (WebSocket with polling fallback)
       connect: async () => {
         console.log('🔌 [ConnectionStore] connect() called');
-        const roomStore = useRoomStore.getState();
+        const multiRoomStore = useMultiRoomStore.getState();
         const gameStore = useGameStore.getState();
 
-        if (!roomStore.currentRoom || !roomStore.currentPlayer) {
+        // Get active room and current player from multiRoomStore
+        const activeRoomState = multiRoomStore.getActiveRoom();
+        const currentPlayer = multiRoomStore.currentPlayer;
+
+        if (!activeRoomState || !currentPlayer) {
           console.error('❌ [ConnectionStore] No room or player to connect');
           return;
         }
 
-        const { currentRoom, currentPlayer } = roomStore;
+        const currentRoom = activeRoomState.room;
         console.log('✅ [ConnectionStore] Room and player found:', { roomCode: currentRoom.code, playerId: currentPlayer.id });
         
         // Clear any existing connections
@@ -132,16 +136,8 @@ export const useConnectionStore = create<ConnectionStore>()(
             connectionError: null,
             lastMessageTime: Date.now()
           });
-          
+
           console.log('WebSocket connected successfully');
-          
-          // Request immediate room state to sync other players
-          setTimeout(() => {
-            const roomStore = useRoomStore.getState();
-            if (roomStore.currentRoom && roomStore.currentPlayer) {
-              roomStore.syncRoomState(roomStore.currentRoom.code, roomStore.currentPlayer.id);
-            }
-          }, 200); // Small delay to ensure WebSocket is fully ready
         } catch (wsError) {
           console.warn('WebSocket failed, falling back to polling:', wsError);
           
@@ -172,13 +168,6 @@ export const useConnectionStore = create<ConnectionStore>()(
             
             console.log('Polling connected successfully');
             
-            // Request immediate room state to sync other players
-            setTimeout(() => {
-              const roomStore = useRoomStore.getState();
-              if (roomStore.currentRoom && roomStore.currentPlayer) {
-                roomStore.syncRoomState(roomStore.currentRoom.code, roomStore.currentPlayer.id);
-              }
-            }, 300); // Slightly longer delay for polling to be ready
           } catch (pollError) {
             console.error('Both WebSocket and polling failed:', pollError);
             set({
@@ -212,9 +201,12 @@ export const useConnectionStore = create<ConnectionStore>()(
       // Send message through active connection
       sendMessage: async (type: string, payload?: Record<string, unknown>) => {
         const state = get();
-        const roomStore = useRoomStore.getState();
-        
-        if (!roomStore.currentRoom || !roomStore.currentPlayer) {
+        const multiRoomStore = useMultiRoomStore.getState();
+
+        const activeRoomState = multiRoomStore.getActiveRoom();
+        const currentPlayer = multiRoomStore.currentPlayer;
+
+        if (!activeRoomState || !currentPlayer) {
           console.error('No room or player for sending message');
           return;
         }
@@ -240,36 +232,43 @@ export const useConnectionStore = create<ConnectionStore>()(
       
       // Handle incoming messages
       handleMessage: async (message: IncomingMessage) => {
-        const roomStore = useRoomStore.getState();
+        const multiRoomStore = useMultiRoomStore.getState();
         const gameStore = useGameStore.getState();
-        
+
         set({ lastMessageTime: Date.now() });
-        
+
+        // Get active room code for message handling
+        const activeRoomCode = multiRoomStore.activeRoomCode;
+        if (!activeRoomCode) {
+          console.warn('No active room for handling message');
+          return;
+        }
+
         switch (message.type) {
           case MESSAGE_TYPES.PLAYER_JOINED:
           case MESSAGE_TYPES.PLAYER_LEFT:
           case MESSAGE_TYPES.ROOM_UPDATE:
             if (message.players && Array.isArray(message.players)) {
               console.log(`🏠 Room update received: ${message.players.length} players`);
-              roomStore.updateRoomPlayers(message.players);
+              multiRoomStore.updateRoomPlayers(activeRoomCode, message.players);
             } else if (message.type === MESSAGE_TYPES.PLAYER_JOINED && message.player) {
               // Handle single player join
-              const currentRoom = roomStore.currentRoom;
-              if (currentRoom) {
-                const updatedPlayers = [...currentRoom.players];
+              const activeRoomState = multiRoomStore.getActiveRoom();
+              if (activeRoomState) {
+                const updatedPlayers = [...activeRoomState.room.players];
                 // Only add if not already in list
                 if (message.player && !updatedPlayers.find(p => p.id === message.player?.id)) {
                   updatedPlayers.push(message.player);
-                  roomStore.updateRoomPlayers(updatedPlayers);
+                  multiRoomStore.updateRoomPlayers(activeRoomCode, updatedPlayers);
                   console.log(`👋 Player joined: ${message.player?.name || 'Unknown'} (${updatedPlayers.length} total)`);
                 }
               }
             } else if (message.type === MESSAGE_TYPES.PLAYER_LEFT && message.playerId) {
               // Handle single player leave
-              const currentRoom = roomStore.currentRoom;
-              if (currentRoom) {
-                const updatedPlayers = currentRoom.players.filter(p => p.id !== message.playerId);
-                roomStore.updateRoomPlayers(updatedPlayers);
+              const activeRoomState = multiRoomStore.getActiveRoom();
+              if (activeRoomState) {
+                const updatedPlayers = activeRoomState.room.players.filter(p => p.id !== message.playerId);
+                multiRoomStore.updateRoomPlayers(activeRoomCode, updatedPlayers);
                 console.log(`👋 Player left: ${message.playerId} (${updatedPlayers.length} remaining)`);
               }
             }
@@ -319,7 +318,7 @@ export const useConnectionStore = create<ConnectionStore>()(
             const update = message as GameStateUpdate;
             if (update.players) {
               console.log(`🔄 Polling update: ${update.players.length} players`);
-              roomStore.updateRoomPlayers(update.players);
+              multiRoomStore.updateRoomPlayers(activeRoomCode, update.players);
             }
             if (update.playerCount !== undefined) {
               console.log(`🔢 Polling update: player count ${update.playerCount}`);

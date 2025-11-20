@@ -14,6 +14,7 @@ export function RoomManager() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [error, setError] = useState('');
   const [previousScores, setPreviousScores] = useState<Record<string, number>>({});
+  const [inviteLinkCopied, setInviteLinkCopied] = useState(false);
   
   const {
     playerName: storedPlayerName,
@@ -44,6 +45,23 @@ export function RoomManager() {
       setPlayerNameInput(storedPlayerName);
     }
   }, [storedPlayerName, playerName]);
+
+  // Handle auto-join from URL parameter
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const joinRoomCode = urlParams.get('join');
+
+    if (joinRoomCode && !hasRooms && storedPlayerName) {
+      // Auto-fill the join code and attempt to join
+      setJoinCode(joinRoomCode.toUpperCase());
+
+      // Clear the URL parameter after reading it
+      window.history.replaceState({}, '', window.location.pathname);
+
+      // Show a toast to inform the user
+      showGameToast(`Joining room ${joinRoomCode.toUpperCase()}...`, 'info');
+    }
+  }, [hasRooms, storedPlayerName]);
   
   // Cleanup expired rooms periodically
   useEffect(() => {
@@ -172,6 +190,37 @@ export function RoomManager() {
     setError('');
   };
 
+  const copyInviteLink = async (roomCode: string) => {
+    const baseUrl = window.location.origin;
+    const inviteUrl = `${baseUrl}?join=${roomCode}`;
+
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setInviteLinkCopied(true);
+      showGameToast('Invite link copied! Share with your team.', 'success');
+      setTimeout(() => setInviteLinkCopied(false), 2000);
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = inviteUrl;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+
+      try {
+        document.execCommand('copy');
+        setInviteLinkCopied(true);
+        showGameToast('Invite link copied! Share with your team.', 'success');
+        setTimeout(() => setInviteLinkCopied(false), 2000);
+      } catch (e) {
+        showGameToast('Failed to copy link. Please copy manually.', 'error');
+      } finally {
+        document.body.removeChild(textArea);
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Room Tabs */}
@@ -265,10 +314,26 @@ export function RoomManager() {
 
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="col-span-2">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                   <span className="text-apple-secondary">Room Code</span>
                   <span className="font-mono text-apple-accent bg-apple-darkest px-2 py-0.5 rounded text-sm">{currentRoom.code}</span>
                 </div>
+                <button
+                  onClick={() => copyInviteLink(currentRoom.code)}
+                  className="w-full px-3 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white text-xs font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  {inviteLinkCopied ? (
+                    <>
+                      <span>✓</span>
+                      <span>Link Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>🔗</span>
+                      <span>Copy Invite Link</span>
+                    </>
+                  )}
+                </button>
               </div>
               
               <div className="flex items-center justify-between">

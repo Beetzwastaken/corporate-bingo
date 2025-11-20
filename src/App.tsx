@@ -372,7 +372,16 @@ function App() {
 
 
       {/* BINGO Modal */}
-      <BingoModal show={gameState.hasWon} onBingo={handleBingo} onCancel={handleCancelBingo} />
+      <BingoModal
+        show={gameState.hasWon}
+        onBingo={handleBingo}
+        onCancel={handleCancelBingo}
+        board={gameState.board}
+        markedSquares={gameState.markedSquares}
+        winningCells={gameState.winningPattern}
+        score={currentScore}
+        gamesPlayed={gamesPlayed}
+      />
 
       {/* Verification Modal */}
       <VerificationModal />

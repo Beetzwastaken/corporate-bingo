@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useVerificationStore } from '../../stores/verificationStore';
 import { useRoomStore } from '../../stores/roomStore';
 import { useConnectionStore } from '../../stores/connectionStore';
@@ -12,6 +12,29 @@ export function VerificationModal() {
 
   const [timeRemaining, setTimeRemaining] = useState(30);
   const [hasVoted, setHasVoted] = useState(false);
+
+  const handleVote = useCallback(async (approved: boolean) => {
+    if (!activeVerification || !currentPlayer || hasVoted) return;
+
+    setHasVoted(true);
+
+    // Send vote to backend
+    try {
+      await sendMessage('cast_vote', {
+        verificationId: activeVerification.id,
+        approved
+      });
+
+      // Update local store
+      castVote(activeVerification.id, currentPlayer.id, approved);
+
+      // Close modal
+      setActiveVerification(null);
+    } catch (error) {
+      console.error('Failed to cast vote:', error);
+      setHasVoted(false);
+    }
+  }, [activeVerification, currentPlayer, hasVoted, sendMessage, castVote, setActiveVerification]);
 
   // Countdown timer
   useEffect(() => {
@@ -33,30 +56,7 @@ export function VerificationModal() {
     }, 100); // Update every 100ms for smooth countdown
 
     return () => clearInterval(interval);
-  }, [activeVerification]);
-
-  const handleVote = async (approved: boolean) => {
-    if (!activeVerification || !currentPlayer || hasVoted) return;
-
-    setHasVoted(true);
-
-    // Send vote to backend
-    try {
-      await sendMessage('cast_vote', {
-        verificationId: activeVerification.id,
-        approved
-      });
-
-      // Update local store
-      castVote(activeVerification.id, currentPlayer.id, approved);
-
-      // Close modal
-      setActiveVerification(null);
-    } catch (error) {
-      console.error('Failed to cast vote:', error);
-      setHasVoted(false);
-    }
-  };
+  }, [activeVerification, handleVote]);
 
   if (!activeVerification) {
     return null;
