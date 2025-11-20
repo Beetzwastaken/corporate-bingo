@@ -1,0 +1,19 @@
+{
+  "name": "Corporate Bingo - Multiplayer Buzzword Game",
+  "short_name": "Corporate Bingo",
+  "description": "Transform boring meetings into interactive multiplayer bingo games. Play with colleagues in real-time using corporate buzzwords.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#1a1a1a",
+  "orientation": "portrait-primary",
+  "categories": ["games", "entertainment", "productivity"],
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
