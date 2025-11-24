@@ -6,6 +6,7 @@ import { BingoCard } from './components/bingo/BingoCard';
 import { SoloScoreDisplay } from './components/bingo/SoloScoreDisplay';
 import { BingoModal } from './components/bingo/BingoModal';
 import { VerificationModal } from './components/bingo/VerificationModal';
+import { WelcomeTutorial } from './components/shared/WelcomeTutorial';
 import { useBingoStore } from './utils/store';
 import { APP_VERSION } from './utils/version';
 import { BingoEngine } from './lib/bingoEngine';
@@ -27,6 +28,7 @@ function ComponentLoader() {
 }
 
 function App() {
+  const [showTutorial, setShowTutorial] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<'rooms' | 'stats' | null>(null);
   const dismissedPatternRef = useRef<string | null>(null);
@@ -78,6 +80,24 @@ function App() {
       dismissedPatternRef.current = null; // Always clear dismissed state when pattern is broken
     }
   }, [gameState.markedSquares, gameState.hasWon, gameState.board, setGameWon]);
+
+
+  // Check if this is the user's first visit
+  useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem('cb_tutorial_completed');
+    if (!hasSeenTutorial) {
+      setShowTutorial(true);
+    }
+  }, []);
+
+  const handleTutorialComplete = () => {
+    localStorage.setItem('cb_tutorial_completed', 'true');
+    setShowTutorial(false);
+  };
+
+  const handleShowTutorial = () => {
+    setShowTutorial(true);
+  };
 
   const handleSquareClick = async (squareId: string) => {
     const squareIndex = parseInt(squareId.split('-')[1]);
@@ -257,6 +277,16 @@ function App() {
                   Reset Score
                 </button>
               )}
+              <button
+                onClick={handleShowTutorial}
+                className="p-2 text-apple-secondary hover:text-apple-text transition-colors"
+                title="Show tutorial"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+
 
 
               <button
@@ -388,6 +418,12 @@ function App() {
 
       {/* Toast Notifications */}
       <ToastContainer />
+
+      {/* Welcome Tutorial */}
+      <WelcomeTutorial
+        show={showTutorial}
+        onComplete={handleTutorialComplete}
+      />
     </div>
   );
 }

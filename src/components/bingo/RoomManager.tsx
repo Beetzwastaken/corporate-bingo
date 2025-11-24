@@ -199,7 +199,7 @@ export function RoomManager() {
       setInviteLinkCopied(true);
       showGameToast('Invite link copied! Share with your team.', 'success');
       setTimeout(() => setInviteLinkCopied(false), 2000);
-    } catch (err) {
+    } catch {
       // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = inviteUrl;
@@ -213,7 +213,7 @@ export function RoomManager() {
         setInviteLinkCopied(true);
         showGameToast('Invite link copied! Share with your team.', 'success');
         setTimeout(() => setInviteLinkCopied(false), 2000);
-      } catch (e) {
+      } catch {
         showGameToast('Failed to copy link. Please copy manually.', 'error');
       } finally {
         document.body.removeChild(textArea);
