@@ -1,7 +1,7 @@
 // Application version management for Corporate Bingo
 // Used for cache-busting and state migration
 
-export const APP_VERSION = '1.2.1';
+export const APP_VERSION = '1.6.0';
 
 // Version history for migration logic
 export const VERSION_HISTORY = [
