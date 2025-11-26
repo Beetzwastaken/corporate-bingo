@@ -1,6 +1,7 @@
 // Game Store - Manages game state, board, and win conditions
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
+// Simplified scoring: +1 per square, +5 BINGO bonus only (no 3/4-in-row)
 import { BingoEngine, type LineBonus } from '../lib/bingoEngine';
 
 export interface BingoSquare {
@@ -18,6 +19,15 @@ export interface GameState {
   appliedBonuses: Map<string, { type: string; points: number }>; // Track bonuses by line (pattern|lineIndex)
 }
 
+// Monthly stats - reset at the start of each month
+interface MonthlyStats {
+  month: string; // Format: "YYYY-MM"
+  score: number;
+  bingos: number;
+  gamesPlayed: number;
+  wins: number;
+}
+
 interface GameStore {
   // State
   gameState: GameState;
@@ -26,6 +36,10 @@ interface GameStore {
   totalSquares: number;
   currentScore: number;
   recentBonuses: LineBonus[];
+  // All-time stats (persisted)
+  totalScore: number;
+  bingoCount: number;
+  monthlyStats: MonthlyStats;
   
   // Actions
   initializeGame: () => void;
@@ -37,8 +51,11 @@ interface GameStore {
   incrementGamesPlayed: () => void;
   incrementWins: () => void;
   incrementTotalSquares: () => void;
+  incrementBingoCount: () => void;
+  addToTotalScore: (points: number) => void;
   clearStats: () => void;
   clearRecentBonuses: () => void;
+  checkMonthReset: () => void;
 }
 
 export const useGameStore = create<GameStore>()(
@@ -58,6 +75,16 @@ export const useGameStore = create<GameStore>()(
         totalSquares: 0,
         currentScore: 0,
         recentBonuses: [],
+        // All-time stats
+        totalScore: 0,
+        bingoCount: 0,
+        monthlyStats: {
+          month: new Date().toISOString().slice(0, 7), // "YYYY-MM"
+          score: 0,
+          bingos: 0,
+          gamesPlayed: 0,
+          wins: 0
+        },
         
         // Initialize a new game (preserve currentScore)
         initializeGame: () => {
@@ -190,18 +217,82 @@ export const useGameStore = create<GameStore>()(
         },
         
         // Statistics actions
-        incrementGamesPlayed: () => set(state => ({ gamesPlayed: state.gamesPlayed + 1 })),
-        incrementWins: () => set(state => ({ wins: state.wins + 1 })),
+        incrementGamesPlayed: () => set(state => {
+          const currentMonth = new Date().toISOString().slice(0, 7);
+          const monthlyStats = state.monthlyStats.month === currentMonth
+            ? { ...state.monthlyStats, gamesPlayed: state.monthlyStats.gamesPlayed + 1 }
+            : { month: currentMonth, score: 0, bingos: 0, gamesPlayed: 1, wins: 0 };
+          return {
+            gamesPlayed: state.gamesPlayed + 1,
+            monthlyStats
+          };
+        }),
+        incrementWins: () => set(state => {
+          const currentMonth = new Date().toISOString().slice(0, 7);
+          const monthlyStats = state.monthlyStats.month === currentMonth
+            ? { ...state.monthlyStats, wins: state.monthlyStats.wins + 1 }
+            : { month: currentMonth, score: 0, bingos: 0, gamesPlayed: 0, wins: 1 };
+          return {
+            wins: state.wins + 1,
+            monthlyStats
+          };
+        }),
         incrementTotalSquares: () => set(state => ({ totalSquares: state.totalSquares + 1 })),
+        incrementBingoCount: () => set(state => {
+          const currentMonth = new Date().toISOString().slice(0, 7);
+          const monthlyStats = state.monthlyStats.month === currentMonth
+            ? { ...state.monthlyStats, bingos: state.monthlyStats.bingos + 1 }
+            : { month: currentMonth, score: 0, bingos: 1, gamesPlayed: 0, wins: 0 };
+          return {
+            bingoCount: state.bingoCount + 1,
+            monthlyStats
+          };
+        }),
+        addToTotalScore: (points: number) => set(state => {
+          const currentMonth = new Date().toISOString().slice(0, 7);
+          const monthlyStats = state.monthlyStats.month === currentMonth
+            ? { ...state.monthlyStats, score: state.monthlyStats.score + points }
+            : { month: currentMonth, score: points, bingos: 0, gamesPlayed: 0, wins: 0 };
+          return {
+            totalScore: state.totalScore + points,
+            monthlyStats
+          };
+        }),
         
         // Clear all statistics
         clearStats: () => {
           set({
             gamesPlayed: 0,
             wins: 0,
-            totalSquares: 0
+            totalSquares: 0,
+            totalScore: 0,
+            bingoCount: 0,
+            monthlyStats: {
+              month: new Date().toISOString().slice(0, 7),
+              score: 0,
+              bingos: 0,
+              gamesPlayed: 0,
+              wins: 0
+            }
           });
         },
+
+        // Check and reset monthly stats if month changed
+        checkMonthReset: () => set(state => {
+          const currentMonth = new Date().toISOString().slice(0, 7);
+          if (state.monthlyStats.month !== currentMonth) {
+            return {
+              monthlyStats: {
+                month: currentMonth,
+                score: 0,
+                bingos: 0,
+                gamesPlayed: 0,
+                wins: 0
+              }
+            };
+          }
+          return {};
+        }),
         
         // Reset current score (separate from game reset)
         resetScore: () => {
@@ -218,7 +309,10 @@ export const useGameStore = create<GameStore>()(
         partialize: (state) => ({
           gamesPlayed: state.gamesPlayed,
           wins: state.wins,
-          totalSquares: state.totalSquares
+          totalSquares: state.totalSquares,
+          totalScore: state.totalScore,
+          bingoCount: state.bingoCount,
+          monthlyStats: state.monthlyStats
         }),
         onRehydrateStorage: () => (state) => {
           // Migration: Fix boards with incorrectly checked middle square (old FREE SPACE bug)

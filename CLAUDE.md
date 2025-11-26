@@ -3,8 +3,8 @@
 **Project Type**: Corporate Humor Web Application
 **Current Status**: ✅ PRODUCTION READY - Advanced Multiplayer Platform
 **Live URL**: https://corporate-bingo-ai.netlify.app
-**Last Updated**: January 16, 2025
-**Latest Session**: January 16, 2025 - ConnectionStore migration to multi-room architecture complete. Fixed "[connectionStore] No room or player to connect" error. WebSocket connections now properly use multiRoomStore for room/player data. ⏳ Awaiting user testing before deployment.
+**Last Updated**: November 24, 2025
+**Latest Session**: November 24, 2025 - Welcome tutorial (v1.6.0) added with 6-step interactive walkthrough. First-time user detection via localStorage. Help button for replay. Committed and tagged. Ready for testing.
 
 ## 🚨 MANDATORY: ALWAYS USE SPECIALIZED AGENTS 🚨
 **NEVER work directly on Corporate Bingo tasks - Always delegate to specialized agents first**

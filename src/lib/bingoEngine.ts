@@ -1,4 +1,5 @@
 // Bingo game engine for corporate buzzword bingo
+// Simplified scoring: +1 per square, +5 BINGO bonus only (no 3/4-in-row)
 import { CORPORATE_BINGO } from '../data/buzzwords';
 
 export interface BingoSquare {
@@ -14,7 +15,7 @@ export interface BingoResult {
 }
 
 export interface LineBonus {
-  type: '3-in-row' | '4-in-row' | 'bingo';
+  type: 'bingo';
   points: number;
   pattern: 'row' | 'column' | 'diagonal';
   lineIndex: number;
@@ -34,9 +35,9 @@ export class BingoEngine {
   static generateCard(): BingoSquare[] {
     const shuffled = [...CORPORATE_BINGO].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, 25); // 25 buzzwords, no free space
-    
+
     const card: BingoSquare[] = [];
-    
+
     for (let i = 0; i < 25; i++) {
       card.push({
         id: `square-${i}`,
@@ -63,7 +64,7 @@ export class BingoEngine {
         };
       }
     }
-    
+
     // Check columns
     for (let col = 0; col < 5; col++) {
       const colSquares = squares.filter((_, index) => index % 5 === col);
@@ -75,14 +76,14 @@ export class BingoEngine {
         };
       }
     }
-    
+
     // Check diagonals
     const diagonal1Indices = [0, 6, 12, 18, 24];
     const diagonal2Indices = [4, 8, 12, 16, 20];
-    
+
     const diagonal1 = diagonal1Indices.map(i => squares[i]);
     const diagonal2 = diagonal2Indices.map(i => squares[i]);
-    
+
     if (diagonal1.every(square => square.isMarked)) {
       return {
         hasWon: true,
@@ -90,7 +91,7 @@ export class BingoEngine {
         winningCells: diagonal1Indices
       };
     }
-    
+
     if (diagonal2.every(square => square.isMarked)) {
       return {
         hasWon: true,
@@ -98,189 +99,82 @@ export class BingoEngine {
         winningCells: diagonal2Indices
       };
     }
-    
+
     return { hasWon: false };
   }
 
   /**
-   * Find the longest consecutive run of marked squares in a line
-   * IMPORTANT: Only consecutive/touching squares count for bonuses
-   */
-  private static findLongestConsecutiveRun(markedStates: boolean[], cellIndices: number[]): { length: number; cells: number[] } {
-    let maxLength = 0;
-    let maxCells: number[] = [];
-    let currentLength = 0;
-    let currentCells: number[] = [];
-
-    for (let i = 0; i < markedStates.length; i++) {
-      if (markedStates[i]) {
-        if (currentLength === 0) {
-          currentCells = [];
-        }
-        currentLength++;
-        currentCells.push(cellIndices[i]);
-
-        if (currentLength > maxLength) {
-          maxLength = currentLength;
-          maxCells = [...currentCells];
-        }
-      } else {
-        currentLength = 0;
-        currentCells = [];
-      }
-    }
-
-    return { length: maxLength, cells: maxCells };
-  }
-
-  /**
-   * Analyze board for line bonuses (3-in-row, 4-in-row, BINGO)
-   * IMPORTANT: Only counts CONSECUTIVE/TOUCHING squares, not total marked squares in a line
+   * Analyze board for BINGO bonuses only (simplified scoring)
+   * Only awards +5 bonus for complete 5-in-a-row lines
    */
   static analyzeBoardForBonuses(squares: BingoSquare[]): BingoAnalysis {
     const lineBonuses: LineBonus[] = [];
-    
-    // Check rows for bonuses
+
+    // Check rows for BINGO
     for (let row = 0; row < 5; row++) {
       const rowStart = row * 5;
       const rowSquares = squares.slice(rowStart, rowStart + 5);
-      const markedStates = rowSquares.map(s => s.isMarked);
       const cellIndices = Array.from({ length: 5 }, (_, i) => rowStart + i);
-      const consecutiveRun = this.findLongestConsecutiveRun(markedStates, cellIndices);
 
-      if (consecutiveRun.length === 5) {
+      if (rowSquares.every(s => s.isMarked)) {
         lineBonuses.push({
           type: 'bingo',
           points: 5,
           pattern: 'row',
           lineIndex: row,
-          cells: consecutiveRun.cells
-        });
-      } else if (consecutiveRun.length === 4) {
-        lineBonuses.push({
-          type: '4-in-row',
-          points: 3,
-          pattern: 'row',
-          lineIndex: row,
-          cells: consecutiveRun.cells
-        });
-      } else if (consecutiveRun.length === 3) {
-        lineBonuses.push({
-          type: '3-in-row',
-          points: 1,
-          pattern: 'row',
-          lineIndex: row,
-          cells: consecutiveRun.cells
+          cells: cellIndices
         });
       }
     }
 
-    // Check columns for bonuses
+    // Check columns for BINGO
     for (let col = 0; col < 5; col++) {
       const colSquares = squares.filter((_, index) => index % 5 === col);
-      const markedStates = colSquares.map(s => s.isMarked);
       const cellIndices = Array.from({ length: 5 }, (_, i) => i * 5 + col);
-      const consecutiveRun = this.findLongestConsecutiveRun(markedStates, cellIndices);
 
-      if (consecutiveRun.length === 5) {
+      if (colSquares.every(s => s.isMarked)) {
         lineBonuses.push({
           type: 'bingo',
           points: 5,
           pattern: 'column',
           lineIndex: col,
-          cells: consecutiveRun.cells
-        });
-      } else if (consecutiveRun.length === 4) {
-        lineBonuses.push({
-          type: '4-in-row',
-          points: 3,
-          pattern: 'column',
-          lineIndex: col,
-          cells: consecutiveRun.cells
-        });
-      } else if (consecutiveRun.length === 3) {
-        lineBonuses.push({
-          type: '3-in-row',
-          points: 1,
-          pattern: 'column',
-          lineIndex: col,
-          cells: consecutiveRun.cells
+          cells: cellIndices
         });
       }
     }
 
-    // Check diagonals for bonuses
+    // Check diagonals for BINGO
     const diagonal1Indices = [0, 6, 12, 18, 24];
     const diagonal2Indices = [4, 8, 12, 16, 20];
-    
-    // Diagonal 1 (top-left to bottom-right)
-    const diagonal1Squares = diagonal1Indices.map(i => squares[i]);
-    const diagonal1MarkedStates = diagonal1Squares.map(s => s.isMarked);
-    const diagonal1Run = this.findLongestConsecutiveRun(diagonal1MarkedStates, diagonal1Indices);
 
-    if (diagonal1Run.length === 5) {
+    const diagonal1Squares = diagonal1Indices.map(i => squares[i]);
+    if (diagonal1Squares.every(s => s.isMarked)) {
       lineBonuses.push({
         type: 'bingo',
         points: 5,
         pattern: 'diagonal',
         lineIndex: 0,
-        cells: diagonal1Run.cells
-      });
-    } else if (diagonal1Run.length === 4) {
-      lineBonuses.push({
-        type: '4-in-row',
-        points: 3,
-        pattern: 'diagonal',
-        lineIndex: 0,
-        cells: diagonal1Run.cells
-      });
-    } else if (diagonal1Run.length === 3) {
-      lineBonuses.push({
-        type: '3-in-row',
-        points: 1,
-        pattern: 'diagonal',
-        lineIndex: 0,
-        cells: diagonal1Run.cells
+        cells: diagonal1Indices
       });
     }
 
-    // Diagonal 2 (top-right to bottom-left)
     const diagonal2Squares = diagonal2Indices.map(i => squares[i]);
-    const diagonal2MarkedStates = diagonal2Squares.map(s => s.isMarked);
-    const diagonal2Run = this.findLongestConsecutiveRun(diagonal2MarkedStates, diagonal2Indices);
-
-    if (diagonal2Run.length === 5) {
+    if (diagonal2Squares.every(s => s.isMarked)) {
       lineBonuses.push({
         type: 'bingo',
         points: 5,
         pattern: 'diagonal',
         lineIndex: 1,
-        cells: diagonal2Run.cells
-      });
-    } else if (diagonal2Run.length === 4) {
-      lineBonuses.push({
-        type: '4-in-row',
-        points: 3,
-        pattern: 'diagonal',
-        lineIndex: 1,
-        cells: diagonal2Run.cells
-      });
-    } else if (diagonal2Run.length === 3) {
-      lineBonuses.push({
-        type: '3-in-row',
-        points: 1,
-        pattern: 'diagonal',
-        lineIndex: 1,
-        cells: diagonal2Run.cells
+        cells: diagonal2Indices
       });
     }
 
     // Calculate total bonus points
     const totalBonusPoints = lineBonuses.reduce((sum, bonus) => sum + bonus.points, 0);
-    
+
     // Get standard BINGO result
     const bingoResult = this.checkBingo(squares);
-    
+
     return {
       bingoResult,
       lineBonuses,
@@ -302,7 +196,7 @@ export class BingoEngine {
   static getSquareStats(squares: BingoSquare[]) {
     const marked = squares.filter(s => s.isMarked);
     const total = squares.length;
-    
+
     return {
       marked: marked.length,
       total,
@@ -318,7 +212,7 @@ export class BingoEngine {
     const markedTexts = squares
       .filter(s => s.isMarked)
       .map(s => s.text);
-    
+
     // Common combinations in corporate meetings
     const combinations = [
       ['Synergy', 'Paradigm Shift', 'Game Changer'],
@@ -327,20 +221,20 @@ export class BingoEngine {
       ['Agile Transformation', 'Sprint Planning', 'Stand-up'],
       ['Low-hanging Fruit', 'Move the Needle', 'Think Outside the Box']
     ];
-    
+
     const suggestions: string[] = [];
-    
+
     for (const combo of combinations) {
       const markedInCombo = combo.filter(term => markedTexts.includes(term));
       if (markedInCombo.length > 0) {
-        const unmarked = combo.filter(term => 
-          !markedTexts.includes(term) && 
+        const unmarked = combo.filter(term =>
+          !markedTexts.includes(term) &&
           squares.some(s => s.text === term && !s.isMarked)
         );
         suggestions.push(...unmarked);
       }
     }
-    
+
     return [...new Set(suggestions)].slice(0, 3); // Return unique suggestions
   }
 }

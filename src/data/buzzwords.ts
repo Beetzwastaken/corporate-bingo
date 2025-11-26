@@ -1,6 +1,6 @@
 // Corporate Bingo Buzzwords - Professional Curated List
-// Updated: January 2025 - Focused on high-impact corporate humor
-// Total: 171 professionally selected buzzwords (spoken phrases + observable actions)
+// Updated: November 2025 - Focused on high-impact corporate humor
+// Total: 172 professionally selected buzzwords (spoken phrases + observable actions)
 
 export const CORPORATE_BINGO = [
   "Circle Back",
@@ -63,9 +63,6 @@ export const CORPORATE_BINGO = [
   "Iterate",
   "Machine Learning",
   "Big Data",
-  "Rockstar",
-  "Ninja",
-  "Guru",
   "Thought Leader",
   "Self-starter",
   "Team Player",
@@ -76,7 +73,6 @@ export const CORPORATE_BINGO = [
   "Run it Up the Flagpole",
   "Herding Cats",
   "Ducks in a Row",
-  "Throw Spaghetti",
   "Parking Lot",
   "Action Items",
   "Deliverables",
@@ -148,7 +144,6 @@ export const CORPORATE_BINGO = [
   "Above My Paygrade",
   "Apples to Apples",
   "Move Fast Break Things",
-  "Drink the Kool-Aid",
   "Boots on the Ground",
   "Push the Envelope",
   "Raise the Bar",
@@ -171,7 +166,13 @@ export const CORPORATE_BINGO = [
   "Let's Take a Step Back",
   "Quick Win",
   "Give You Back X Minutes",
-  "Color Commentary",
   "Optics",
-  "Swim Lane"
+  "Swim Lane",
+  "Can Everyone See My Screen?",
+  "I'll Drop It in the Chat",
+  "Do More with Less",
+  "Double Down",
+  "Sorry, Go Ahead",
+  "I Have a Hard Stop At...",
+  "Friendly Reminder"
 ];

@@ -1,5 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import confetti from 'canvas-confetti';
 import { generateEmojiGrid, copyToClipboard } from '../../utils/shareUtils';
+
+// Fire confetti celebration
+const fireConfetti = () => {
+  const duration = 3000;
+  const end = Date.now() + duration;
+
+  const colors = ['#fbbf24', '#f59e0b', '#22d3ee', '#3b82f6', '#a855f7'];
+
+  (function frame() {
+    confetti({
+      particleCount: 5,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0 },
+      colors: colors
+    });
+    confetti({
+      particleCount: 5,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1 },
+      colors: colors
+    });
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  }());
+};
 
 interface BoardSquare {
   text: string;
@@ -28,6 +58,13 @@ export function BingoModal({
   gamesPlayed = 1
 }: BingoModalProps) {
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+
+  // Fire confetti when modal shows
+  useEffect(() => {
+    if (show) {
+      fireConfetti();
+    }
+  }, [show]);
 
   const handleShare = async () => {
     const shareText = generateEmojiGrid({

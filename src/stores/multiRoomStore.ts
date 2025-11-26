@@ -7,15 +7,15 @@ import { createBingoRoom, joinBingoRoom, type BackendRoom, type BackendPlayer } 
 
 import { useConnectionStore } from './connectionStore';
 // Room type enumeration
-export type RoomType = 'single' | 'persistent';
+export type GameMode = 'play' | 'host';
 
 // Extended room interface with type and metadata
 export interface MultiRoom extends BingoRoom {
-  roomType: RoomType;
+  gameMode: GameMode;
   createdAt: Date;
   lastActivity: Date;
   expiresAt?: Date; // For single meeting rooms
-  cumulativeScores?: Record<string, number>; // For persistent rooms
+  cumulativeScores?: Record<string, number>; // Legacy field (no longer used)
   weeklyLeaderboard?: Array<{ playerId: string; playerName: string; score: number; }>;
   monthlyLeaderboard?: Array<{ playerId: string; playerName: string; score: number; }>;
 }
@@ -36,7 +36,7 @@ interface MultiRoomStore {
   currentPlayer: BingoPlayer | null;
   
   // Actions
-  createRoom: (roomName: string, playerName: string, roomType: RoomType) => Promise<{ success: boolean; error?: string; roomCode?: string }>;
+  createRoom: (roomName: string, playerName: string, gameMode: GameMode) => Promise<{ success: boolean; error?: string; roomCode?: string }>;
   joinRoom: (roomCode: string, playerName: string) => Promise<{ success: boolean; error?: string }>;
   leaveRoom: (roomCode: string) => void;
   leaveAllRooms: () => void;
@@ -46,7 +46,7 @@ interface MultiRoomStore {
   updateGameState: (roomCode: string, gameState: GameState) => void;
   updateCumulativeScores: (roomCode: string, playerId: string, scoreIncrement: number) => void;
   cleanupExpiredRooms: () => void;
-  getRoomsOfType: (roomType: RoomType) => RoomState[];
+  getRoom: () => RoomState | null;
   getActiveRoom: () => RoomState | null;
   setCurrentPlayer: (player: BingoPlayer | null) => void;
 }
@@ -60,15 +60,15 @@ export const generateRoomCode = (): string => {
 
 // Check if a room is expired (for single meeting rooms)
 export const isRoomExpired = (room: MultiRoom): boolean => {
-  if (room.roomType !== 'single' || !room.expiresAt) return false;
+  if (!room.expiresAt) return false;
   return new Date() > room.expiresAt;
 };
 
 // Check if a room should be cleaned up due to inactivity
 export const shouldCleanupRoom = (room: MultiRoom): boolean => {
-  if (room.roomType === 'persistent') return false; // Continuous rooms NEVER cleanup
+  // All rooms cleanup after 2 hours of inactivity (removed persistent check)
   
-  // Only single meeting rooms cleanup after 2 hours of inactivity
+  // (
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
   return room.lastActivity < twoHoursAgo;
 };
@@ -83,13 +83,13 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
         currentPlayer: null,
         
         // Create a new room with specified type
-        createRoom: async (roomName: string, playerName: string, roomType: RoomType) => {
+        createRoom: async (roomName: string, playerName: string, gameMode: GameMode) => {
           try {
             // Generate simple room code
             const roomCode = generateRoomCode();
             
             // Create room via API (updated to include roomType)
-            const response = await createBingoRoom(roomName, playerName, roomType);
+            const response = await createBingoRoom(roomName, playerName, gameMode);
             
             if (!response.success || !response.data) {
               return { 
@@ -115,15 +115,15 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
               isActive: true,
               createdAt: now,
               lastActivity: now,
-              roomType,
+              gameMode,
               maxPlayers: 10,
               // Set expiration ONLY for single meeting rooms (24 hours from creation)
               // Continuous rooms NEVER expire
-              expiresAt: roomType === 'single' ? new Date(now.getTime() + 24 * 60 * 60 * 1000) : undefined,
-              // Initialize empty cumulative scores for persistent rooms
-              cumulativeScores: roomType === 'persistent' ? {} : undefined,
-              weeklyLeaderboard: roomType === 'persistent' ? [] : undefined,
-              monthlyLeaderboard: roomType === 'persistent' ? [] : undefined,
+              expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000), // All rooms auto-expire after 24 hours
+              // Cumulative scores no longer used (stats tracked client-side)
+              // cumulativeScores removed - using client-side stats tracking
+              
+              
             };
             
             const roomState: RoomState = {
@@ -184,9 +184,9 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
               joinedAt: Date.now()
             };
             
-            // Extract room type from nested room object (backend sends response.data.room.type)
+            // Extract game mode from nested room object
             const backendRoom = response.data.room as BackendRoom | undefined;
-            const roomType: RoomType = (backendRoom?.type === 'persistent' ? 'persistent' : 'single') as RoomType;
+            const gameMode: GameMode = (backendRoom?.gameMode === 'host' ? 'host' : 'play') as GameMode;
 
             // Extract all existing players from backend response
             const existingPlayers = Array.isArray(backendRoom?.players)
@@ -208,13 +208,13 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
               isActive: true,
               createdAt: backendRoom?.createdAt ? new Date(backendRoom.createdAt) : now,
               lastActivity: now,
-              roomType,
+              gameMode,
               maxPlayers: 10,
               // Continuous rooms NEVER expire, only single meeting rooms do
-              expiresAt: roomType === 'single' ? new Date(now.getTime() + 24 * 60 * 60 * 1000) : undefined,
-              cumulativeScores: roomType === 'persistent' ? {} : undefined,
-              weeklyLeaderboard: roomType === 'persistent' ? [] : undefined,
-              monthlyLeaderboard: roomType === 'persistent' ? [] : undefined,
+              expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000), // All rooms auto-expire after 24 hours
+              // cumulativeScores removed - using client-side stats tracking
+              
+              
             };
             
             const roomState: RoomState = {
@@ -352,37 +352,12 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
           });
         },
         
-        // Update cumulative scores for persistent rooms
+        // Cumulative scores now tracked client-side via gameStore
+        // This action is kept for backward compatibility but is a no-op
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         updateCumulativeScores: (roomCode: string, playerId: string, scoreIncrement: number) => {
-          set(state => {
-            if (!state.rooms[roomCode] || state.rooms[roomCode].room.roomType !== 'persistent') {
-              return state;
-            }
-            
-            const room = state.rooms[roomCode].room;
-            const currentScores = room.cumulativeScores || {};
-            const newCumulativeScores = {
-              ...currentScores,
-              [playerId]: (currentScores[playerId] || 0) + scoreIncrement
-            };
-            
-            return {
-              rooms: {
-                ...state.rooms,
-                [roomCode]: {
-                  ...state.rooms[roomCode],
-                  room: {
-                    ...room,
-                    cumulativeScores: newCumulativeScores,
-                    lastActivity: new Date()
-                  }
-                }
-              }
-            };
-          });
+          // Stats now tracked in gameStore.monthlyStats and gameStore.totalScore
         },
-        
-        // Clean up expired rooms
         cleanupExpiredRooms: () => {
           set(state => {
             const activeRooms: Record<string, RoomState> = {};
@@ -415,13 +390,12 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
         },
         
         // Get rooms of a specific type
-        getRoomsOfType: (roomType: RoomType) => {
+        // Get the current room (simplified to single room)
+        getRoom: () => {
           const state = get();
-          return Object.values(state.rooms).filter(roomState => 
-            roomState.room.roomType === roomType
-          );
+          return state.activeRoomCode ? state.rooms[state.activeRoomCode] || null : null;
         },
-        
+
         // Get the currently active room
         getActiveRoom: () => {
           const state = get();

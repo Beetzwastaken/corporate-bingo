@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useBingoStore } from '../../utils/store';
-import { useMultiRoomStore, type RoomType } from '../../stores/multiRoomStore';
+import { useMultiRoomStore, type GameMode } from '../../stores/multiRoomStore';
 import { Leaderboard } from './Leaderboard';
 import { RoomTabs } from './RoomTabs';
-import { RoomTypeSelector } from './RoomTypeSelector';
+import { GameModeSelector } from './GameModeSelector';
 import { showScoreToast, showGameToast } from '../shared/ToastNotification';
 
 export function RoomManager() {
   const [roomName, setRoomName] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [playerName, setPlayerNameInput] = useState('');
-  const [roomType, setRoomType] = useState<RoomType>('single');
+  const [gameMode, setGameMode] = useState<GameMode>('play');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [error, setError] = useState('');
   const [previousScores, setPreviousScores] = useState<Record<string, number>>({});
@@ -106,13 +106,11 @@ export function RoomManager() {
 
   // Helper function to determine score change reason
   const getScoreChangeReason = (scoreDiff: number): string => {
-    if (scoreDiff === 10) return "Square verified!";
-    if (scoreDiff === 50) return "3-in-a-row bonus!";
-    if (scoreDiff === 100) return "4-in-a-row bonus!";
-    if (scoreDiff === 200) return "BINGO achieved!";
-    if (scoreDiff === -50) return "Self-claim penalty";
+    if (scoreDiff === 1) return "Square marked!";
+    if (scoreDiff === 5) return "BINGO bonus!";
+    if (scoreDiff === 6) return "BINGO! (+5 bonus + 1 square)";
     if (scoreDiff > 0) return `+${scoreDiff} points earned`;
-    return `${scoreDiff} points penalty`;
+    return "Points adjusted";
   };
 
   const validateRoomCode = (code: string): boolean => {
@@ -145,7 +143,7 @@ export function RoomManager() {
     }
 
     setError('');
-    const result = await createMultiRoom(roomName.trim(), storedPlayerName, roomType);
+    const result = await createMultiRoom(roomName.trim(), storedPlayerName, gameMode);
     
     if (!result.success) {
       setError(result.error || 'Could not create room');
@@ -278,19 +276,19 @@ export function RoomManager() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-2">
                 <span className={`text-base ${
-                  currentRoom.roomType === 'single' ? 'text-blue-400' : 'text-green-400'
+                  currentRoom.gameMode === 'play' ? 'text-blue-400' : 'text-yellow-400'
                 }`}>
-                  {currentRoom.roomType === 'single' ? '⏱️' : '♾️'}
+                  {currentRoom.gameMode === 'play' ? '🎮' : '👑'}
                 </span>
                 <h2 className="text-base font-semibold text-apple-text">
                   Current Room
                 </h2>
                 <span className={`px-2 py-0.5 text-xs rounded font-medium ${
-                  currentRoom.roomType === 'single' 
+                  currentRoom.gameMode === 'play' 
                     ? 'bg-blue-500/20 text-blue-400' 
                     : 'bg-green-500/20 text-green-400'
                 }`}>
-                  {currentRoom.roomType === 'single' ? 'Meeting' : 'Team'}
+                  {currentRoom.gameMode === 'play' ? 'Meeting' : 'Team'}
                 </span>
               </div>
               <button
@@ -304,7 +302,7 @@ export function RoomManager() {
             
             <div className="mb-3">
               <p className="text-apple-accent font-medium text-base">{currentRoom.name}</p>
-              {currentRoom.roomType === 'single' && currentRoom.expiresAt && (
+              {currentRoom.gameMode === 'play' && currentRoom.expiresAt && (
                 <p className="text-xs text-apple-secondary mt-0.5">
                   Expires: {new Date(currentRoom.expiresAt).toLocaleDateString()} at{' '}
                   {new Date(currentRoom.expiresAt).toLocaleTimeString()}
@@ -388,9 +386,9 @@ export function RoomManager() {
                 )}
               </div>
               <div className="space-y-3">
-                <RoomTypeSelector
-                  selectedType={roomType}
-                  onTypeChange={setRoomType}
+                <GameModeSelector
+                  selectedMode={gameMode}
+                  onModeChange={setGameMode}
                   disabled={isConnecting}
                   compact={true}
                 />
@@ -401,7 +399,7 @@ export function RoomManager() {
                     value={roomName}
                     onChange={(e) => setRoomName(e.target.value)}
                     className="apple-input w-full"
-                    placeholder={roomType === 'single' ? 'Meeting name' : 'Team name'}
+                    placeholder="Room name"
                     maxLength={50}
                     disabled={isConnecting}
                     onKeyPress={(e) => e.key === 'Enter' && handleCreateRoom()}
@@ -418,7 +416,7 @@ export function RoomManager() {
                       <span>Creating...</span>
                     </div>
                   ) : (
-                    `Create ${roomType === 'single' ? 'Meeting' : 'Team'} Room`
+                    `Create ${gameMode === 'play' ? 'Casual' : 'Competitive'} Room`
                   )}
                 </button>
               </div>

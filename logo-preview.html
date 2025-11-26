@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logo Preview - Fluff vs Pivot</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      padding: 40px;
+      color: white;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 2rem;
+      color: #94a3b8;
+    }
+    .logo-container {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      flex-wrap: wrap;
+    }
+    .logo-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      min-width: 320px;
+    }
+    .logo-card h2 {
+      margin-bottom: 30px;
+      font-size: 1.5rem;
+      color: #e2e8f0;
+    }
+    .logo-card img {
+      width: 280px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+    .logo-card.fluff { border-color: rgba(34, 211, 238, 0.3); }
+    .logo-card.pivot { border-color: rgba(251, 191, 36, 0.3); }
+    .description {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+    .pros {
+      margin-top: 20px;
+      text-align: left;
+      color: #6ee7b7;
+      font-size: 0.85rem;
+    }
+    .pros li {
+      margin: 8px 0;
+      list-style: none;
+    }
+    .pros li::before {
+      content: "✓ ";
+      color: #22c55e;
+    }
+  </style>
+</head>
+<body>
+  <h1>Logo Options: Choose Your Name</h1>
+
+  <div class="logo-container">
+    <div class="logo-card fluff">
+      <h2>Option 1: FLUFF</h2>
+      <img src="./src/assets/logo-fluff.svg" alt="Fluff Logo">
+      <p class="description">
+        Light, playful, and directly satirical. "Fluff" perfectly describes empty corporate speak.
+      </p>
+      <ul class="pros">
+        <li>Instantly understood meaning</li>
+        <li>Playful cloud aesthetic</li>
+        <li>Cyan-blue gradient feels modern</li>
+        <li>Great for social sharing</li>
+      </ul>
+    </div>
+
+    <div class="logo-card pivot">
+      <h2>Option 2: PIVOT</h2>
+      <img src="./src/assets/logo-pivot.svg" alt="Pivot Logo">
+      <p class="description">
+        Dynamic, energetic, and iconic corporate buzzword. Everyone knows "let's pivot."
+      </p>
+      <ul class="pros">
+        <li>Universal corporate recognition</li>
+        <li>Dynamic rotation arrows</li>
+        <li>Golden-amber feels premium</li>
+        <li>Strong brand identity</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

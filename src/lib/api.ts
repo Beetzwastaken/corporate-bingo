@@ -27,8 +27,10 @@ export interface BackendPlayer {
 // Backend room data structure
 export interface BackendRoom {
   name: string;
-  type: 'single' | 'persistent';
+  gameMode: 'play' | 'host';
+  hostId: string;
   createdAt: string;
+  expiresAt: string;
   players: BackendPlayer[];
 }
 
@@ -40,7 +42,7 @@ export interface JoinRoomResponse {
   roomName: string;
   playerCount: number;
   roundNumber: number;
-  roomType?: string;
+  gameMode?: 'play' | 'host';
   room?: BackendRoom; // Nested room object with full details
 }
 
@@ -81,10 +83,10 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
 }
 
 // Create a new bingo room
-export async function createBingoRoom(roomName: string, playerName: string, roomType: 'single' | 'persistent' = 'single'): Promise<ApiResponse<CreateRoomResponse>> {
+export async function createBingoRoom(roomName: string, playerName: string, gameMode: 'play' | 'host' = 'play'): Promise<ApiResponse<CreateRoomResponse>> {
   return apiRequest<CreateRoomResponse>('/api/room/create', {
     method: 'POST',
-    body: JSON.stringify({ roomName, playerName, roomType }),
+    body: JSON.stringify({ roomName, playerName, gameMode }),
   });
 }
 

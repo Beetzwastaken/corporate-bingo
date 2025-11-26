@@ -23,8 +23,9 @@ export function WelcomeTutorial({ show, onComplete }: WelcomeTutorialProps) {
           <div className="bg-apple-darkest rounded-lg p-4 mt-4">
             <p className="text-apple-accent font-medium mb-2">Quick Stats:</p>
             <ul className="text-apple-secondary text-sm space-y-1">
-              <li>• 170+ professionally curated corporate buzzwords</li>
+              <li>• 171 professionally curated corporate buzzwords</li>
               <li>• Real-time multiplayer support</li>
+              <li>• Advanced scoring with bonuses</li>
               <li>• Share your wins like Wordle!</li>
             </ul>
           </div>
@@ -70,47 +71,86 @@ export function WelcomeTutorial({ show, onComplete }: WelcomeTutorialProps) {
           <div className="bg-yellow-900/10 border border-yellow-500/30 rounded-lg p-3 mt-4">
             <p className="text-yellow-400 text-sm font-medium">💡 Pro Tip</p>
             <p className="text-apple-secondary text-sm mt-1">
-              Pay attention to the meeting - the best buzzwords come when you least expect them!
+              The center square is always FREE - it's already marked for you!
             </p>
           </div>
         </div>
       )
     },
     {
-      title: "Game Modes 🎲",
+      title: "Solo or Multiplayer? 🎲",
       content: (
         <div className="space-y-4">
           <div className="grid gap-3">
             <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 border border-blue-500/30 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">▶️</span>
-                <h3 className="text-apple-text font-bold">Play Mode</h3>
+                <span className="text-2xl">🎯</span>
+                <h3 className="text-apple-text font-bold">Solo Play</h3>
               </div>
               <p className="text-apple-secondary text-sm mb-3">
-                The classic bingo experience!
+                Start playing immediately! No setup needed.
               </p>
               <ul className="text-apple-secondary text-sm space-y-1">
-                <li>• Jump in and start clicking squares</li>
-                <li>• Invite friends with a room code</li>
-                <li>• Celebrate BINGOs together!</li>
+                <li>• Instant play - no room required</li>
+                <li>• Track your own score</li>
+                <li>• Practice and have fun!</li>
               </ul>
             </div>
 
-            <div className="bg-gradient-to-br from-yellow-900/20 to-orange-800/20 border border-yellow-500/30 rounded-lg p-4">
+            <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 border border-purple-500/30 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">🎤</span>
-                <h3 className="text-apple-text font-bold">Host Mode</h3>
-                <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded">Coming Soon</span>
+                <span className="text-2xl">👥</span>
+                <h3 className="text-apple-text font-bold">Multiplayer Rooms</h3>
               </div>
               <p className="text-apple-secondary text-sm mb-3">
-                You're the speaker - try to say buzzwords!
+                Play with your team during meetings!
               </p>
               <ul className="text-apple-secondary text-sm space-y-1">
-                <li>• Host deliberately says buzzwords</li>
-                <li>• Audience marks and verifies claims</li>
-                <li>• Great for presentations & all-hands</li>
+                <li>• Create or join rooms with 4-char codes</li>
+                <li>• Everyone gets unique boards</li>
+                <li>• Vote to verify claims</li>
+                <li>• Real-time leaderboards</li>
               </ul>
             </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "Scoring System 📊",
+      content: (
+        <div className="space-y-4">
+          <p className="text-apple-secondary">
+            Earn points for every square you claim, with bonus points for completing lines!
+          </p>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between bg-apple-darkest rounded-lg p-3">
+              <span className="text-apple-text">Each verified square</span>
+              <span className="text-cyan-400 font-bold">+1 point</span>
+            </div>
+
+            <div className="flex items-center justify-between bg-apple-darkest rounded-lg p-3">
+              <span className="text-apple-text">3-in-a-row bonus</span>
+              <span className="text-green-400 font-bold">+1 point</span>
+            </div>
+
+            <div className="flex items-center justify-between bg-apple-darkest rounded-lg p-3">
+              <span className="text-apple-text">4-in-a-row bonus</span>
+              <span className="text-yellow-400 font-bold">+3 points</span>
+            </div>
+
+            <div className="flex items-center justify-between bg-gradient-to-r from-yellow-900/30 to-yellow-800/30 border border-yellow-500/30 rounded-lg p-3">
+              <span className="text-apple-text font-bold">BINGO! (5-in-a-row)</span>
+              <span className="text-yellow-400 font-bold text-lg">+5 points</span>
+            </div>
+          </div>
+
+          <div className="bg-red-900/10 border border-red-500/30 rounded-lg p-3">
+            <p className="text-red-400 text-sm font-medium">⚠️ Anti-Cheat</p>
+            <p className="text-apple-secondary text-sm mt-1">
+              You can't claim words you said yourself! Penalty: -50 points
+            </p>
           </div>
         </div>
       )
@@ -150,21 +190,15 @@ export function WelcomeTutorial({ show, onComplete }: WelcomeTutorialProps) {
           <div className="bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border border-cyan-500/30 rounded-lg p-4">
             <p className="text-sm text-apple-secondary mb-2">Example share:</p>
             <div className="font-mono text-xs text-apple-text bg-black/30 rounded p-2">
-              🎯 Corporate Bingo<br />
-              BINGO!<br />
+              🎯 Corporate Bingo #5<br />
+              BINGO! 12/25 squares<br />
+              Score: 18 points<br />
               <br />
               🟩🟩🟨⬜⬜<br />
               ⬜🟩🟨⬜🟩<br />
               🟩⬜🟨🟩⬜<br />
               ⬜⬜🟨⬜⬜<br />
-              🟩⬜🟨⬜🟩<br />
-              <br />
-              <span className="text-yellow-400">Winning line:</span><br />
-              🟨 "Circle Back"<br />
-              🟨 "Synergy"<br />
-              🟨 "Deep Dive"<br />
-              🟨 "Moving Forward"<br />
-              🟨 "Let's Take This Offline"
+              🟩⬜🟨⬜🟩
             </div>
           </div>
         </div>

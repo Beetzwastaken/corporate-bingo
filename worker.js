@@ -84,7 +84,7 @@ export default {
       if (url.pathname === '/api/room/create' && request.method === 'POST') {
         const body = await request.json();
         
-        const { roomName, playerName, roomType } = validateRoomInput(body);
+        const { roomName, playerName, gameMode } = validateRoomInput(body);
         if (!roomName || !playerName) {
           return new Response(JSON.stringify({ error: 'Invalid room name or player name' }), {
             status: 400,
@@ -92,14 +92,14 @@ export default {
           });
         }
         
-        const roomCode = await generateRoomCode(env, roomType);
+        const roomCode = await generateRoomCode(env);
         const roomId = env.ROOMS.idFromName(roomCode);
         const roomObj = env.ROOMS.get(roomId);
         
         const response = await roomObj.fetch(new Request('https://dummy/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ roomName, playerName, roomCode, roomType })
+          body: JSON.stringify({ roomName, playerName, roomCode, gameMode })
         }));
         
         const result = await response.json();
@@ -254,7 +254,7 @@ export default {
 };
 
 // Helper functions - moved from original worker
-async function generateRoomCode(env, roomType = 'single') {
+async function generateRoomCode(env) {
   for (let attempt = 0; attempt < 10; attempt++) {
     const code = Math.random().toString(36).substr(2, 4).toUpperCase();
     
@@ -280,9 +280,10 @@ async function generateRoomCode(env, roomType = 'single') {
 function validateRoomInput(body) {
   const roomName = typeof body.roomName === 'string' ? body.roomName.trim().slice(0, 50) : '';
   const playerName = typeof body.playerName === 'string' ? body.playerName.trim().slice(0, 30) : '';
-  const roomType = body.roomType === 'persistent' ? 'persistent' : 'single';
-  
-  return { roomName, playerName, roomType };
+  // gameMode: 'play' (casual, no verification) or 'host' (competitive with verification)
+  const gameMode = body.gameMode === 'host' ? 'host' : 'play';
+
+  return { roomName, playerName, gameMode };
 }
 
 function validateJoinInput(body) {
@@ -348,7 +349,7 @@ export class BingoRoom {
   }
 
   async createRoom(request) {
-    const { roomName, playerName, roomCode, roomType } = await request.json();
+    const { roomName, playerName, roomCode, gameMode = 'play' } = await request.json();
     
     const player = {
       id: crypto.randomUUID(),
@@ -364,11 +365,13 @@ export class BingoRoom {
     this.room = {
       code: roomCode,
       name: roomName,
-      type: roomType,
+      gameMode: gameMode, // 'play' (casual) or 'host' (competitive with verification)
+      hostId: player.id, // Track the host for host mode features
       players: [player],
       gameState: 'waiting',
       createdAt: new Date(),
       lastActivity: new Date(),
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Auto-expire after 24 hours
       settings: {
         autoStart: true,
         winCondition: 'line',
@@ -731,12 +734,13 @@ export class BingoRoom {
     return false;
   }
 
-  // Analyze board for line bonuses (3-in-row, 4-in-row, BINGO)
+  // Analyze board for BINGO bonuses only (simplified scoring)
+  // Only awards +5 bonus for complete 5-in-a-row lines
   analyzeBoardForBonuses(player) {
     const marked = Array.from(player.markedSquares);
     const lineBonuses = [];
     
-    // Check rows for bonuses
+    // Check rows for BINGO
     for (let row = 0; row < 5; row++) {
       const rowSquares = [row * 5, row * 5 + 1, row * 5 + 2, row * 5 + 3, row * 5 + 4];
       const markedCount = rowSquares.filter(square => marked.includes(square)).length;
@@ -749,26 +753,10 @@ export class BingoRoom {
           lineIndex: row,
           cells: rowSquares
         });
-      } else if (markedCount === 4) {
-        lineBonuses.push({
-          type: '4-in-row',
-          points: 3,
-          pattern: 'row',
-          lineIndex: row,
-          cells: rowSquares.filter(square => marked.includes(square))
-        });
-      } else if (markedCount === 3) {
-        lineBonuses.push({
-          type: '3-in-row',
-          points: 1,
-          pattern: 'row',
-          lineIndex: row,
-          cells: rowSquares.filter(square => marked.includes(square))
-        });
       }
     }
     
-    // Check columns for bonuses
+    // Check columns for BINGO
     for (let col = 0; col < 5; col++) {
       const colSquares = [col, col + 5, col + 10, col + 15, col + 20];
       const markedCount = colSquares.filter(square => marked.includes(square)).length;
@@ -781,26 +769,10 @@ export class BingoRoom {
           lineIndex: col,
           cells: colSquares
         });
-      } else if (markedCount === 4) {
-        lineBonuses.push({
-          type: '4-in-row',
-          points: 3,
-          pattern: 'column',
-          lineIndex: col,
-          cells: colSquares.filter(square => marked.includes(square))
-        });
-      } else if (markedCount === 3) {
-        lineBonuses.push({
-          type: '3-in-row',
-          points: 1,
-          pattern: 'column',
-          lineIndex: col,
-          cells: colSquares.filter(square => marked.includes(square))
-        });
       }
     }
     
-    // Check diagonals for bonuses
+    // Check diagonals for BINGO
     const diagonal1 = [0, 6, 12, 18, 24];
     const diagonal2 = [4, 8, 12, 16, 20];
     
@@ -814,22 +786,6 @@ export class BingoRoom {
         lineIndex: 0,
         cells: diagonal1
       });
-    } else if (diagonal1MarkedCount === 4) {
-      lineBonuses.push({
-        type: '4-in-row',
-        points: 3,
-        pattern: 'diagonal',
-        lineIndex: 0,
-        cells: diagonal1.filter(square => marked.includes(square))
-      });
-    } else if (diagonal1MarkedCount === 3) {
-      lineBonuses.push({
-        type: '3-in-row',
-        points: 1,
-        pattern: 'diagonal',
-        lineIndex: 0,
-        cells: diagonal1.filter(square => marked.includes(square))
-      });
     }
     
     // Diagonal 2 (top-right to bottom-left)
@@ -841,22 +797,6 @@ export class BingoRoom {
         pattern: 'diagonal',
         lineIndex: 1,
         cells: diagonal2
-      });
-    } else if (diagonal2MarkedCount === 4) {
-      lineBonuses.push({
-        type: '4-in-row',
-        points: 3,
-        pattern: 'diagonal',
-        lineIndex: 1,
-        cells: diagonal2.filter(square => marked.includes(square))
-      });
-    } else if (diagonal2MarkedCount === 3) {
-      lineBonuses.push({
-        type: '3-in-row',
-        points: 1,
-        pattern: 'diagonal',
-        lineIndex: 1,
-        cells: diagonal2.filter(square => marked.includes(square))
       });
     }
     
