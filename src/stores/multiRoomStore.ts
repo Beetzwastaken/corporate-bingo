@@ -354,9 +354,10 @@ export const useMultiRoomStore = create<MultiRoomStore>()(
         
         // Cumulative scores now tracked client-side via gameStore
         // This action is kept for backward compatibility but is a no-op
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         updateCumulativeScores: (roomCode: string, playerId: string, scoreIncrement: number) => {
           // Stats now tracked in gameStore.monthlyStats and gameStore.totalScore
+          // Use void to suppress unused parameter warnings
+          void roomCode; void playerId; void scoreIncrement;
         },
         cleanupExpiredRooms: () => {
           set(state => {
