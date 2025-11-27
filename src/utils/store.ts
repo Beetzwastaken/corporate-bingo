@@ -108,6 +108,7 @@ export const useBingoStore = () => {
       connectionStore.disconnect();
       roomStore.leaveRoom();
       gameStore.clearStats();
+      gameStore.resetScore();
       gameStore.resetGame();
       uiStore.closeSidebar();
     }

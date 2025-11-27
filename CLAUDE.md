@@ -1,10 +1,10 @@
 # Corporate Bingo Project Context
 
 **Project Type**: Corporate Humor Web Application
-**Current Status**: ✅ PRODUCTION READY - Advanced Multiplayer Platform
+**Current Status**: ✅ PRODUCTION READY - Simplified & Streamlined
 **Live URL**: https://corporate-bingo-ai.netlify.app
-**Last Updated**: November 24, 2025
-**Latest Session**: November 24, 2025 - Welcome tutorial (v1.6.0) added with 6-step interactive walkthrough. First-time user detection via localStorage. Help button for replay. Committed and tagged. Ready for testing.
+**Last Updated**: November 26, 2025
+**Latest Session**: November 26, 2025 - v1.7.1 fixes PWA meta tag deprecation warning. v1.7.0 simplified scoring (+1/square, +5/BINGO only), updated buzzwords, streamlined tutorial (6→5 steps).
 
 ## 🚨 MANDATORY: ALWAYS USE SPECIALIZED AGENTS 🚨
 **NEVER work directly on Corporate Bingo tasks - Always delegate to specialized agents first**
@@ -122,20 +122,6 @@
 - **TypeScript Issues**: Backend Developer Agent resolved ESLint errors and type compatibility  
 - **Testing & Validation**: QA Engineer Agent performed visual regression testing and performance analysis
 - **Cross-Agent Coordination**: Project Manager Agent successfully managed multi-step workflows with TodoWrite
-
-## MCP Server Integration
-
-### Available Tools (Proven in Production)
-- **IDE MCP**: `mcp__ide__getDiagnostics`, `mcp__ide__executeCode` - TypeScript diagnostics, live testing
-- **OpenCV MCP**: `mcp__opencv__get_image_stats_tool`, `mcp__opencv__resize_image_tool` - UI testing, visual validation
-- **Excel VBA MCP**: `mcp__excel__create_workbook`, `mcp__excel__write_excel_data` - Project tracking, analytics
-- **SVGMaker MCP**: `mcp__svgmaker__svgmaker_generate` - Logo design, graphics generation
-
-### Practical Usage Patterns
-- **Visual Testing**: OpenCV for before/after UI comparisons and responsive design validation
-- **Project Management**: Excel VBA for agent coordination dashboards and quality metrics
-- **TypeScript Debugging**: IDE MCP for real-time error analysis and code execution
-- **Graphics Generation**: SVGMaker for professional UI elements and documentation
 
 ## Corporate Humor Domain
 

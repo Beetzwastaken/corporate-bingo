@@ -208,8 +208,8 @@ describe('PWA Configuration', () => {
       expect(indexHtml).toContain('href="/logo.svg"');
     });
 
-    it('should have apple-mobile-web-app-capable', () => {
-      expect(indexHtml).toContain('<meta name="apple-mobile-web-app-capable"');
+    it('should have mobile-web-app-capable', () => {
+      expect(indexHtml).toContain('<meta name="mobile-web-app-capable"');
       expect(indexHtml).toContain('content="yes"');
     });
 
