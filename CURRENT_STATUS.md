@@ -1,7 +1,7 @@
 # Corporate Bingo - Current Status Report
 
 **Date**: November 26, 2025
-**Version**: v1.7.1
+**Version**: v1.7.2
 **Status**: ✅ PRODUCTION READY - Simplified & Streamlined
 **Live URL**: https://corporate-bingo-ai.netlify.app
 
@@ -9,7 +9,11 @@
 
 ## 🎯 Executive Summary
 
-Corporate Bingo v1.7.0 simplifies the experience: cleaner scoring, updated buzzwords, streamlined tutorial, and new GameModeSelector component.
+Corporate Bingo v1.7.2 fixes confetti-on-load bug, PWA meta tag deprecation, and Reset Data score bug.
+
+### ✅ What's New in v1.7.2
+- **Fixed confetti on load**: Added guard for empty board in checkBingo (JS empty array `.every()` bug)
+- **Fixed Reset Data**: Score now properly resets to 0
 
 ### ✅ What's New in v1.7.1
 - **Fixed PWA meta tag**: `apple-mobile-web-app-capable` → `mobile-web-app-capable`
@@ -76,5 +80,5 @@ Corporate Bingo v1.7.0 simplifies the experience: cleaner scoring, updated buzzw
 
 ---
 
-*Status: Ready for testing*
-*Git: v1.7.0 committed*
+*Status: Production v1.7.2 deployed*
+*Git: v1.7.2 committed and pushed*

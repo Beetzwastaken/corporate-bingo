@@ -1,14 +1,17 @@
 // Application version management for Corporate Bingo
 // Used for cache-busting and state migration
 
-export const APP_VERSION = '1.6.0';
+export const APP_VERSION = '1.7.2';
 
 // Version history for migration logic
 export const VERSION_HISTORY = [
   '1.0.0', // Initial release
   '1.1.0', // Enhanced multiplayer
-  '1.2.0', // Cache-busting implementation  
+  '1.2.0', // Cache-busting implementation
   '1.2.1', // Emergency cache-busting fix
+  '1.7.0', // Simplified scoring, updated buzzwords, streamlined tutorial
+  '1.7.1', // Fixed PWA meta tag deprecation
+  '1.7.2', // Fixed confetti on load bug (empty board guard)
 ];
 
 // Check if current version is newer than stored version
