@@ -52,6 +52,11 @@ export class BingoEngine {
    * Check if the current card has a bingo
    */
   static checkBingo(squares: BingoSquare[]): BingoResult {
+    // Guard: empty board can't have BINGO
+    if (squares.length !== 25) {
+      return { hasWon: false };
+    }
+
     // Check rows
     for (let row = 0; row < 5; row++) {
       const rowStart = row * 5;
@@ -108,6 +113,11 @@ export class BingoEngine {
    * Only awards +5 bonus for complete 5-in-a-row lines
    */
   static analyzeBoardForBonuses(squares: BingoSquare[]): BingoAnalysis {
+    // Guard: incomplete board has no bonuses
+    if (squares.length !== 25) {
+      return { bingoResult: { hasWon: false }, lineBonuses: [], totalBonusPoints: 0 };
+    }
+
     const lineBonuses: LineBonus[] = [];
 
     // Check rows for BINGO
