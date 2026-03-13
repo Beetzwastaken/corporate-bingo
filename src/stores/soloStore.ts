@@ -88,21 +88,14 @@ export const useSoloStore = create<SoloStore>()(
         markSquare: (index: number) => {
           const state = get();
 
-          if (state.hasBingo) return; // Game over
           if (index < 0 || index >= 25) return;
-
           const newMarked = [...state.markedSquares];
           newMarked[index] = !newMarked[index];
 
-          let newScore = state.score;
+          // +1 for marking, -1 for unmarking (floor at 0)
+          let newScore = Math.max(0, state.score + (newMarked[index] ? 1 : -1));
           let newBingo = false;
           let newWinningLine: WinningLine | null = null;
-
-          if (newMarked[index]) {
-            newScore += 1;
-          } else {
-            newScore = Math.max(0, newScore - 1);
-          }
 
           // Check all 12 possible lines
           const linesToCheck: WinningLine[] = [
@@ -137,7 +130,7 @@ export const useSoloStore = create<SoloStore>()(
             score: newScore,
             hasBingo: newBingo,
             winningLine: newWinningLine,
-            totalScore: state.totalScore + (newBingo ? 5 : (newMarked[index] ? 1 : -1))
+            totalScore: Math.max(0, state.totalScore + (newBingo ? 6 : (newMarked[index] ? 1 : -1)))
           });
         },
 
