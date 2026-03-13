@@ -1,17 +1,16 @@
-// Jargon - Duo Mode
-// Two players, same card, different lines, compete for score
-
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { BingoCard } from './components/bingo/BingoCard';
 import { BingoModal } from './components/bingo/BingoModal';
 import { WelcomeTutorial } from './components/shared/WelcomeTutorial';
 import { DuoScoreboard } from './components/bingo/DuoScoreboard';
 import { LineSelector } from './components/bingo/LineSelector';
+import { ModeSelector } from './components/ModeSelector';
+import { SoloGame } from './components/SoloGame';
 import { useDuoStore, regenerateDailyCardIfNeeded } from './stores/duoStore';
 import { useConnectionStore } from './stores/connectionStore';
+import { countMarkedInLine } from './lib/dailyCard';
 import { APP_VERSION } from './utils/version';
 import { ToastContainer, showGameToast } from './components/shared/ToastNotification';
-import jargonLogo from './assets/jargon-logo.svg';
 import './App.css';
 
 // Lazy load RoomManager
@@ -26,6 +25,8 @@ function ComponentLoader() {
 }
 
 function App() {
+  const [mode, setMode] = useState<null | 'solo' | 'duo'>(null);
+  const [joinCode, setJoinCode] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showBingoModal, setShowBingoModal] = useState(false);
@@ -56,10 +57,22 @@ function App() {
   // Connection state
   const { isConnected, connectionError } = useConnectionStore();
 
+  // Parse URL for join code on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const joinParam = params.get('join');
+    if (joinParam) {
+      setJoinCode(joinParam);
+      setMode('duo');
+    }
+  }, []);
+
   // Initialize on mount - regenerate card and reconnect if needed
   useEffect(() => {
-    regenerateDailyCardIfNeeded();
-  }, []);
+    if (mode === 'duo') {
+      regenerateDailyCardIfNeeded();
+    }
+  }, [mode]);
 
   // Watch for bingo events
   useEffect(() => {
@@ -88,6 +101,18 @@ function App() {
   const handleTutorialComplete = () => {
     localStorage.setItem('cb_tutorial_completed', 'true');
     setShowTutorial(false);
+  };
+
+  const handleModeSelect = (selectedMode: 'solo' | 'duo') => {
+    setMode(selectedMode);
+    if (selectedMode === 'duo' && joinCode) {
+      // If join code exists, it will be handled in RoomManager
+    }
+  };
+
+  const handleBackToModeSelect = () => {
+    setMode(null);
+    setJoinCode(null);
   };
 
   const handleSquareClick = async (squareId: string) => {
@@ -137,21 +162,36 @@ function App() {
     isMarked: markedSquares[index] || false
   }));
 
+  // Show mode selector if no mode selected
+  if (!mode) {
+    return <ModeSelector onSelectMode={handleModeSelect} />;
+  }
+
+  // Show solo game
+  if (mode === 'solo') {
+    return <SoloGame onBack={handleBackToModeSelect} />;
+  }
+
+  // Render duo mode (original logic)
   return (
     <div className="h-screen bg-black text-white font-system flex flex-col overflow-hidden">
       {/* Header */}
       <header className="bg-apple-dark border-b border-apple-border z-50 backdrop-blur-xl bg-opacity-80 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
+            {/* Logo + Back */}
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 flex items-center justify-center shadow-lg border border-purple-400/30 relative overflow-hidden">
-                <img
-                  src={jargonLogo}
-                  alt="Jargon"
-                  className="w-6 h-6 relative z-10"
-                />
-              </div>
+              {phase === 'unpaired' && (
+                <button
+                  onClick={handleBackToModeSelect}
+                  className="p-2 -ml-2 text-apple-secondary hover:text-apple-text transition-colors"
+                  title="Back"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
               <div>
                 <h1 className="text-lg font-medium text-apple-text">Jargon</h1>
                 <span className="text-xs text-apple-tertiary">Duo Mode</span>
@@ -308,6 +348,18 @@ function App() {
             {/* Phase: Playing - Show BingoCard */}
             {phase === 'playing' && dailyCard.length > 0 && (
               <>
+                {/* Today's Card header */}
+                <div className="text-center mb-4">
+                  <p className="text-sm text-apple-tertiary">
+                    Today's Card • {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </p>
+                  {myLine && (
+                    <p className="text-xs text-cyan-400 mt-1">
+                      Your line: {countMarkedInLine(markedSquares, myLine)}/5
+                    </p>
+                  )}
+                </div>
+
                 {/* Duo Scoreboard */}
                 <div className="mb-6">
                   <DuoScoreboard />

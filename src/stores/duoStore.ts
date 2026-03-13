@@ -410,7 +410,6 @@ export const useDuoStore = create<DuoStore>()(
       {
         name: 'duo-storage',
         partialize: (state) => ({
-          // Persist pairing info and game state
           pairCode: state.pairCode,
           odId: state.odId,
           odName: state.odName,
@@ -429,8 +428,22 @@ export const useDuoStore = create<DuoStore>()(
           partnerScore: state.partnerScore,
           myBingo: state.myBingo,
           partnerBingo: state.partnerBingo
-          // Note: dailyCard is regenerated from dailySeed, not persisted
-        })
+        }),
+        onRehydrateStorage: () => (state) => {
+          if (!state) return;
+          // Reset stale sessions: if phase isn't unpaired but date changed, room is dead
+          if (state.phase !== 'unpaired' && state.dailySeed) {
+            const tz = state.pairTimezone || getLocalTimezone();
+            if (hasNewDayStarted(tz, state.dailySeed)) {
+              useDuoStore.setState(initialState);
+              return;
+            }
+          }
+          // Reset waiting/selecting if no pair code (corrupt state)
+          if (state.phase !== 'unpaired' && !state.pairCode) {
+            useDuoStore.setState(initialState);
+          }
+        }
       }
     )
   )

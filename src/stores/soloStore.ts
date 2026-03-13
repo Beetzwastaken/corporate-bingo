@@ -1,0 +1,166 @@
+import { create } from 'zustand';
+import { devtools, persist } from 'zustand/middleware';
+import type { BingoSquare } from '../types';
+import {
+  generateDailyCard,
+  getTodayDateString,
+  getLocalTimezone,
+  hasNewDayStarted,
+  isLineComplete
+} from '../lib/dailyCard';
+
+export type LineType = 'row' | 'col' | 'diag';
+
+interface WinningLine {
+  type: LineType;
+  index: number;
+}
+
+interface SoloState {
+  dailyCard: BingoSquare[];
+  markedSquares: boolean[];
+  currentDateSeed: string;
+  score: number;
+  hasBingo: boolean;
+  winningLine: WinningLine | null;
+  gamesPlayed: number;
+  totalScore: number;
+}
+
+interface SoloActions {
+  initializeCard: () => void;
+  markSquare: (index: number) => void;
+  resetForNewDay: () => void;
+}
+
+type SoloStore = SoloState & SoloActions;
+
+const initialState: SoloState = {
+  dailyCard: [],
+  markedSquares: Array(25).fill(false),
+  currentDateSeed: '',
+  score: 0,
+  hasBingo: false,
+  winningLine: null,
+  gamesPlayed: 0,
+  totalScore: 0
+};
+
+export const useSoloStore = create<SoloStore>()(
+  devtools(
+    persist(
+      (set, get) => ({
+        ...initialState,
+
+        initializeCard: () => {
+          const state = get();
+          const timezone = getLocalTimezone();
+          const today = getTodayDateString(timezone);
+
+          // Check if date changed
+          if (state.currentDateSeed && hasNewDayStarted(timezone, state.currentDateSeed)) {
+            // New day - reset marks, keep game counters
+            const newCard = generateDailyCard(today);
+            set({
+              dailyCard: newCard,
+              markedSquares: Array(25).fill(false),
+              currentDateSeed: today,
+              score: 0,
+              hasBingo: false,
+              winningLine: null,
+              gamesPlayed: state.gamesPlayed + 1
+            });
+          } else if (!state.dailyCard.length) {
+            // First init
+            const newCard = generateDailyCard(today);
+            set({
+              dailyCard: newCard,
+              markedSquares: Array(25).fill(false),
+              currentDateSeed: today,
+              score: 0,
+              hasBingo: false,
+              winningLine: null,
+              gamesPlayed: state.gamesPlayed || 1
+            });
+          }
+        },
+
+        markSquare: (index: number) => {
+          const state = get();
+
+          if (state.hasBingo) return; // Game over
+          if (index < 0 || index >= 25) return;
+
+          const newMarked = [...state.markedSquares];
+          newMarked[index] = !newMarked[index];
+
+          let newScore = state.score;
+          let newBingo = false;
+          let newWinningLine: WinningLine | null = null;
+
+          if (newMarked[index]) {
+            newScore += 1;
+          } else {
+            newScore = Math.max(0, newScore - 1);
+          }
+
+          // Check all 12 possible lines
+          const linesToCheck: WinningLine[] = [
+            // Rows
+            { type: 'row', index: 0 },
+            { type: 'row', index: 1 },
+            { type: 'row', index: 2 },
+            { type: 'row', index: 3 },
+            { type: 'row', index: 4 },
+            // Cols
+            { type: 'col', index: 0 },
+            { type: 'col', index: 1 },
+            { type: 'col', index: 2 },
+            { type: 'col', index: 3 },
+            { type: 'col', index: 4 },
+            // Diags
+            { type: 'diag', index: 0 },
+            { type: 'diag', index: 1 }
+          ];
+
+          for (const line of linesToCheck) {
+            if (isLineComplete(newMarked, line)) {
+              newBingo = true;
+              newWinningLine = line;
+              newScore += 5; // Bonus for bingo
+              break;
+            }
+          }
+
+          set({
+            markedSquares: newMarked,
+            score: newScore,
+            hasBingo: newBingo,
+            winningLine: newWinningLine,
+            totalScore: state.totalScore + (newBingo ? 5 : (newMarked[index] ? 1 : -1))
+          });
+        },
+
+        resetForNewDay: () => {
+          const state = get();
+          const timezone = getLocalTimezone();
+          const today = getTodayDateString(timezone);
+          const newCard = generateDailyCard(today);
+
+          set({
+            dailyCard: newCard,
+            markedSquares: Array(25).fill(false),
+            currentDateSeed: today,
+            score: 0,
+            hasBingo: false,
+            winningLine: null,
+            gamesPlayed: state.gamesPlayed + 1
+          });
+        }
+      }),
+      {
+        name: 'jargon-solo'
+      }
+    )
+  )
+);
