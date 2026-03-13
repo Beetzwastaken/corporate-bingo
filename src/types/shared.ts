@@ -1,4 +1,4 @@
-// Shared types for Corporate Bingo
+// Shared types for Jargon
 // This file provides common interfaces used across stores and components
 
 export interface BingoPlayer {

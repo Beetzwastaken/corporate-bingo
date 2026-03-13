@@ -1,4 +1,4 @@
-// Application version management for Corporate Bingo
+// Application version management for Jargon
 // Used for cache-busting and state migration
 
 export const APP_VERSION = '2.0.0';
@@ -27,30 +27,24 @@ export function needsStateMigration(storedVersion?: string): boolean {
 }
 
 // Log version information for debugging
-export function logVersionInfo(storedVersion?: string): void {
-  console.log(`[Corporate Bingo] Version Check:`, {
-    currentVersion: APP_VERSION,
-    storedVersion: storedVersion || 'none',
-    needsMigration: needsStateMigration(storedVersion),
-    timestamp: new Date().toISOString()
-  });
+export function logVersionInfo(): void {
+  // Version check logged internally if needed
 }
 
 // Emergency cache clearing function
 export function emergencyCacheClear(): boolean {
   try {
     // Clear localStorage
-    localStorage.removeItem('corporate-bingo-store');
+    localStorage.removeItem('jargon-store');
     
     // Clear sessionStorage
     sessionStorage.clear();
     
     // Force reload without cache
     window.location.reload();
-    
+
     return true;
-  } catch (error) {
-    console.error('[Corporate Bingo] Emergency cache clear failed:', error);
+  } catch {
     return false;
   }
 }

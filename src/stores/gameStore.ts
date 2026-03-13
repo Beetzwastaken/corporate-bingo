@@ -317,7 +317,6 @@ export const useGameStore = create<GameStore>()(
         onRehydrateStorage: () => (state) => {
           // Migration: Fix boards with incorrectly checked middle square (old FREE SPACE bug)
           if (state && state.gameState.markedSquares[12] === true) {
-            console.log('[Migration] Detected old FREE SPACE bug, clearing middle square');
             const newMarkedSquares = [...state.gameState.markedSquares];
             newMarkedSquares[12] = false;
 

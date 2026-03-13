@@ -150,7 +150,6 @@ export const useDuoStore = create<DuoStore>()(
           // Connect WebSocket
           useConnectionStore.getState().connect(code, playerId);
 
-          console.log(`🎮 Created game with code: ${code}`);
           return { success: true, code };
         },
 
@@ -180,7 +179,6 @@ export const useDuoStore = create<DuoStore>()(
           // Connect WebSocket
           useConnectionStore.getState().connect(code.toUpperCase(), playerId);
 
-          console.log(`🎮 Joined game with code: ${code}`);
           return { success: true };
         },
 
@@ -196,7 +194,6 @@ export const useDuoStore = create<DuoStore>()(
           useConnectionStore.getState().disconnect();
 
           set(initialState);
-          console.log('👋 Left game');
         },
 
         // Select a line (secret until both pick)
@@ -236,7 +233,6 @@ export const useDuoStore = create<DuoStore>()(
             });
           }
 
-          console.log(`📍 Selected line: ${line.type} ${line.index}`);
           return { success: true };
         },
 
@@ -278,21 +274,17 @@ export const useDuoStore = create<DuoStore>()(
           if (state.myLine && !myBingo && isLineComplete(newMarked, state.myLine)) {
             myBingo = true;
             myScore += 5;
-            console.log('🎉 BINGO! You completed your line!');
           }
 
           if (state.partnerLine && !partnerBingo && isLineComplete(newMarked, state.partnerLine)) {
             partnerBingo = true;
             partnerScore += 5;
-            console.log('🎉 Partner got BINGO!');
           }
 
           set({ myScore, partnerScore, myBingo, partnerBingo });
 
           // Send to server
           await apiMarkSquare(state.pairCode, state.odId, index);
-
-          console.log(`✓ Marked square ${index}`);
         },
 
         // Sync full state from backend
@@ -308,7 +300,6 @@ export const useDuoStore = create<DuoStore>()(
             isPaired: true,
             phase: 'selecting'
           });
-          console.log(`👋 Partner joined: ${partner.name}`);
         },
 
         // Handle partner selected their line (but we don't know which)
@@ -321,8 +312,6 @@ export const useDuoStore = create<DuoStore>()(
             const card = generateDailyCard(state.dailySeed || getTodayDateString(state.pairTimezone));
             set({ dailyCard: card, phase: 'playing' });
           }
-
-          console.log('📍 Partner has selected their line');
         },
 
         // Handle card reveal (both lines now visible)
@@ -336,8 +325,6 @@ export const useDuoStore = create<DuoStore>()(
             dailyCard: card,
             phase: 'playing'
           });
-
-          console.log(`🃏 Card revealed! My line: ${myLine.type} ${myLine.index}, Partner: ${partnerLine.type} ${partnerLine.index}`);
         },
 
         // Handle square marked by partner
@@ -374,7 +361,6 @@ export const useDuoStore = create<DuoStore>()(
           } else {
             set({ partnerBingo: true, myScore, partnerScore });
           }
-          console.log(`🎉 ${player === 'me' ? 'You' : 'Partner'} got BINGO!`);
         },
 
         // Handle daily reset
@@ -395,8 +381,6 @@ export const useDuoStore = create<DuoStore>()(
             partnerBingo: false,
             phase: state.isPaired ? 'selecting' : 'unpaired'
           });
-
-          console.log(`🌅 New day! Reset for ${newSeed}`);
         },
 
         // Check if daily reset is needed

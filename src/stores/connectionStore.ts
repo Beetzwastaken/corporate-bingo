@@ -51,11 +51,9 @@ export const useConnectionStore = create<ConnectionStore>()(
           playerId,
           onMessage: handleWebSocketMessage,
           onConnect: () => {
-            console.log('🔌 WebSocket connected to duo room');
             set({ isConnected: true, connectionError: null });
           },
           onDisconnect: () => {
-            console.log('❌ WebSocket disconnected');
             set({ isConnected: false });
 
             // Switch to polling as fallback
@@ -65,7 +63,6 @@ export const useConnectionStore = create<ConnectionStore>()(
             }
           },
           onError: (error) => {
-            console.error('WebSocket error:', error);
             set({ connectionError: error.message });
 
             // Switch to polling on error
@@ -80,8 +77,7 @@ export const useConnectionStore = create<ConnectionStore>()(
 
         try {
           await wsClient.connect();
-        } catch (error) {
-          console.warn('WebSocket connection failed, switching to polling');
+        } catch {
           get().switchToPolling();
         }
       },
@@ -117,7 +113,6 @@ export const useConnectionStore = create<ConnectionStore>()(
         const duoState = useDuoStore.getState();
 
         if (!duoState.pairCode || !duoState.odId) {
-          console.warn('Cannot start polling: no room or player ID');
           return;
         }
 
@@ -126,7 +121,6 @@ export const useConnectionStore = create<ConnectionStore>()(
           playerId: duoState.odId,
           onUpdate: handlePollingUpdate,
           onError: (error) => {
-            console.error('Polling error:', error);
             set({ connectionError: error.message });
           },
           pollInterval: 2000
@@ -139,8 +133,6 @@ export const useConnectionStore = create<ConnectionStore>()(
           usePolling: true,
           isConnected: true // Polling counts as "connected"
         });
-
-        console.log('🔄 Switched to HTTP polling');
       }
     })
   )
@@ -152,7 +144,6 @@ function handleWebSocketMessage(message: DuoWebSocketMessage): void {
 
   switch (message.type) {
     case DUO_MESSAGE_TYPES.CONNECTED:
-      console.log('📡 Received connection confirmation');
       break;
 
     case DUO_MESSAGE_TYPES.PARTNER_JOINED:
@@ -165,7 +156,6 @@ function handleWebSocketMessage(message: DuoWebSocketMessage): void {
       break;
 
     case DUO_MESSAGE_TYPES.PARTNER_LEFT:
-      console.log('👋 Partner left the game');
       // Reset to waiting state
       useDuoStore.setState({
         partnerId: null,
@@ -189,7 +179,6 @@ function handleWebSocketMessage(message: DuoWebSocketMessage): void {
 
     case DUO_MESSAGE_TYPES.LINE_CONFLICT:
       if (message.takenLine) {
-        console.warn('⚠️ Line conflict:', message.message);
         // Reset own selection and show taken line
         useDuoStore.setState({
           myLine: null,
@@ -263,19 +252,16 @@ function handleWebSocketMessage(message: DuoWebSocketMessage): void {
           useDuoStore.setState({ partnerBingo: true });
         }
 
-        console.log(`🎉 BINGO! ${message.playerName} (${message.player})`);
       }
       break;
 
     case DUO_MESSAGE_TYPES.DAILY_RESET:
       if (message.dailySeed) {
-        console.log('🌅 Daily reset:', message.dailySeed);
         duoStore.handleDailyReset();
       }
       break;
 
     default:
-      console.log('📨 Unknown message type:', message.type);
   }
 }
 

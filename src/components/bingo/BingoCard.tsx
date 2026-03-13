@@ -155,7 +155,7 @@ export function BingoCard({
         className="bingo-grid"
         ref={gridRef}
         role="grid"
-        aria-label="Corporate Bingo Card - 5x5 grid"
+        aria-label="Jargon Card - 5x5 grid"
         aria-describedby="bingo-instructions"
       >
         {squares.map((square, index) => {

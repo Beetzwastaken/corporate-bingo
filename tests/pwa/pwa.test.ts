@@ -37,8 +37,8 @@ describe('PWA Configuration', () => {
     });
 
     it('should have correct app name', () => {
-      expect(manifest.name).toBe('Corporate Bingo - Multiplayer Buzzword Game');
-      expect(manifest.short_name).toBe('Corporate Bingo');
+      expect(manifest.name).toBe('Jargon — Buzzword Bingo for Meetings');
+      expect(manifest.short_name).toBe('Jargon');
     });
 
     it('should use standalone display mode', () => {
@@ -92,7 +92,7 @@ describe('PWA Configuration', () => {
 
     it('should define CACHE_NAME constant', () => {
       expect(serviceWorkerCode).toContain('CACHE_NAME');
-      expect(serviceWorkerCode).toMatch(/CACHE_NAME\s*=\s*['"]corporate-bingo-v[\d.]+['"]/);
+      expect(serviceWorkerCode).toMatch(/CACHE_NAME\s*=\s*['"]jargon-v[\d.]+['"]/);
     });
 
     it('should have install event listener', () => {
@@ -171,12 +171,10 @@ describe('PWA Configuration', () => {
 
     it('should handle registration success', () => {
       expect(mainTsxCode).toContain('.then((registration)');
-      expect(mainTsxCode).toContain('console.log');
     });
 
     it('should handle registration errors', () => {
-      expect(mainTsxCode).toContain('.catch((error)');
-      expect(mainTsxCode).toContain('console.error');
+      expect(mainTsxCode).toContain('.catch(');
     });
 
     it('should check for updates periodically', () => {
@@ -220,7 +218,7 @@ describe('PWA Configuration', () => {
 
     it('should have apple-mobile-web-app-title', () => {
       expect(indexHtml).toContain('<meta name="apple-mobile-web-app-title"');
-      expect(indexHtml).toContain('content="Corporate Bingo"');
+      expect(indexHtml).toContain('content="Jargon"');
     });
 
     it('should have Microsoft tile color', () => {

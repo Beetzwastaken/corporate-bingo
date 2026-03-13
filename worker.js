@@ -1,4 +1,4 @@
-// Corporate Bingo - Duo Mode Backend
+// Jargon - Duo Mode Backend
 // Cloudflare Workers with Durable Objects for paired play
 
 import { CORPORATE_BINGO } from './src/data/buzzwords.js';
@@ -416,7 +416,6 @@ export class BingoRoom {
       return new Response('Not found', { status: 404 });
 
     } catch (error) {
-      console.error('BingoRoom error:', error);
       return new Response(JSON.stringify({ error: 'Room processing error' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
@@ -464,8 +463,6 @@ export class BingoRoom {
     };
 
     await this.state.storage.put('room', this.room);
-
-    console.log(`🎮 Duo game created: ${roomCode} by ${playerName}`);
 
     return new Response(JSON.stringify({
       success: true,
@@ -547,8 +544,6 @@ export class BingoRoom {
       partnerId,
       partnerName: playerName
     });
-
-    console.log(`🤝 Partner joined: ${playerName} -> ${this.room.code}`);
 
     return new Response(JSON.stringify({
       success: true,
@@ -668,8 +663,6 @@ export class BingoRoom {
         partnerScore: 0
       });
 
-      console.log(`🃏 Card revealed for ${this.room.code}`);
-
       return new Response(JSON.stringify({
         success: true,
         phase: 'playing',
@@ -771,7 +764,6 @@ export class BingoRoom {
         playerName: this.room.hostName,
         score: this.room.hostScore
       });
-      console.log(`🎉 BINGO! Host ${this.room.hostName} in ${this.room.code}`);
     }
     if (partnerGotBingo) {
       this.broadcastToRoom({
@@ -780,7 +772,6 @@ export class BingoRoom {
         playerName: this.room.partnerName,
         score: this.room.partnerScore
       });
-      console.log(`🎉 BINGO! Partner ${this.room.partnerName} in ${this.room.code}`);
     }
 
     return new Response(JSON.stringify({
@@ -961,7 +952,7 @@ export class BingoRoom {
             server.send(JSON.stringify({ type: 'pong' }));
           }
         } catch (e) {
-          console.error('WS message error:', e);
+          // Silently ignore message parse errors
         }
       });
     }
@@ -979,7 +970,6 @@ export class BingoRoom {
       try {
         socket.send(messageString);
       } catch (error) {
-        console.error(`Failed to send to ${playerId}:`, error);
         this.sessions.delete(playerId);
       }
     });
@@ -992,7 +982,6 @@ export class BingoRoom {
       try {
         socket.send(JSON.stringify(message));
       } catch (error) {
-        console.error(`Failed to send to ${playerId}:`, error);
         this.sessions.delete(playerId);
       }
     }

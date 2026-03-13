@@ -85,7 +85,7 @@ export function BingoModal({
     if (isDuoMode) {
       // Generate duo mode share text
       const winner = myScore > partnerScore ? myName : partnerScore > myScore ? partnerName : 'Tie!';
-      shareText = `🎰 Corporate Bingo - Duo Mode\n\n`;
+      shareText = `🎰 Jargon - Duo Mode\n\n`;
       shareText += `${myName}: ${myScore} pts\n`;
       shareText += `${partnerName}: ${partnerScore} pts\n\n`;
       shareText += `Winner: ${winner} 🏆\n\n`;

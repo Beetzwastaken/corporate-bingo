@@ -1,4 +1,4 @@
-// Corporate Bingo - Duo Mode
+// Jargon - Duo Mode
 // Two players, same card, different lines, compete for score
 
 import { useState, useEffect, lazy, Suspense } from 'react';
@@ -11,7 +11,7 @@ import { useDuoStore, regenerateDailyCardIfNeeded } from './stores/duoStore';
 import { useConnectionStore } from './stores/connectionStore';
 import { APP_VERSION } from './utils/version';
 import { ToastContainer, showGameToast } from './components/shared/ToastNotification';
-import corporateBingoLogo from './assets/corporate-bingo-logo.svg';
+import jargonLogo from './assets/jargon-logo.svg';
 import './App.css';
 
 // Lazy load RoomManager
@@ -147,13 +147,13 @@ function App() {
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 flex items-center justify-center shadow-lg border border-purple-400/30 relative overflow-hidden">
                 <img
-                  src={corporateBingoLogo}
-                  alt="Corporate Bingo"
+                  src={jargonLogo}
+                  alt="Jargon"
                   className="w-6 h-6 relative z-10"
                 />
               </div>
               <div>
-                <h1 className="text-lg font-medium text-apple-text">Corporate Bingo</h1>
+                <h1 className="text-lg font-medium text-apple-text">Jargon</h1>
                 <span className="text-xs text-apple-tertiary">Duo Mode</span>
               </div>
             </div>

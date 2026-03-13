@@ -1,4 +1,4 @@
-name = "corporate-bingo-api"
+name = "jargon-api"
 main = "worker.js"
 compatibility_date = "2024-12-01"
 

@@ -54,7 +54,6 @@ export class BingoPollingClient {
     if (this.polling) return;
 
     this.polling = true;
-    console.log('🔄 Starting HTTP polling for duo updates');
 
     this.poll();
     this.scheduleNextPoll();
@@ -67,7 +66,6 @@ export class BingoPollingClient {
       clearTimeout(this.pollTimer);
       this.pollTimer = null;
     }
-    console.log('⏹️ Stopped HTTP polling');
   }
 
   // Single poll request
@@ -97,11 +95,9 @@ export class BingoPollingClient {
           this.options.onUpdate(state);
         }
       } else if (response.status === 404) {
-        console.warn('Room not found during polling');
         this.options.onError?.(new Error('Room not found'));
       }
     } catch (error) {
-      console.error('Polling error:', error);
       this.options.onError?.(error instanceof Error ? error : new Error(String(error)));
     }
   }
@@ -141,8 +137,7 @@ export class BingoPollingClient {
         return true;
       }
       return false;
-    } catch (error) {
-      console.error('Select line error:', error);
+    } catch {
       return false;
     }
   }
@@ -169,8 +164,7 @@ export class BingoPollingClient {
         return true;
       }
       return false;
-    } catch (error) {
-      console.error('Mark square error:', error);
+    } catch {
       return false;
     }
   }
@@ -192,8 +186,7 @@ export class BingoPollingClient {
       });
 
       return response.ok;
-    } catch (error) {
-      console.error('Leave game error:', error);
+    } catch {
       return false;
     }
   }

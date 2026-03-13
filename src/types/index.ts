@@ -1,4 +1,4 @@
-// Corporate Bingo - TypeScript Type Definitions
+// Jargon - TypeScript Type Definitions
 // Multiplayer Bingo Game Types
 
 export interface ApiResponse<T> {

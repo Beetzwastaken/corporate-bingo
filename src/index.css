@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Corporate Bingo - Apple Dark Mode Global Styles */
+/* Jargon - Apple Dark Mode Global Styles */
 @layer base {
   html {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;

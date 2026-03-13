@@ -1,4 +1,4 @@
-// Corporate Bingo Buzzwords - Professional Curated List
+// Jargon Buzzwords - Professional Curated List
 // Updated: November 2025 - Focused on high-impact corporate humor
 // Total: 172 professionally selected buzzwords (spoken phrases + observable actions)
 

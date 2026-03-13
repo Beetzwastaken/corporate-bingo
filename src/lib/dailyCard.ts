@@ -121,10 +121,11 @@ export function hasNewDayStarted(timezone: string, lastSeed: string): boolean {
  */
 export function getLineIndices(line: { type: 'row' | 'col' | 'diag'; index: number }): number[] {
   switch (line.type) {
-    case 'row':
+    case 'row': {
       // Row N = indices [N*5, N*5+1, N*5+2, N*5+3, N*5+4]
       const rowStart = line.index * 5;
       return [rowStart, rowStart + 1, rowStart + 2, rowStart + 3, rowStart + 4];
+    }
 
     case 'col':
       // Col N = indices [N, N+5, N+10, N+15, N+20]

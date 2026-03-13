@@ -1,7 +1,7 @@
-// Corporate Bingo Service Worker
+// Jargon Service Worker
 // Provides offline capability and faster loading
 
-const CACHE_NAME = 'corporate-bingo-v1.5.0';
+const CACHE_NAME = 'jargon-v2.0.0';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

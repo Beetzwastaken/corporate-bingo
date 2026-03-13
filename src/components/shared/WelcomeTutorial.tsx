@@ -10,7 +10,7 @@ export function WelcomeTutorial({ show, onComplete }: WelcomeTutorialProps) {
 
   const steps = [
     {
-      title: "Welcome to Corporate Bingo! 🎯",
+      title: "Welcome to Jargon! 🎯",
       content: (
         <div className="space-y-4">
           <p className="text-apple-text text-lg">

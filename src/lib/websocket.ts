@@ -84,7 +84,6 @@ export class BingoWebSocketClient {
 
       try {
         const url = this.getWebSocketUrl();
-        console.log('🔌 Connecting to WebSocket:', url);
         this.socket = new WebSocket(url);
 
         const timeout = setTimeout(() => {
@@ -98,7 +97,6 @@ export class BingoWebSocketClient {
           clearTimeout(timeout);
           this.isConnecting = false;
           this.reconnectAttempts = 0;
-          console.log('✅ WebSocket connected');
           this.startPing();
           this.options.onConnect?.();
           resolve();
@@ -110,8 +108,8 @@ export class BingoWebSocketClient {
             // Handle pong silently
             if (message.type === 'pong') return;
             this.options.onMessage(message);
-          } catch (error) {
-            console.error('Failed to parse WebSocket message:', error);
+          } catch {
+            // Silently ignore parse errors
           }
         };
 
@@ -119,7 +117,6 @@ export class BingoWebSocketClient {
           clearTimeout(timeout);
           this.isConnecting = false;
           this.stopPing();
-          console.log('❌ WebSocket disconnected:', event.code, event.reason);
           this.options.onDisconnect?.();
 
           // Auto-reconnect unless manual close
@@ -128,10 +125,9 @@ export class BingoWebSocketClient {
           }
         };
 
-        this.socket.onerror = (event) => {
+        this.socket.onerror = () => {
           clearTimeout(timeout);
           this.isConnecting = false;
-          console.error('WebSocket error:', event);
           const error = new Error('WebSocket connection error');
           this.options.onError?.(error);
 
@@ -168,15 +164,12 @@ export class BingoWebSocketClient {
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
 
-    console.log(`🔄 Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-
     setTimeout(() => {
       if (this.reconnectAttempts <= this.maxReconnectAttempts) {
-        this.connect().catch((error) => {
-          console.error('Reconnection failed:', error);
+        this.connect().catch(() => {
+          // Silently ignore reconnection errors
         });
       } else {
-        console.error('Max reconnection attempts reached');
         this.options.onError?.(new Error('Max reconnection attempts reached'));
       }
     }, delay);

@@ -127,7 +127,7 @@ export function LineSelector({
       {/* Instructions */}
       <div className="text-center">
         <h2 className="text-xl font-semibold text-apple-text mb-2">
-          Pick Your Bingo Line
+          Pick Your Line
         </h2>
         <p className="text-apple-secondary text-sm">
           Choose a row, column, or diagonal. Score points when squares in your line are marked.

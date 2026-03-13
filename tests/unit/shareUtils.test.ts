@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { generateEmojiGrid, copyToClipboard, generateShareText } from './shareUtils';
+import { generateEmojiGrid, copyToClipboard, generateShareText } from '../../src/utils/shareUtils';
 
 describe('shareUtils', () => {
   describe('generateEmojiGrid', () => {
@@ -21,7 +21,7 @@ describe('shareUtils', () => {
       const result = generateEmojiGrid(options);
 
       // Check header
-      expect(result).toContain('🎯 Corporate Bingo #5');
+      expect(result).toContain('🎯 Jargon #5');
       expect(result).toContain('BINGO! 5/25 squares');
       expect(result).toContain('Score: 100 points');
 
@@ -193,7 +193,7 @@ describe('shareUtils', () => {
 
       const result = generateShareText(options);
 
-      expect(result).toContain('🎯 I got BINGO in Corporate Bingo!');
+      expect(result).toContain('🎯 I got BINGO in Jargon!');
       expect(result).toContain('15/25 squares');
       expect(result).toContain('200 points');
       expect(result).toContain('Play at: https://corporate-bingo-ai.netlify.app');

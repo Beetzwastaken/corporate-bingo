@@ -26,7 +26,7 @@ export function generateEmojiGrid(options: ShareOptions): string {
   const markedCount = markedSquares.filter(Boolean).length;
 
   // Generate header
-  const header = `🎯 Corporate Bingo #${gamesPlayed}\nBINGO! ${markedCount}/25 squares\nScore: ${score} points\n\n`;
+  const header = `🎯 Jargon #${gamesPlayed}\nBINGO! ${markedCount}/25 squares\nScore: ${score} points\n\n`;
 
   // Generate grid (5x5)
   let grid = '';
@@ -80,8 +80,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
       document.body.removeChild(textArea);
       return false;
     }
-  } catch (err) {
-    console.error('Failed to copy to clipboard:', err);
+  } catch {
     return false;
   }
 }
@@ -93,5 +92,5 @@ export function generateShareText(options: ShareOptions): string {
   const { score = 0 } = options;
   const markedCount = options.markedSquares.filter(Boolean).length;
 
-  return `🎯 I got BINGO in Corporate Bingo! ${markedCount}/25 squares, ${score} points!\n\nSurvived another meeting full of buzzwords 😅\n\nPlay at: https://corporate-bingo-ai.netlify.app`;
+  return `🎯 I got BINGO in Jargon! ${markedCount}/25 squares, ${score} points!\n\nSurvived another meeting full of buzzwords 😅\n\nPlay at: https://corporate-bingo-ai.netlify.app`;
 }

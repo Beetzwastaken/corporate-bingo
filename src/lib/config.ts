@@ -1,4 +1,4 @@
-// Configuration for Corporate Bingo API endpoints
+// Configuration for Jargon API endpoints
 
 // API Configuration
 export const API_CONFIG = {

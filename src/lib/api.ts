@@ -1,4 +1,4 @@
-// API functions for Corporate Bingo - Duo Mode
+// API functions for Jargon - Duo Mode
 
 import { getApiBaseUrl } from './config';
 import type { LineSelection } from '../stores/duoStore';
@@ -74,7 +74,6 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
       data
     };
   } catch (error) {
-    console.error('API request failed:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Network error occurred'
