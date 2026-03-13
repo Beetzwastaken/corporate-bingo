@@ -14,25 +14,26 @@ export function WelcomeTutorial({ show, onComplete }: WelcomeTutorialProps) {
       content: (
         <div className="space-y-4">
           <p className="text-apple-text text-lg">
-            Turn boring meetings into interactive entertainment!
+            Duo Mode - Team up and compete!
           </p>
           <p className="text-apple-secondary">
-            Listen for buzzwords like "synergy", "circle back", and "let's take this offline"
-            during your meetings and mark them on your bingo board.
+            Pair up with a coworker and see who can spot corporate buzzwords faster.
+            Same bingo card, different lines, one winner!
           </p>
           <div className="bg-apple-darkest rounded-lg p-4 mt-4">
-            <p className="text-apple-accent font-medium mb-2">Quick Stats:</p>
+            <p className="text-apple-accent font-medium mb-2">What's New:</p>
             <ul className="text-apple-secondary text-sm space-y-1">
-              <li>• 170+ professionally curated corporate buzzwords</li>
-              <li>• Real-time multiplayer support</li>
-              <li>• Share your wins like Wordle!</li>
+              <li>• Pair with a partner using a 4-character code</li>
+              <li>• Each player picks their own secret line</li>
+              <li>• Same 25 buzzwords globally per day</li>
+              <li>• Compete for the highest score!</li>
             </ul>
           </div>
         </div>
       )
     },
     {
-      title: "How to Play 🎮",
+      title: "How It Works 🎮",
       content: (
         <div className="space-y-4">
           <div className="space-y-3">
@@ -41,8 +42,8 @@ export function WelcomeTutorial({ show, onComplete }: WelcomeTutorialProps) {
                 1
               </div>
               <div>
-                <p className="text-apple-text font-medium">Listen for buzzwords</p>
-                <p className="text-apple-secondary text-sm">During your meeting, listen for corporate speak on your board</p>
+                <p className="text-apple-text font-medium">Create or Join</p>
+                <p className="text-apple-secondary text-sm">Enter your name and create a room, or join with a friend's code</p>
               </div>
             </div>
 
@@ -51,8 +52,8 @@ export function WelcomeTutorial({ show, onComplete }: WelcomeTutorialProps) {
                 2
               </div>
               <div>
-                <p className="text-apple-text font-medium">Click to claim squares</p>
-                <p className="text-apple-secondary text-sm">Tap a square when you hear that buzzword</p>
+                <p className="text-apple-text font-medium">Pick Your Line</p>
+                <p className="text-apple-secondary text-sm">Choose a row, column, or diagonal - kept secret until both pick!</p>
               </div>
             </div>
 
@@ -61,8 +62,18 @@ export function WelcomeTutorial({ show, onComplete }: WelcomeTutorialProps) {
                 3
               </div>
               <div>
-                <p className="text-apple-text font-medium">Get BINGO!</p>
-                <p className="text-apple-secondary text-sm">Complete 5 in a row (horizontal, vertical, or diagonal)</p>
+                <p className="text-apple-text font-medium">Mark Buzzwords</p>
+                <p className="text-apple-secondary text-sm">Tap squares when you hear those phrases in your meeting</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold flex-shrink-0">
+                4
+              </div>
+              <div>
+                <p className="text-apple-text font-medium">Race to BINGO!</p>
+                <p className="text-apple-secondary text-sm">Complete your line first to score the bonus points</p>
               </div>
             </div>
           </div>
@@ -70,102 +81,93 @@ export function WelcomeTutorial({ show, onComplete }: WelcomeTutorialProps) {
           <div className="bg-yellow-900/10 border border-yellow-500/30 rounded-lg p-3 mt-4">
             <p className="text-yellow-400 text-sm font-medium">💡 Pro Tip</p>
             <p className="text-apple-secondary text-sm mt-1">
-              Pay attention to the meeting - the best buzzwords come when you least expect them!
+              Lines can overlap! You and your partner might share some squares.
             </p>
           </div>
         </div>
       )
     },
     {
-      title: "Game Modes 🎲",
+      title: "Scoring 📊",
       content: (
         <div className="space-y-4">
+          <p className="text-apple-secondary">
+            Score points by marking squares in YOUR line:
+          </p>
+
           <div className="grid gap-3">
-            <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 border border-blue-500/30 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">▶️</span>
-                <h3 className="text-apple-text font-bold">Play Mode</h3>
+            <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">✓</span>
+                  <span className="text-apple-text font-medium">Square in your line marked</span>
+                </div>
+                <span className="text-cyan-400 font-bold text-xl">+1</span>
               </div>
-              <p className="text-apple-secondary text-sm mb-3">
-                The classic bingo experience!
-              </p>
-              <ul className="text-apple-secondary text-sm space-y-1">
-                <li>• Jump in and start clicking squares</li>
-                <li>• Invite friends with a room code</li>
-                <li>• Celebrate BINGOs together!</li>
-              </ul>
             </div>
 
-            <div className="bg-gradient-to-br from-yellow-900/20 to-orange-800/20 border border-yellow-500/30 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">🎤</span>
-                <h3 className="text-apple-text font-bold">Host Mode</h3>
-                <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded">Coming Soon</span>
+            <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🎉</span>
+                  <span className="text-apple-text font-medium">Complete your line (BINGO!)</span>
+                </div>
+                <span className="text-yellow-400 font-bold text-xl">+5</span>
               </div>
-              <p className="text-apple-secondary text-sm mb-3">
-                You're the speaker - try to say buzzwords!
-              </p>
-              <ul className="text-apple-secondary text-sm space-y-1">
-                <li>• Host deliberately says buzzwords</li>
-                <li>• Audience marks and verifies claims</li>
-                <li>• Great for presentations & all-hands</li>
-              </ul>
             </div>
+          </div>
+
+          <div className="bg-apple-darkest rounded-lg p-4 mt-4">
+            <p className="text-apple-secondary text-sm">
+              <span className="text-cyan-400 font-medium">Your line</span> is highlighted in cyan,{' '}
+              <span className="text-orange-400 font-medium">partner's line</span> in orange.
+              Purple means overlap!
+            </p>
+          </div>
+
+          <div className="bg-purple-900/10 border border-purple-500/30 rounded-lg p-3">
+            <p className="text-purple-400 text-sm font-medium">Overlap Strategy</p>
+            <p className="text-apple-secondary text-sm mt-1">
+              If you share squares with your partner, you both score when those are marked!
+            </p>
           </div>
         </div>
       )
     },
     {
-      title: "Share Your Wins! 🎉",
+      title: "Daily Card 🌅",
       content: (
         <div className="space-y-4">
           <p className="text-apple-secondary">
-            Got BINGO? Share your results with friends and coworkers!
+            Everyone plays the same 25 buzzwords each day!
           </p>
 
-          <div className="bg-apple-darkest rounded-lg p-4">
-            <p className="text-apple-accent font-medium mb-2">After each BINGO:</p>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-start gap-2">
-                <span className="text-cyan-400">📋</span>
-                <p className="text-apple-secondary">
-                  Click "Share Result" to copy your emoji grid
-                </p>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-cyan-400">🔗</span>
-                <p className="text-apple-secondary">
-                  Copy invite links to bring friends to your room
-                </p>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-cyan-400">💬</span>
-                <p className="text-apple-secondary">
-                  Paste in Slack, Teams, or social media!
-                </p>
+          <div className="bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border border-cyan-500/30 rounded-lg p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-3xl">🔄</span>
+              <div>
+                <p className="text-apple-text font-medium">Daily Reset</p>
+                <p className="text-apple-secondary text-sm">New card at midnight in your timezone</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border border-cyan-500/30 rounded-lg p-4">
-            <p className="text-sm text-apple-secondary mb-2">Example share:</p>
-            <div className="font-mono text-xs text-apple-text bg-black/30 rounded p-2">
-              🎯 Corporate Bingo<br />
-              BINGO!<br />
-              <br />
-              🟩🟩🟨⬜⬜<br />
-              ⬜🟩🟨⬜🟩<br />
-              🟩⬜🟨🟩⬜<br />
-              ⬜⬜🟨⬜⬜<br />
-              🟩⬜🟨⬜🟩<br />
-              <br />
-              <span className="text-yellow-400">Winning line:</span><br />
-              🟨 "Circle Back"<br />
-              🟨 "Synergy"<br />
-              🟨 "Deep Dive"<br />
-              🟨 "Moving Forward"<br />
-              🟨 "Let's Take This Offline"
+          <div className="grid gap-3">
+            <div className="bg-apple-darkest rounded-lg p-4">
+              <p className="text-apple-accent font-medium mb-2">Same card means:</p>
+              <ul className="text-apple-secondary text-sm space-y-1">
+                <li>• Compare scores fairly with your partner</li>
+                <li>• Play throughout the day across meetings</li>
+                <li>• Your duo persists across days</li>
+              </ul>
             </div>
+          </div>
+
+          <div className="bg-yellow-900/10 border border-yellow-500/30 rounded-lg p-3">
+            <p className="text-yellow-400 text-sm font-medium">💡 Pro Tip</p>
+            <p className="text-apple-secondary text-sm mt-1">
+              Stay paired with your partner - you'll get a fresh card together each day!
+            </p>
           </div>
         </div>
       )
@@ -175,36 +177,36 @@ export function WelcomeTutorial({ show, onComplete }: WelcomeTutorialProps) {
       content: (
         <div className="space-y-4">
           <p className="text-apple-text text-lg text-center">
-            You're all set to survive your next corporate meeting!
+            You're all set to compete in Duo Mode!
           </p>
 
           <div className="bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border border-cyan-500/30 rounded-lg p-6 text-center">
             <p className="text-cyan-400 font-bold text-xl mb-2">
-              🎯 Choose Your Mode
+              🤝 Get Started
             </p>
             <p className="text-apple-secondary mb-4">
-              Start with solo play to get comfortable, then create or join a room to compete with your team!
+              Enter your name, then create a room or join your partner's!
             </p>
           </div>
 
           <div className="space-y-2 text-sm text-apple-secondary">
             <p className="flex items-center gap-2">
               <span className="text-cyan-400">✓</span>
-              Click the board to start solo play
+              Create a room and share the 4-character code
             </p>
             <p className="flex items-center gap-2">
               <span className="text-cyan-400">✓</span>
-              Click "Rooms" to create/join multiplayer
+              Or join with a code from your partner
             </p>
             <p className="flex items-center gap-2">
               <span className="text-cyan-400">✓</span>
-              Have fun and may the best buzzword hunter win!
+              Pick your line and start marking buzzwords!
             </p>
           </div>
 
           <div className="bg-yellow-900/10 border border-yellow-500/30 rounded-lg p-3">
             <p className="text-yellow-400 text-sm font-medium text-center">
-              💡 You can replay this tutorial anytime from the app menu
+              💡 Click the ? button anytime to see this tutorial again
             </p>
           </div>
         </div>

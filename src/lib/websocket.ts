@@ -1,18 +1,47 @@
-// WebSocket service for real-time multiplayer communication
+// WebSocket service for Duo Mode real-time communication
 // Handles connections to Cloudflare Workers Durable Objects
 
 import { getWebSocketBaseUrl } from './config';
 
-interface WebSocketMessage {
+// Message types from server
+export interface DuoWebSocketMessage {
   type: string;
-  payload?: Record<string, unknown>;
-  timestamp: number;
+  // Partner joined
+  partnerId?: string;
+  partnerName?: string;
+  // Partner selected (no line revealed yet)
+  playerId?: string;
+  // Line conflict
+  takenLine?: { type: 'row' | 'col' | 'diag'; index: number };
+  message?: string;
+  // Card revealed
+  hostLine?: { type: 'row' | 'col' | 'diag'; index: number };
+  partnerLine?: { type: 'row' | 'col' | 'diag'; index: number };
+  card?: string[];
+  // Square marked
+  index?: number;
+  markedBy?: string;
+  hostScore?: number;
+  partnerScore?: number;
+  hostBingo?: boolean;
+  partnerBingo?: boolean;
+  // Bingo
+  player?: 'host' | 'partner';
+  playerName?: string;
+  score?: number;
+  // Daily reset
+  dailySeed?: string;
+  // Connection state
+  phase?: string;
+  isHost?: boolean;
+  hostName?: string;
+  isPaired?: boolean;
 }
 
 interface ConnectionOptions {
   roomCode: string;
   playerId: string;
-  onMessage: (message: WebSocketMessage) => void;
+  onMessage: (message: DuoWebSocketMessage) => void;
   onConnect?: () => void;
   onDisconnect?: () => void;
   onError?: (error: Error) => void;
@@ -25,18 +54,17 @@ export class BingoWebSocketClient {
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
   private isConnecting = false;
+  private pingInterval: number | null = null;
 
   constructor(options: ConnectionOptions) {
     this.options = options;
   }
 
-  // Get WebSocket URL based on environment
+  // Get WebSocket URL for duo mode
   private getWebSocketUrl(): string {
     const { roomCode, playerId } = this.options;
-    
     const baseUrl = getWebSocketBaseUrl();
-    
-    return `${baseUrl}/api/room/${roomCode}/ws?playerId=${playerId}`;
+    return `${baseUrl}/api/duo/${roomCode}/ws?playerId=${playerId}`;
   }
 
   // Connect to WebSocket
@@ -53,9 +81,10 @@ export class BingoWebSocketClient {
       }
 
       this.isConnecting = true;
-      
+
       try {
         const url = this.getWebSocketUrl();
+        console.log('🔌 Connecting to WebSocket:', url);
         this.socket = new WebSocket(url);
 
         const timeout = setTimeout(() => {
@@ -63,20 +92,23 @@ export class BingoWebSocketClient {
             this.socket?.close();
             reject(new Error('Connection timeout'));
           }
-        }, 10000); // 10 second timeout
+        }, 10000);
 
         this.socket.onopen = () => {
           clearTimeout(timeout);
           this.isConnecting = false;
           this.reconnectAttempts = 0;
-          console.log('WebSocket connected');
+          console.log('✅ WebSocket connected');
+          this.startPing();
           this.options.onConnect?.();
           resolve();
         };
 
         this.socket.onmessage = (event) => {
           try {
-            const message: WebSocketMessage = JSON.parse(event.data);
+            const message: DuoWebSocketMessage = JSON.parse(event.data);
+            // Handle pong silently
+            if (message.type === 'pong') return;
             this.options.onMessage(message);
           } catch (error) {
             console.error('Failed to parse WebSocket message:', error);
@@ -86,10 +118,11 @@ export class BingoWebSocketClient {
         this.socket.onclose = (event) => {
           clearTimeout(timeout);
           this.isConnecting = false;
-          console.log('WebSocket disconnected:', event.code, event.reason);
+          this.stopPing();
+          console.log('❌ WebSocket disconnected:', event.code, event.reason);
           this.options.onDisconnect?.();
-          
-          // Auto-reconnect unless it was a manual close
+
+          // Auto-reconnect unless manual close
           if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
             this.scheduleReconnect();
           }
@@ -101,7 +134,7 @@ export class BingoWebSocketClient {
           console.error('WebSocket error:', event);
           const error = new Error('WebSocket connection error');
           this.options.onError?.(error);
-          
+
           if (this.socket?.readyState !== WebSocket.OPEN) {
             reject(error);
           }
@@ -113,13 +146,30 @@ export class BingoWebSocketClient {
     });
   }
 
+  // Start ping interval for keepalive
+  private startPing(): void {
+    this.pingInterval = window.setInterval(() => {
+      if (this.socket?.readyState === WebSocket.OPEN) {
+        this.socket.send(JSON.stringify({ type: 'ping' }));
+      }
+    }, 30000); // Ping every 30 seconds
+  }
+
+  // Stop ping interval
+  private stopPing(): void {
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = null;
+    }
+  }
+
   // Schedule reconnect with exponential backoff
-  private scheduleReconnect() {
+  private scheduleReconnect(): void {
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
-    
-    console.log(`Scheduling reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`);
-    
+
+    console.log(`🔄 Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+
     setTimeout(() => {
       if (this.reconnectAttempts <= this.maxReconnectAttempts) {
         this.connect().catch((error) => {
@@ -140,14 +190,8 @@ export class BingoWebSocketClient {
         return;
       }
 
-      const message: WebSocketMessage = {
-        type,
-        payload,
-        timestamp: Date.now()
-      };
-
       try {
-        this.socket.send(JSON.stringify(message));
+        this.socket.send(JSON.stringify({ type, ...payload }));
         resolve();
       } catch (error) {
         reject(error);
@@ -155,93 +199,52 @@ export class BingoWebSocketClient {
     });
   }
 
-  // Mark a square (with validation)
-  markSquare(squareIndex: number): Promise<void> {
-    return this.send('MARK_SQUARE', { 
-      squareIndex,
-      timestamp: Date.now()
-    });
-  }
-
-  // Verify another player's claim
-  verifySquare(playerId: string, squareIndex: number, verification: boolean): Promise<void> {
-    return this.send('VERIFY_SQUARE', { 
-      playerId,
-      squareIndex,
-      verification,
-      timestamp: Date.now()
-    });
-  }
-
-  // Send chat message
-  sendChatMessage(message: string): Promise<void> {
-    return this.send('CHAT_MESSAGE', { 
-      message: message.trim().slice(0, 500), // Limit message length
-      timestamp: Date.now()
-    });
-  }
-
-  // Claim bingo
-  claimBingo(winningPattern: number[]): Promise<void> {
-    return this.send('CLAIM_BINGO', { 
-      winningPattern,
-      timestamp: Date.now()
-    });
-  }
-
-  // Get connection status
+  // Check connection status
   isConnected(): boolean {
     return this.socket?.readyState === WebSocket.OPEN;
   }
 
   // Disconnect gracefully
   disconnect(): void {
+    this.stopPing();
     if (this.socket) {
-      // Set to max attempts to prevent auto-reconnect
-      this.reconnectAttempts = this.maxReconnectAttempts;
+      this.reconnectAttempts = this.maxReconnectAttempts; // Prevent auto-reconnect
       this.socket.close(1000, 'Manual disconnect');
       this.socket = null;
     }
   }
 
-  // Update connection options (for switching rooms)
+  // Update connection options
   updateOptions(newOptions: Partial<ConnectionOptions>): void {
     this.options = { ...this.options, ...newOptions };
   }
 }
 
-// Utility function to create WebSocket client
+// Create WebSocket client
 export function createWebSocketClient(options: ConnectionOptions): BingoWebSocketClient {
   return new BingoWebSocketClient(options);
 }
 
-// Message type constants for type safety
-export const MESSAGE_TYPES = {
-  // Player actions
-  MARK_SQUARE: 'MARK_SQUARE',
-  VERIFY_SQUARE: 'VERIFY_SQUARE',
-  CLAIM_BINGO: 'CLAIM_BINGO',
-  CHAT_MESSAGE: 'CHAT_MESSAGE',
-  
-  // Server broadcasts
-  SQUARE_MARKED: 'SQUARE_MARKED',
-  SQUARE_VERIFIED: 'SQUARE_VERIFIED',
-  BINGO_CLAIMED: 'BINGO_CLAIMED',
-  PLAYER_JOINED: 'PLAYER_JOINED',
-  PLAYER_LEFT: 'PLAYER_LEFT',
-  GAME_STATE_UPDATE: 'GAME_STATE_UPDATE',
-  VERIFICATION_REQUEST: 'VERIFICATION_REQUEST',
-  CHAT_MESSAGE_BROADCAST: 'CHAT_MESSAGE_BROADCAST',
-  
-  // New scoring system messages
-  LINE_MULTIPLIER: 'LINE_MULTIPLIER',
-  CLAIM_APPROVED: 'CLAIM_APPROVED',
-  CLAIM_REJECTED: 'CLAIM_REJECTED',
-  
-  // System messages
-  ERROR: 'ERROR',
-  PING: 'PING',
-  PONG: 'PONG'
-} as const;
+// Message type constants for duo mode
+export const DUO_MESSAGE_TYPES = {
+  // Connection
+  CONNECTED: 'connected',
+  PING: 'ping',
+  PONG: 'pong',
 
-export type MessageType = typeof MESSAGE_TYPES[keyof typeof MESSAGE_TYPES];
+  // Pairing
+  PARTNER_JOINED: 'partner_joined',
+  PARTNER_LEFT: 'partner_left',
+
+  // Line selection
+  PARTNER_SELECTED: 'partner_selected',
+  LINE_CONFLICT: 'line_conflict',
+  CARD_REVEALED: 'card_revealed',
+
+  // Gameplay
+  SQUARE_MARKED: 'square_marked',
+  BINGO: 'bingo',
+
+  // Daily
+  DAILY_RESET: 'daily_reset'
+} as const;

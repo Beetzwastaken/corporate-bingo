@@ -1,518 +1,349 @@
-import { useState, useEffect } from 'react';
-import { useBingoStore } from '../../utils/store';
-import { useMultiRoomStore, type GameMode } from '../../stores/multiRoomStore';
-import { Leaderboard } from './Leaderboard';
-import { RoomTabs } from './RoomTabs';
-import { GameModeSelector } from './GameModeSelector';
-import { showScoreToast, showGameToast } from '../shared/ToastNotification';
+// RoomManager - Duo pairing UI
+import { useState } from 'react';
+import { useDuoStore } from '../../stores/duoStore';
+import { showGameToast } from '../shared/ToastNotification';
+
+type View = 'main' | 'create' | 'join';
 
 export function RoomManager() {
-  const [roomName, setRoomName] = useState('');
+  const [view, setView] = useState<View>('main');
+  const [playerName, setPlayerName] = useState('');
   const [joinCode, setJoinCode] = useState('');
-  const [playerName, setPlayerNameInput] = useState('');
-  const [gameMode, setGameMode] = useState<GameMode>('play');
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [error, setError] = useState('');
-  const [previousScores, setPreviousScores] = useState<Record<string, number>>({});
-  const [inviteLinkCopied, setInviteLinkCopied] = useState(false);
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const {
-    playerName: storedPlayerName,
-    isConnecting,
-    isConnected,
-    connectionError,
-    setPlayerName
-  } = useBingoStore();
-  
-  const {
-    rooms,
-    activeRoomCode,
-    currentPlayer,
-    createRoom: createMultiRoom,
-    joinRoom: joinMultiRoom,
-    leaveRoom: leaveMultiRoom,
-    setActiveRoom,
-    getActiveRoom,
-    cleanupExpiredRooms
-  } = useMultiRoomStore();
-  
-  const currentRoom = getActiveRoom()?.room || null;
-  const hasRooms = Object.keys(rooms).length > 0;
+    phase,
+    pairCode,
+    odName,
+    partnerName,
+    isPaired,
+    isHost,
+    createGame,
+    joinGame,
+    leaveGame
+  } = useDuoStore();
 
-  // Initialize player name input with stored value if empty
-  useEffect(() => {
-    if (!playerName && storedPlayerName) {
-      setPlayerNameInput(storedPlayerName);
+  const handleCreateGame = async () => {
+    if (!playerName.trim()) {
+      setError('Please enter your name');
+      return;
     }
-  }, [storedPlayerName, playerName]);
 
-  // Handle auto-join from URL parameter
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const joinRoomCode = urlParams.get('join');
+    setIsLoading(true);
+    setError(null);
 
-    if (joinRoomCode && !hasRooms && storedPlayerName) {
-      // Auto-fill the join code and attempt to join
-      setJoinCode(joinRoomCode.toUpperCase());
+    const result = await createGame(playerName.trim());
 
-      // Clear the URL parameter after reading it
-      window.history.replaceState({}, '', window.location.pathname);
+    setIsLoading(false);
 
-      // Show a toast to inform the user
-      showGameToast(`Joining room ${joinRoomCode.toUpperCase()}...`, 'info');
-    }
-  }, [hasRooms, storedPlayerName]);
-  
-  // Cleanup expired rooms periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      cleanupExpiredRooms();
-    }, 5 * 60 * 1000); // Check every 5 minutes
-    
-    return () => clearInterval(interval);
-  }, [cleanupExpiredRooms]);
-
-  // Track score changes and show notifications
-  useEffect(() => {
-    if (!currentRoom?.players) return;
-
-    currentRoom.players.forEach(player => {
-      const currentScore = player.currentScore || 0;
-      const previousScore = previousScores[player.id] || 0;
-      const scoreDiff = currentScore - previousScore;
-
-      if (scoreDiff !== 0 && previousScore !== undefined && previousScores[player.id] !== undefined) {
-        // Show toast notification for score changes
-        if (player.id === currentPlayer?.id) {
-          // Show notification for current player
-          const reason = getScoreChangeReason(scoreDiff);
-          showScoreToast(scoreDiff, reason);
-        } else {
-          // Show notification for other players (less prominent)
-          if (scoreDiff > 0) {
-            showGameToast(`${player.name} scored ${scoreDiff} points!`, undefined, 'success');
-          }
-        }
-      }
-    });
-
-    // Update previous scores
-    const newPreviousScores: Record<string, number> = {};
-    currentRoom.players.forEach(player => {
-      newPreviousScores[player.id] = player.currentScore || 0;
-    });
-    setPreviousScores(newPreviousScores);
-  }, [currentRoom?.players, currentPlayer?.id, previousScores]);
-
-  // Helper function to determine score change reason
-  const getScoreChangeReason = (scoreDiff: number): string => {
-    if (scoreDiff === 1) return "Square marked!";
-    if (scoreDiff === 5) return "BINGO bonus!";
-    if (scoreDiff === 6) return "BINGO! (+5 bonus + 1 square)";
-    if (scoreDiff > 0) return `+${scoreDiff} points earned`;
-    return "Points adjusted";
-  };
-
-  const validateRoomCode = (code: string): boolean => {
-    const cleaned = code.trim().toUpperCase();
-    // Accept 4-character codes (current format), 6-char legacy, and prefixed formats
-    return /^[A-Z0-9]{4}$/.test(cleaned) ||
-           /^[A-Z0-9]{6}$/.test(cleaned) ||
-           /^(MTG|TEAM)-[A-Z0-9]{4}$/.test(cleaned);
-  };
-
-  const handleSetPlayerName = () => {
-    const trimmed = playerName.trim();
-    if (trimmed.length >= 2 && trimmed.length <= 30) {
-      setPlayerName(trimmed);
-      setError('');
+    if (result.success) {
+      showGameToast('Game Created', `Share code: ${result.code}`, 'success');
     } else {
-      setError('Name must be 2-30 characters');
+      setError(result.error || 'Failed to create game');
     }
   };
 
-  const handleCreateRoom = async () => {
-    if (!roomName.trim()) {
-      setError('Room name is required');
+  const handleJoinGame = async () => {
+    if (!playerName.trim()) {
+      setError('Please enter your name');
       return;
     }
-    
-    if (!storedPlayerName) {
-      setError('Set your name first');
+    if (!joinCode.trim() || joinCode.length !== 4) {
+      setError('Please enter a 4-character code');
       return;
     }
 
-    setError('');
-    const result = await createMultiRoom(roomName.trim(), storedPlayerName, gameMode);
-    
-    if (!result.success) {
-      setError(result.error || 'Could not create room');
+    setIsLoading(true);
+    setError(null);
+
+    const result = await joinGame(joinCode.trim().toUpperCase(), playerName.trim());
+
+    setIsLoading(false);
+
+    if (result.success) {
+      showGameToast('Joined Game', 'Connecting to partner...', 'success');
     } else {
-      setRoomName('');
-      setShowCreateForm(false);
+      setError(result.error || 'Failed to join game');
     }
   };
 
-  const handleJoinRoom = async () => {
-    if (!joinCode.trim()) {
-      setError('Room code is required');
-      return;
+  const handleCopyCode = () => {
+    if (pairCode) {
+      navigator.clipboard.writeText(pairCode);
+      showGameToast('Copied!', 'Code copied to clipboard', 'success');
     }
-    
-    if (!validateRoomCode(joinCode)) {
-      setError('Enter a 4-character room code');
-      return;
-    }
-    
-    if (!storedPlayerName) {
-      setError('Set your name first');
-      return;
-    }
+  };
 
-    setError('');
-    const result = await joinMultiRoom(joinCode.toUpperCase(), storedPlayerName);
-    
-    if (!result.success) {
-      setError(result.error || 'Could not join room');
-    } else {
+  const handleCopyLink = () => {
+    if (pairCode) {
+      const link = `${window.location.origin}?join=${pairCode}`;
+      navigator.clipboard.writeText(link);
+      showGameToast('Link Copied!', 'Share this link with your partner', 'success');
+    }
+  };
+
+  const handleLeave = () => {
+    if (confirm('Leave this game?')) {
+      leaveGame();
+      setView('main');
+      setPlayerName('');
       setJoinCode('');
     }
   };
 
-  const handleLeaveRoom = (roomCode?: string) => {
-    if (roomCode) {
-      leaveMultiRoom(roomCode);
-    } else if (activeRoomCode) {
-      leaveMultiRoom(activeRoomCode);
-    }
-    setError('');
-  };
-
-  const copyInviteLink = async (roomCode: string) => {
-    const baseUrl = window.location.origin;
-    const inviteUrl = `${baseUrl}?join=${roomCode}`;
-
-    try {
-      await navigator.clipboard.writeText(inviteUrl);
-      setInviteLinkCopied(true);
-      showGameToast('Invite link copied! Share with your team.', 'success');
-      setTimeout(() => setInviteLinkCopied(false), 2000);
-    } catch {
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = inviteUrl;
-      textArea.style.position = 'fixed';
-      textArea.style.left = '-9999px';
-      document.body.appendChild(textArea);
-      textArea.select();
-
-      try {
-        document.execCommand('copy');
-        setInviteLinkCopied(true);
-        showGameToast('Invite link copied! Share with your team.', 'success');
-        setTimeout(() => setInviteLinkCopied(false), 2000);
-      } catch {
-        showGameToast('Failed to copy link. Please copy manually.', 'error');
-      } finally {
-        document.body.removeChild(textArea);
-      }
-    }
-  };
-
-  return (
-    <div className="flex flex-col h-full">
-      {/* Room Tabs */}
-      {hasRooms && (
-        <RoomTabs
-          rooms={rooms}
-          activeRoomCode={activeRoomCode}
-          onRoomChange={setActiveRoom}
-          onRoomClose={handleLeaveRoom}
-        />
-      )}
-      
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Error Display */}
-        {(error || connectionError) && (
-          <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-4 h-4 rounded-full bg-red-500"></div>
-              <p className="text-red-300 text-sm font-medium">{error || connectionError}</p>
+  // If already paired or waiting
+  if (phase !== 'unpaired') {
+    return (
+      <div className="flex flex-col h-full p-4 space-y-4">
+        {/* Status Card */}
+        <div className="apple-panel p-6">
+          {/* Paired State */}
+          {isPaired ? (
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 mx-auto bg-green-500/20 rounded-full flex items-center justify-center">
+                <span className="text-3xl">🤝</span>
+              </div>
+              <h2 className="text-lg font-semibold text-apple-text">
+                Paired with {partnerName}
+              </h2>
+              <p className="text-apple-secondary text-sm">
+                {phase === 'selecting'
+                  ? 'Time to pick your bingo line!'
+                  : phase === 'playing'
+                  ? 'Game in progress'
+                  : 'Connected'}
+              </p>
             </div>
-          </div>
-        )}
+          ) : (
+            /* Waiting State */
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 mx-auto bg-apple-accent/20 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-apple-accent border-t-transparent rounded-full animate-spin" />
+              </div>
+              <h2 className="text-lg font-semibold text-apple-text">
+                Waiting for Partner
+              </h2>
+              <p className="text-apple-secondary text-sm">
+                Share the code below with your teammate
+              </p>
+            </div>
+          )}
+        </div>
 
-        {/* Player Name Setup */}
-        {!storedPlayerName && (
-          <div className="apple-panel p-4 bg-yellow-900/10 border-yellow-500/30">
-            <h2 className="text-lg font-semibold text-apple-text mb-2">
-              Player Setup
-            </h2>
-            <p className="text-apple-secondary text-sm mb-3">Set your name to continue</p>
-            <div className="space-y-3">
-              <input
-                type="text"
-                value={playerName}
-                onChange={(e) => setPlayerNameInput(e.target.value)}
-                className="apple-input w-full"
-                placeholder="Your name"
-                maxLength={30}
-                onKeyPress={(e) => e.key === 'Enter' && handleSetPlayerName()}
-              />
+        {/* Code Display (when hosting) */}
+        {isHost && pairCode && !isPaired && (
+          <div className="apple-panel p-6 space-y-4">
+            <div className="text-center">
+              <p className="text-apple-secondary text-xs uppercase tracking-wider mb-2">
+                Your Game Code
+              </p>
+              <div className="text-4xl font-mono font-bold text-cyan-400 tracking-widest">
+                {pairCode}
+              </div>
+            </div>
+
+            <div className="flex gap-2">
               <button
-                onClick={handleSetPlayerName}
-                disabled={!playerName.trim() || isConnecting}
-                className="apple-button w-full justify-center"
+                onClick={handleCopyCode}
+                className="flex-1 px-4 py-2 bg-apple-darkest hover:bg-apple-hover text-apple-text rounded-lg transition-colors text-sm font-medium"
               >
-                Set Name
+                📋 Copy Code
+              </button>
+              <button
+                onClick={handleCopyLink}
+                className="flex-1 px-4 py-2 bg-apple-accent hover:bg-apple-accent-hover text-white rounded-lg transition-colors text-sm font-medium"
+              >
+                🔗 Copy Link
               </button>
             </div>
           </div>
         )}
 
-        {/* Current Room Status */}
-        {currentRoom && (
-          <div className="apple-panel p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-2">
-                <span className={`text-base ${
-                  currentRoom.gameMode === 'play' ? 'text-blue-400' : 'text-yellow-400'
-                }`}>
-                  {currentRoom.gameMode === 'play' ? '🎮' : '👑'}
-                </span>
-                <h2 className="text-base font-semibold text-apple-text">
-                  Current Room
-                </h2>
-                <span className={`px-2 py-0.5 text-xs rounded font-medium ${
-                  currentRoom.gameMode === 'play' 
-                    ? 'bg-blue-500/20 text-blue-400' 
-                    : 'bg-green-500/20 text-green-400'
-                }`}>
-                  {currentRoom.gameMode === 'play' ? 'Meeting' : 'Team'}
-                </span>
-              </div>
-              <button
-                onClick={() => handleLeaveRoom()}
-                disabled={isConnecting}
-                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-apple-darkest disabled:cursor-not-allowed text-white rounded-md font-medium transition-colors text-xs"
-              >
-                Leave
-              </button>
+        {/* Player Info */}
+        <div className="apple-panel p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-apple-secondary text-xs">Playing as</p>
+              <p className="text-apple-text font-medium">{odName}</p>
             </div>
-            
-            <div className="mb-3">
-              <p className="text-apple-accent font-medium text-base">{currentRoom.name}</p>
-              {currentRoom.gameMode === 'play' && currentRoom.expiresAt && (
-                <p className="text-xs text-apple-secondary mt-0.5">
-                  Expires: {new Date(currentRoom.expiresAt).toLocaleDateString()} at{' '}
-                  {new Date(currentRoom.expiresAt).toLocaleTimeString()}
-                </p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="col-span-2">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-apple-secondary">Room Code</span>
-                  <span className="font-mono text-apple-accent bg-apple-darkest px-2 py-0.5 rounded text-sm">{currentRoom.code}</span>
-                </div>
-                <button
-                  onClick={() => copyInviteLink(currentRoom.code)}
-                  className="w-full px-3 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white text-xs font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                  {inviteLinkCopied ? (
-                    <>
-                      <span>✓</span>
-                      <span>Link Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>🔗</span>
-                      <span>Copy Invite Link</span>
-                    </>
-                  )}
-                </button>
+            {pairCode && (
+              <div className="text-right">
+                <p className="text-apple-secondary text-xs">Room</p>
+                <p className="text-apple-text font-mono">{pairCode}</p>
               </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-apple-secondary text-xs">Players</span>
-                <span className="text-apple-text text-xs">{currentRoom.players.length}/{currentRoom.maxPlayers || 10}</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-apple-secondary text-xs">Status</span>
-                <div className={`flex items-center space-x-1 ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
-                  <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                  <span className="text-xs">{isConnected ? 'Connected' : 'Offline'}</span>
-                </div>
-              </div>
-              
-              <div className="col-span-2 flex items-center justify-between">
-                <span className="text-apple-secondary text-xs">Your Name</span>
-                <div className="flex items-center space-x-1">
-                  <span className="text-apple-text text-xs">{currentPlayer?.name}</span>
-                  {currentPlayer?.isHost && <span className="text-yellow-400 text-xs">(Host)</span>}
-                </div>
-              </div>
-            </div>
-
-            {/* Enhanced Leaderboard */}
-            <div className="mt-4 pt-3 border-t border-apple-border">
-              <Leaderboard 
-                players={currentRoom.players} 
-                currentPlayerId={currentPlayer?.id}
-                compact={true}
-              />
-            </div>
+            )}
           </div>
-        )}
+        </div>
 
-        {/* Create or Join Room */}
-        {(!hasRooms || showCreateForm) && storedPlayerName && (
-          <div className="space-y-4">
-            {/* Create Room */}
-            <div className="apple-panel p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-semibold text-apple-text">Create Room</h2>
-                {hasRooms && (
-                  <button
-                    onClick={() => setShowCreateForm(false)}
-                    className="text-apple-secondary hover:text-apple-text transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-              <div className="space-y-3">
-                <GameModeSelector
-                  selectedMode={gameMode}
-                  onModeChange={setGameMode}
-                  disabled={isConnecting}
-                  compact={true}
-                />
-                <div>
-                  <label className="block text-sm font-medium text-apple-secondary mb-2">Room Name</label>
-                  <input
-                    type="text"
-                    value={roomName}
-                    onChange={(e) => setRoomName(e.target.value)}
-                    className="apple-input w-full"
-                    placeholder="Room name"
-                    maxLength={50}
-                    disabled={isConnecting}
-                    onKeyPress={(e) => e.key === 'Enter' && handleCreateRoom()}
-                  />
-                </div>
-                <button
-                  onClick={handleCreateRoom}
-                  disabled={!roomName.trim() || isConnecting}
-                  className="apple-button w-full justify-center bg-emerald-600 hover:bg-emerald-700"
-                >
-                  {isConnecting ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Creating...</span>
-                    </div>
-                  ) : (
-                    `Create ${gameMode === 'play' ? 'Casual' : 'Competitive'} Room`
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Join Room */}
-            <div className="apple-panel p-4">
-              <h2 className="text-base font-semibold text-apple-text mb-3">Join Room</h2>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-apple-secondary mb-2">Room Code</label>
-                  <input
-                    type="text"
-                    value={joinCode}
-                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                    className="apple-input w-full text-center font-mono tracking-wider"
-                    placeholder="e.g. A1B2"
-                    maxLength={4}
-                    disabled={isConnecting}
-                    onKeyPress={(e) => e.key === 'Enter' && handleJoinRoom()}
-                  />
-                  <p className="text-xs text-apple-secondary mt-1">
-                    Enter the 4-character room code
-                  </p>
-                </div>
-                <button
-                  onClick={handleJoinRoom}
-                  disabled={!joinCode.trim() || isConnecting}
-                  className="apple-button w-full justify-center"
-                >
-                  {isConnecting ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Joining...</span>
-                    </div>
-                  ) : (
-                    'Join Room'
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Show Create Room Button for Multi-Room */}
-        {hasRooms && !showCreateForm && storedPlayerName && (
-          <div className="apple-panel p-4">
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="apple-button w-full justify-center bg-emerald-600 hover:bg-emerald-700"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Create Another Room
-            </button>
-          </div>
-        )}
-
-        {/* Features Info */}
-        {!hasRooms && (
-          <div className="apple-panel p-6">
-            <h2 className="text-lg font-semibold text-apple-text mb-4">Game Features</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-apple-accent/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-xl">🎯</span>
-                </div>
-                <h3 className="font-medium text-apple-text text-sm mb-1">Unique Boards</h3>
-                <p className="text-xs text-apple-secondary">Unique cards for each player</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-apple-accent/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-xl">⚡</span>
-                </div>
-                <h3 className="font-medium text-apple-text text-sm mb-1">Real-time</h3>
-                <p className="text-xs text-apple-secondary">Instant synchronization</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-apple-accent/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-xl">⏱️</span>
-                </div>
-                <h3 className="font-medium text-apple-text text-sm mb-1">Meeting Rooms</h3>
-                <p className="text-xs text-apple-secondary">Auto-expire after meetings</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-apple-accent/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-xl">♾️</span>
-                </div>
-                <h3 className="font-medium text-apple-text text-sm mb-1">Team Rooms</h3>
-                <p className="text-xs text-apple-secondary">Persistent with leaderboards</p>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Leave Button */}
+        <button
+          onClick={handleLeave}
+          className="px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors text-sm"
+        >
+          Leave Game
+        </button>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Main Menu
+  if (view === 'main') {
+    return (
+      <div className="flex flex-col h-full p-4 space-y-4">
+        <div className="apple-panel p-6 text-center">
+          <h2 className="text-lg font-semibold text-apple-text mb-2">
+            Duo Mode
+          </h2>
+          <p className="text-apple-secondary text-sm">
+            Play bingo with a partner. Same card, different lines.
+          </p>
+        </div>
+
+        <button
+          onClick={() => setView('create')}
+          className="apple-panel p-6 text-left hover:bg-apple-hover transition-colors group"
+        >
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center group-hover:bg-cyan-500/30 transition-colors">
+              <span className="text-2xl">🎮</span>
+            </div>
+            <div>
+              <h3 className="text-apple-text font-medium">Create Game</h3>
+              <p className="text-apple-secondary text-sm">Start a new game and invite a partner</p>
+            </div>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setView('join')}
+          className="apple-panel p-6 text-left hover:bg-apple-hover transition-colors group"
+        >
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+              <span className="text-2xl">🤝</span>
+            </div>
+            <div>
+              <h3 className="text-apple-text font-medium">Join Game</h3>
+              <p className="text-apple-secondary text-sm">Enter a code to join your partner</p>
+            </div>
+          </div>
+        </button>
+      </div>
+    );
+  }
+
+  // Create Game Form
+  if (view === 'create') {
+    return (
+      <div className="flex flex-col h-full p-4 space-y-4">
+        <button
+          onClick={() => { setView('main'); setError(null); }}
+          className="flex items-center space-x-2 text-apple-secondary hover:text-apple-text transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          <span>Back</span>
+        </button>
+
+        <div className="apple-panel p-6 space-y-4">
+          <h2 className="text-lg font-semibold text-apple-text">Create Game</h2>
+
+          <div>
+            <label className="block text-apple-secondary text-sm mb-2">
+              Your Name
+            </label>
+            <input
+              type="text"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full px-4 py-3 bg-apple-darkest border border-apple-border rounded-lg text-apple-text placeholder-apple-tertiary focus:border-apple-accent focus:outline-none"
+              maxLength={20}
+              autoFocus
+            />
+          </div>
+
+          {error && (
+            <p className="text-red-400 text-sm">{error}</p>
+          )}
+
+          <button
+            onClick={handleCreateGame}
+            disabled={isLoading}
+            className="w-full px-4 py-3 bg-apple-accent hover:bg-apple-accent-hover disabled:opacity-50 text-white rounded-lg transition-colors font-medium"
+          >
+            {isLoading ? 'Creating...' : 'Create Game'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Join Game Form
+  if (view === 'join') {
+    return (
+      <div className="flex flex-col h-full p-4 space-y-4">
+        <button
+          onClick={() => { setView('main'); setError(null); }}
+          className="flex items-center space-x-2 text-apple-secondary hover:text-apple-text transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          <span>Back</span>
+        </button>
+
+        <div className="apple-panel p-6 space-y-4">
+          <h2 className="text-lg font-semibold text-apple-text">Join Game</h2>
+
+          <div>
+            <label className="block text-apple-secondary text-sm mb-2">
+              Your Name
+            </label>
+            <input
+              type="text"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full px-4 py-3 bg-apple-darkest border border-apple-border rounded-lg text-apple-text placeholder-apple-tertiary focus:border-apple-accent focus:outline-none"
+              maxLength={20}
+            />
+          </div>
+
+          <div>
+            <label className="block text-apple-secondary text-sm mb-2">
+              Game Code
+            </label>
+            <input
+              type="text"
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 4))}
+              placeholder="XXXX"
+              className="w-full px-4 py-3 bg-apple-darkest border border-apple-border rounded-lg text-apple-text placeholder-apple-tertiary focus:border-apple-accent focus:outline-none font-mono text-center text-2xl tracking-widest uppercase"
+              maxLength={4}
+              autoFocus
+            />
+          </div>
+
+          {error && (
+            <p className="text-red-400 text-sm">{error}</p>
+          )}
+
+          <button
+            onClick={handleJoinGame}
+            disabled={isLoading}
+            className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg transition-colors font-medium"
+          >
+            {isLoading ? 'Joining...' : 'Join Game'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
+
+export default RoomManager;

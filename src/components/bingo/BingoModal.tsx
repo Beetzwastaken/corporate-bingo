@@ -45,6 +45,13 @@ interface BingoModalProps {
   winningCells?: number[];
   score: number;
   gamesPlayed: number;
+  // Duo mode props
+  isDuoMode?: boolean;
+  duoWinner?: 'me' | 'partner' | 'both';
+  myName?: string;
+  partnerName?: string;
+  myScore?: number;
+  partnerScore?: number;
 }
 
 export function BingoModal({
@@ -55,7 +62,13 @@ export function BingoModal({
   markedSquares = [],
   winningCells = [],
   score = 0,
-  gamesPlayed = 1
+  gamesPlayed = 1,
+  isDuoMode = false,
+  duoWinner,
+  myName = 'You',
+  partnerName = 'Partner',
+  myScore = 0,
+  partnerScore = 0
 }: BingoModalProps) {
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>('idle');
 
@@ -67,13 +80,25 @@ export function BingoModal({
   }, [show]);
 
   const handleShare = async () => {
-    const shareText = generateEmojiGrid({
-      board,
-      markedSquares,
-      winningCells,
-      score,
-      gamesPlayed
-    });
+    let shareText: string;
+
+    if (isDuoMode) {
+      // Generate duo mode share text
+      const winner = myScore > partnerScore ? myName : partnerScore > myScore ? partnerName : 'Tie!';
+      shareText = `🎰 Corporate Bingo - Duo Mode\n\n`;
+      shareText += `${myName}: ${myScore} pts\n`;
+      shareText += `${partnerName}: ${partnerScore} pts\n\n`;
+      shareText += `Winner: ${winner} 🏆\n\n`;
+      shareText += `Play at: https://corporate-bingo-ai.netlify.app`;
+    } else {
+      shareText = generateEmojiGrid({
+        board,
+        markedSquares,
+        winningCells,
+        score,
+        gamesPlayed
+      });
+    }
 
     const success = await copyToClipboard(shareText);
 
@@ -90,6 +115,20 @@ export function BingoModal({
     return null;
   }
 
+  // Duo mode title
+  const getDuoTitle = () => {
+    if (duoWinner === 'both') return 'Both Got BINGO!';
+    if (duoWinner === 'me') return 'You Got BINGO!';
+    return 'Partner Got BINGO!';
+  };
+
+  // Duo mode subtitle
+  const getDuoSubtitle = () => {
+    if (duoWinner === 'me') return 'Congratulations! You completed your line!';
+    if (duoWinner === 'partner') return `${partnerName} completed their line!`;
+    return 'Incredible! You both completed your lines!';
+  };
+
   return (
     <>
       {/* Backdrop with blur */}
@@ -103,13 +142,34 @@ export function BingoModal({
         <div className="bg-apple-dark border-2 border-yellow-400 rounded-2xl shadow-2xl p-8 max-w-md">
           {/* BINGO Title */}
           <div className="text-center mb-6">
-            <h2 className="text-6xl font-bold text-yellow-400 animate-pulse tracking-wider">
-              🎉 BINGO! 🎉
+            <h2 className="text-5xl font-bold text-yellow-400 animate-pulse tracking-wider">
+              🎉 {isDuoMode ? getDuoTitle() : 'BINGO!'} 🎉
             </h2>
             <p className="text-apple-secondary mt-4 text-lg">
-              Congratulations! You got a BINGO!
+              {isDuoMode ? getDuoSubtitle() : 'Congratulations! You got a BINGO!'}
             </p>
           </div>
+
+          {/* Duo Mode Score Summary */}
+          {isDuoMode && (
+            <div className="mb-6 p-4 bg-apple-darkest rounded-xl">
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div className={`p-3 rounded-lg ${myScore >= partnerScore ? 'bg-cyan-500/20 ring-2 ring-cyan-500' : ''}`}>
+                  <div className="text-cyan-400 font-medium text-sm">{myName}</div>
+                  <div className="text-3xl font-bold text-cyan-400">{myScore}</div>
+                </div>
+                <div className={`p-3 rounded-lg ${partnerScore >= myScore ? 'bg-orange-500/20 ring-2 ring-orange-500' : ''}`}>
+                  <div className="text-orange-400 font-medium text-sm">{partnerName}</div>
+                  <div className="text-3xl font-bold text-orange-400">{partnerScore}</div>
+                </div>
+              </div>
+              {myScore !== partnerScore && (
+                <div className="text-center mt-3 text-yellow-400 font-medium">
+                  {myScore > partnerScore ? `${myName} wins!` : `${partnerName} wins!`}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Share Button - Primary Action */}
           <div className="mb-4">
@@ -137,7 +197,7 @@ export function BingoModal({
               )}
             </button>
             <p className="text-center text-apple-tertiary text-xs mt-2">
-              Share your BINGO with friends & coworkers!
+              {isDuoMode ? 'Share your duo match result!' : 'Share your BINGO with friends & coworkers!'}
             </p>
           </div>
 
@@ -147,19 +207,23 @@ export function BingoModal({
               onClick={onCancel}
               className="flex-1 px-6 py-4 bg-gray-600 hover:bg-gray-700 text-white font-bold text-lg rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
-              Cancel
+              {isDuoMode ? 'Close' : 'Cancel'}
             </button>
-            <button
-              onClick={onBingo}
-              className="flex-1 px-6 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold text-lg rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
-            >
-              Confirm BINGO
-            </button>
+            {!isDuoMode && (
+              <button
+                onClick={onBingo}
+                className="flex-1 px-6 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold text-lg rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+              >
+                Confirm BINGO
+              </button>
+            )}
           </div>
 
           {/* Hint Text */}
           <p className="text-center text-apple-tertiary text-sm mt-4">
-            Click backdrop or Cancel if this was a mistake
+            {isDuoMode
+              ? 'New card tomorrow at midnight!'
+              : 'Click backdrop or Cancel if this was a mistake'}
           </p>
         </div>
       </div>

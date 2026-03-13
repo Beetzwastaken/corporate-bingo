@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { BingoPlayer } from '../../stores/roomStore';
+import type { BingoPlayer } from '../../types/shared';
 
 interface ScoreDisplayProps {
   player: BingoPlayer;

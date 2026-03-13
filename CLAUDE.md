@@ -1,345 +1,237 @@
-# Corporate Bingo Project Context
-
-**Project Type**: Corporate Humor Web Application
-**Current Status**: ✅ PRODUCTION READY - Simplified & Streamlined
-**Live URL**: https://corporate-bingo-ai.netlify.app
-**Last Updated**: November 26, 2025
-**Latest Session**: November 26, 2025 - v1.7.2 fixes confetti-on-load bug (empty array .every() returns true), Reset Data score bug. v1.7.1 fixed PWA meta tag. v1.7.0 simplified scoring (+1/square, +5/BINGO only).
-
-## 🚨 MANDATORY: ALWAYS USE SPECIALIZED AGENTS 🚨
-**NEVER work directly on Corporate Bingo tasks - Always delegate to specialized agents first**
-
-### Required Agent Delegation:
-- **Frontend/React/TypeScript** → Frontend Developer Agent via Task tool
-- **Backend/worker.js/API/WebSocket** → Backend Developer Agent via Task tool  
-- **Testing/QA/Screenshots/Validation** → QA Engineer Agent via Task tool
-- **Multi-step workflows/Coordination** → Project Manager Agent via Task tool
-- **Content/Visual/Corporate Humor** → Content Manager Agent via Task tool
-- **Deployment/Infrastructure** → DevOps Agent via Task tool
-
-### Agent Auto-Activation Rules:
-- ANY React component updates → Frontend Developer Agent
-- ANY worker.js modifications → Backend Developer Agent
-- ANY testing or validation → QA Engineer Agent
-- ANY multi-step task coordination → Project Manager Agent
-- ALL tasks require Task tool delegation before direct work
-
-## Available Specialized Agents
-@include docs/reports/agent_task_briefs.md
-
-### Agent Collaboration Standards
-- 95%+ autonomous agent operation expected
-- TodoWrite integration for progress tracking
-- Cross-agent dependency resolution via Project Manager
-- Professional engineering standards (95%+ compliance)
-
-## Project Overview
-
-**Corporate Bingo & Buzzword Entertainment Platform** - A sophisticated real-time multiplayer web application that transforms corporate meetings into interactive entertainment. Features professional-grade architecture with 171 professionally curated buzzwords, comprehensive scoring system, and advanced room management for authentic corporate humor.
-
-**Core Features**: 
-- **Real-time Multiplayer Bingo**: Room-based gameplay with unique boards per player
-- **Advanced Scoring System**: Live points tracking with animations and leaderboards
-- **Multi-Room Support**: Users can join multiple rooms simultaneously with tab navigation
-- **Dual Room Types**: Single meeting rooms (auto-expire) and persistent team rooms
-- **Corporate Humor Focus**: Meeting-oriented buzzwords and corporate humor
-- **Professional Architecture**: Enterprise-grade security and performance
-
-## Technology Stack
-
-- **Frontend**: React 19.1.0, TypeScript, Vite 7.0.4, Tailwind CSS 4.1.11
-- **State Management**: Zustand 5.0.7 (4 focused store modules)
-- **Backend**: Cloudflare Workers with dual-service architecture, Durable Objects, WebSocket real-time communication
-- **Development**: ESLint 9.30.1, TypeScript 5.8.3, PostCSS, Autoprefixer
-- **Deployment**: Netlify (frontend), Cloudflare Workers (backend)
-
-## Essential Commands
-
-### Development
-- `npm run dev` - Start Vite development server (port 5175)
-- `npx wrangler dev --port 8787` - Local main worker development
-- `npx wrangler dev --port 8788` - Local analytics worker development (if needed)
-
-### Quality & Build
-- `npm run build` - TypeScript compilation + Vite production build
-- `npm run lint` - ESLint validation with TypeScript rules
-- `npm run preview` - Test production build locally
-
-### Deployment
-- `npx wrangler deploy` - Deploy main worker to Cloudflare Workers production
-- `npx wrangler deploy --config wrangler-analytics.toml` - Deploy analytics service
-- **Frontend**: Automatic via Netlify Git integration on push to main
-- **Health Endpoints**: Backward compatible deployment (/health + /api/health)
-
-## File Structure
-
-### Frontend Source (`/src/`)
-- `App.tsx` - Main single-page application with sidebar and toast system
-- `components/bingo/` - BingoCard, RoomManager, Leaderboard, ScoreDisplay components
-- `components/shared/` - ToastNotification system for scoring feedback
-- `stores/` - Zustand stores (connectionStore, gameStore, roomStore, playerStore, multiRoomStore)
-- `lib/` - WebSocket, polling, and game engine utilities
-- `types/` - TypeScript interfaces
-- `data/buzzwords.ts` - Single source of truth for all 171 professionally curated buzzwords
-
-### Backend & Configuration
-- `worker.js` - Optimized main backend (18KB, reduced from 77KB)
-- `analytics-worker.js` - Separate analytics service with DashboardAnalytics Durable Object
-- `package.json`, `vite.config.ts`, `tsconfig.json`, `eslint.config.js`
-- `netlify.toml` - Proxy setup, `wrangler.toml` - Cloudflare config with dual service deployment
-- `/dist/` - Build output directory
-
-### Documentation & Testing
-- `/docs/` - Project plans, handoffs, architecture documentation
-- `/testing/` - Screenshots, research data, validation files
-- `/testing/screenshots/` - UI testing and visual validation assets
-
-## System Configuration
-
-**Platform**: Windows  
-**Path Format**: ALWAYS use forward slashes (`F:/CC/Projects/Corporate Bingo/`) and quote paths with spaces  
-**Bash Commands**: Use `F:/path/` format, never `F:\path\` or `F:path`
-
-### File Path Requirements
-- **Screenshots**: MUST save to `F:/CC/Projects/Corporate Bingo/testing/screenshots/`
-- **Project Root**: `F:/CC/Projects/Corporate Bingo/`
-- **Test before operations**: `ls "F:/CC/Projects/Corporate Bingo/"`
-
-## MANDATORY Agent-Enhanced Development Workflow
-
-### Required Agent Activation Patterns
-**All development work must use these patterns - direct work is prohibited:**
-
-- **Frontend Issues**: `Task(subagent_type: "general-purpose", prompt: "Use Frontend Developer Agent expertise for...")` - React/TypeScript UI, responsive design, component fixes
-- **Backend Issues**: `Task(subagent_type: "general-purpose", prompt: "Use Backend Developer Agent expertise for...")` - WebSocket, multiplayer sync, performance optimization  
-- **Quality Assurance**: `Task(subagent_type: "general-purpose", prompt: "Use QA Engineer Agent expertise for...")` - Comprehensive testing, validation, edge cases
-- **Multi-Agent Coordination**: `Task(subagent_type: "general-purpose", prompt: "Use Project Manager Agent for...")` - TodoWrite management, cross-agent coordination
-- **Content/Visual**: `Task(subagent_type: "general-purpose", prompt: "Use Content Manager Agent for...")` - Corporate humor, visual standards, presentation
-- **Infrastructure**: `Task(subagent_type: "general-purpose", prompt: "Use DevOps Agent for...")` - Deployment, monitoring, infrastructure
-
-### Agent Delegation Success Examples
-- **UI/UX Improvements**: Frontend Developer Agent fixed button positioning, star overlays, 3D effects
-- **TypeScript Issues**: Backend Developer Agent resolved ESLint errors and type compatibility  
-- **Testing & Validation**: QA Engineer Agent performed visual regression testing and performance analysis
-- **Cross-Agent Coordination**: Project Manager Agent successfully managed multi-step workflows with TodoWrite
-
-## Corporate Humor Domain
-
-### Buzzword Library Strategy (171 Terms)
-- **Meeting-focused humor** over technical accuracy
-- **Universal corporate recognition** for broad appeal  
-- **Professional appropriateness** for workplace use
-- **Viral potential** through relatable corporate experiences
-
-### Primary Categories
-- **Classic Corporate Speak**: "Synergy", "Deep Dive", "Circle Back", "Move the Needle"
-- **Virtual Meeting Comedy**: "You're Muted", "Can You See My Screen?", "Let's Circle Back Offline"  
-- **Meeting Theater**: "Let's Take This Offline", "Run it by Legal", "Touch Base"
-- **Consultant Word Salad**: "Value Creation", "Thought Leadership", "Best Practices"
-- **People & Culture**: "Culture Fit", "Self-starter", "Servant Leader", "Growth Mindset"
-
-### Game Mechanics
-- **WebSocket-based real-time synchronization**
-- **Unique 5x5 boards per player** (24 buzzwords + FREE SPACE)
-- **Democratic verification system** with majority voting
-- **Anti-cheat detection** preventing self-claims
-- **Room-wide board reset** after BINGO confirmation (Phase 4 ✅)
-- **BINGO confirmation modal** with Cancel/Confirm options (Phase 4 ✅)
-- **Misclick protection** with pattern tracking anti-retrigger system (Phase 4 ✅)
-- **Advanced Scoring System**: 1 point per square, BINGO bonuses (3-in-a-row: +1, 4-in-a-row: +3, BINGO: +5)
-- **Solo Score Persistence**: Scores maintained through BINGOs with manual reset option
-- **Bonus Stacking Prevention**: Smart Map-based tracking prevents duplicate bonuses per line
-- **Progressive Bonuses**: Upgrading from 3→4→BINGO adds only the point difference
-- **Real-time Leaderboards**: Live player rankings with crown indicators
-
-## Architecture Highlights
-
-### Real-time Multiplayer
-- **Primary**: WebSocket connections via Cloudflare Workers
-- **Fallback**: HTTP polling (3-second intervals) for reliability
-- **State Management**: Zustand with 5 focused store modules (including multiRoomStore)
-- **Performance**: <200ms response time, global edge deployment
-
-### Security & Reliability  
-- **Input validation** and comprehensive CORS security
-- **Rate limiting** (30 messages/minute) preventing abuse
-- **Atomic operations** preventing race conditions
-- **Memory management** and connection cleanup
-
-### Professional Polish
-- **Apple-inspired dark theme** with professional aesthetics
-- **Mobile-first responsive design** with touch optimization
-- **Accessibility compliance** with keyboard navigation and screen reader support
-- **Performance optimization** with lazy loading and GPU acceleration
-
-## Advanced Features & Components
-
-### Points & Scoring System
-**Complete real-time scoring with visual feedback:**
-
-- **SoloScoreDisplay Component**: Large centered score display (6xl font) with real-time bonus animations
-- **ScoreDisplay Component**: Live score counter with floating animations (+1, +3, +5, etc.)
-- **Leaderboard Component**: Real-time sorted player rankings with crown emoji (👑) for leaders
-- **Toast Notifications**: Animated score change notifications with point values
-- **Advanced Scoring Logic**:
-  - **Base**: 1 point per verified square (scaled down from 10)
-  - **Line Bonuses**: 3-in-a-row (+1), 4-in-a-row (+3), BINGO (+5)
-  - **Solo Persistence**: Scores maintained through multiple BINGOs
-  - **Manual Reset**: User-controlled score reset with confirmation dialog
-- **Anti-cheat Penalties**: -50 points for self-claims with visual feedback
-- **BINGO Confirmation** (Phase 4 ✅):
-  - Modal with Cancel/Confirm buttons
-  - Cancel: Dismiss modal, continue playing
-  - Confirm: Reset board, increment wins
-  - Pattern tracking prevents modal re-trigger after cancel
-
-### Room Management System
-**Sophisticated multi-room architecture:**
-
-#### Single Meeting Rooms (4-char codes (e.g., A4B7))
-- **Purpose**: One-time use for specific meetings or events
-- **Expiration**: Auto-expire after 24 hours from creation
-- **Cleanup**: Auto-remove after 2 hours of inactivity
-- **Use Cases**: Stand-ups, all-hands meetings, workshops, training sessions
-
-#### Persistent Team Rooms (4-char codes (e.g., X9K2)) 
-- **Purpose**: Long-running rooms for teams, departments, or ongoing groups
-- **Duration**: Never expire automatically
-- **Cumulative Scoring**: Maintains total scores across multiple game sessions
-- **Leaderboards**: Weekly/monthly performance tracking (framework implemented)
-- **Use Cases**: Department teams, project groups, regular meeting attendees
-
-#### Multi-Room Support
-- **Simultaneous Participation**: Users can join and actively play in multiple rooms
-- **Tab Navigation**: Browser-style tabs for seamless room switching
-- **Independent State**: Each room maintains separate game state and player data
-- **WebSocket Multiplexing**: Efficient connection management for multiple rooms
-
-### Responsive Design System
-**Optimized layouts for all screen sizes:**
-
-#### Desktop Sidebar (≥768px)
-- **Compact Room Selector**: iOS-style segmented control (70px height vs 200px+ before)
-- **Efficient Space Usage**: Reduced padding, grid layouts, horizontal organization
-- **Professional Animations**: Smooth hover states and selection feedback
-
-#### Mobile Interface (<768px)
-- **Touch-Friendly Cards**: Large room type selection with 44px+ touch targets
-- **Rich Descriptions**: Full feature explanations and visual hierarchy
-- **Tab Optimization**: Mobile-responsive room switching with scroll indicators
-
-### Visual Design Elements
-**Professional Apple-inspired aesthetic:**
-
-- **New Logo**: CB monogram with grid pattern and cyan accents
-- **Dark Theme**: Consistent #0a0a0a backgrounds with #00d4ff accents  
-- **Score Animations**: Hardware-accelerated floating point notifications
-- **Crown Effects**: Bouncing animation for leaderboard winners
-- **Toast System**: Elegant slide-in notifications with progress bars
-
-## Development Best Practices
-
-### Code Style
-- **TypeScript strict mode** with comprehensive type checking
-- **ESLint compliance** with @typescript-eslint rules
-- **2-space indentation** for consistency
-- **Component-based architecture** with clear separation of concerns
-
-### Testing & Quality
-- **Build validation** before deployment (`npm run build` + `npm run lint`)
-- **Visual regression testing** using OpenCV MCP integration
-- **Cross-device compatibility** validation across viewports
-- **Performance benchmarking** with real-time metrics
-
-### Deployment Pipeline
-1. **Push to main branch** triggers automatic deployment
-2. **GitHub Actions** runs build and quality checks  
-3. **Netlify deployment** for frontend (automatic)
-4. **Cloudflare Workers** for backend (manual via `npx wrangler deploy`)
-5. **Live validation** at https://corporate-bingo-ai.netlify.app
-
-## CI/CD Configuration & Troubleshooting
-
-### GitHub Actions Build Requirements
-
-**CRITICAL**: The following configuration is required for successful GitHub Actions builds:
-
-#### TypeScript Configuration
-- **Compatible Version**: TypeScript ~5.8.3 (avoid experimental flags)
-- **Removed Flags** (incompatible with CI):
-  - `erasableSyntaxOnly` - TypeScript 5.8+ experimental feature
-  - `noUncheckedSideEffectImports` - TypeScript 5.8+ experimental feature
-- **Required tsconfig.app.json Settings**:
-  ```json
-  {
-    "include": ["src"]  // NOT ["src", "data"] - data is inside src/
-  }
-  ```
-
-#### ESLint Configuration
-- **Use Standard Flat Config**: ESLint 9+ format
-- **Correct Ignores Syntax**:
-  ```javascript
-  export default tseslint.config([
-    { ignores: ['dist', 'src/temp-disabled/**/*', 'tests/**/*'] },
-    // ... rest of config
-  ])
-  ```
-- **Invalid Import to Avoid**: `import { globalIgnores } from 'eslint/config'` - This doesn't exist
-
-#### Vite Configuration
-- **Use Default Minification**: `minify: true` instead of custom terser options
-- **Avoid Complex Terser Config**: Custom terser options can fail in CI environments
-- **Working Configuration**:
-  ```typescript
-  build: {
-    minify: true,  // Use defaults for CI compatibility
-    cssMinify: true,
-    target: 'esnext'
-  }
-  ```
-
-### Common Build Failures & Solutions
-
-#### Issue 1: Build Fails at "Build application" Step
-**Symptoms**: Local build works, GitHub Actions fails after lint/typecheck pass  
-**Cause**: TypeScript 5.8+ experimental flags or configuration mismatches  
-**Solution**: Remove experimental TypeScript flags, use standard configurations
-
-#### Issue 2: ESLint Import Errors
-**Symptoms**: Build fails with module resolution errors  
-**Cause**: Invalid ESLint imports or configuration syntax  
-**Solution**: Use standard ESLint flat config without experimental imports
-
-#### Issue 3: 403 Errors on Build Logs
-**Symptoms**: Cannot access GitHub Actions build logs  
-**Cause**: This is usually a red herring - the real issue is the build failure  
-**Solution**: Focus on fixing the build configuration, not the log access
-
-### Proven Working Configuration (January 8, 2025)
-
-Successfully fixed GitHub Actions by:
-1. Removing TypeScript 5.8+ experimental flags
-2. Fixing ESLint configuration to use standard syntax
-3. Correcting TypeScript include paths
-4. Simplifying Vite terser configuration to defaults
-
-**Key Principle**: Prioritize CI/CD compatibility over cutting-edge features. Use proven, stable configurations.
-
-### Testing Build Fixes
-
-Always test locally before pushing:
-```bash
-npm run lint        # Must pass
-npx tsc --noEmit    # Must pass  
-npm run build       # Must pass
-```
-
-If all pass locally but fail in CI, check for:
-- TypeScript version mismatches
-- Node.js version differences
-- Configuration flags not supported in CI environment
+# Corporate Bingo - Duo Mode
+
+> **Status**: Duo mode refactor complete, needs deploy + testing
+
+## Quick Reference
+
+| Item | Value |
+|------|-------|
+| **Project Path** | `C:\Users\Ryan\CC\Projects\Corporate Bingo` |
+| **Version** | v2.0.0 (Duo Mode) |
+| **Status** | Refactor Complete - Needs Deploy |
+| **Frontend URL** | https://corporate-bingo-ai.netlify.app |
+| **Backend URL** | https://corporate-bingo-api.ryanwixon15.workers.dev |
 
 ---
 
-*Corporate Bingo | Professional Corporate Entertainment | Real-time Multiplayer | Claude Code Optimized*
+## What Changed (Jan 2026 Refactor)
+
+**Old**: Solo play + multiplayer rooms with verification voting
+**New**: Duo Mode - 2 players pair up, each picks a secret line, compete for score
+
+### Duo Mode Flow
+1. **Unpaired** → Enter name, create room OR join with partner's code
+2. **Waiting** → Host waits, shares 4-char code with partner
+3. **Selecting** → Both players secretly pick a line (row/col/diagonal)
+4. **Playing** → Same card revealed, mark squares, race to BINGO
+
+### Scoring
+- +1 point per square in YOUR line marked
+- +5 bonus for completing your line (BINGO)
+- Same 25 buzzwords globally per day (seeded by date)
+- Daily reset at midnight in user's timezone
+
+---
+
+## Architecture
+
+### Zustand Stores (Current)
+
+| Store | File | Purpose |
+|-------|------|---------|
+| `duoStore` | `src/stores/duoStore.ts` | **Main store** - pairing, lines, scores, game state |
+| `connectionStore` | `src/stores/connectionStore.ts` | WebSocket/polling, routes messages to duoStore |
+| `uiStore` | `src/stores/uiStore.ts` | UI state (modals, sidebar) |
+
+**Legacy (unused but present)**:
+- `gameStore.ts` - Old solo mode (kept for localStorage compat)
+
+### Key Components
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| `App.tsx` | `src/App.tsx` | Main app, phase-based rendering |
+| `RoomManager` | `src/components/bingo/RoomManager.tsx` | Create/join room UI |
+| `LineSelector` | `src/components/bingo/LineSelector.tsx` | Pick your line (12 options) |
+| `BingoCard` | `src/components/bingo/BingoCard.tsx` | 5x5 grid with line highlighting |
+| `DuoScoreboard` | `src/components/bingo/DuoScoreboard.tsx` | Live scores display |
+| `BingoModal` | `src/components/bingo/BingoModal.tsx` | BINGO celebration + share |
+| `WelcomeTutorial` | `src/components/shared/WelcomeTutorial.tsx` | 5-step duo tutorial |
+
+### Backend (worker.js ~1000 lines)
+
+**Duo API Routes**:
+```
+POST /api/duo/create     - Create room, returns { code, odId }
+POST /api/duo/join       - Join room with code
+POST /api/duo/:code/select - Pick your line
+POST /api/duo/:code/mark   - Mark a square
+POST /api/duo/:code/leave  - Leave game
+GET  /api/duo/:code/state  - Polling endpoint
+GET  /api/duo/:code/ws     - WebSocket upgrade
+```
+
+**WebSocket Message Types** (see `src/lib/websocket.ts`):
+- `connected`, `partner_joined`, `partner_left`
+- `partner_selected`, `line_conflict`
+- `card_revealed`, `square_marked`, `bingo`, `daily_reset`
+
+### Daily Card System
+
+`src/lib/dailyCard.ts`:
+- Seeded PRNG (Mulberry32) for deterministic shuffle
+- Same date → same 25 phrases globally
+- `generateDailyCard(dateString)` returns BingoSquare[]
+- `getLineIndices(line)` returns array of 5 indices for a line
+
+---
+
+## Directory Structure
+
+```
+Corporate Bingo/
+├── src/
+│   ├── components/
+│   │   ├── bingo/
+│   │   │   ├── BingoCard.tsx      # 5x5 grid + line highlighting
+│   │   │   ├── BingoModal.tsx     # BINGO celebration
+│   │   │   ├── DuoScoreboard.tsx  # Live scores
+│   │   │   ├── LineSelector.tsx   # Pick row/col/diag
+│   │   │   ├── RoomManager.tsx    # Create/join UI
+│   │   │   ├── Leaderboard.tsx    # LEGACY (unused)
+│   │   │   └── ScoreDisplay.tsx   # LEGACY (unused)
+│   │   └── shared/
+│   │       ├── WelcomeTutorial.tsx
+│   │       └── ToastNotification.tsx
+│   ├── stores/
+│   │   ├── duoStore.ts        # Main game state
+│   │   ├── connectionStore.ts # WebSocket management
+│   │   ├── uiStore.ts         # UI state
+│   │   ├── gameStore.ts       # LEGACY (unused)
+│   │   └── index.ts           # Exports
+│   ├── lib/
+│   │   ├── api.ts             # Duo API client
+│   │   ├── websocket.ts       # WebSocket client + message types
+│   │   ├── polling.ts         # HTTP polling fallback
+│   │   ├── dailyCard.ts       # Seeded card generation
+│   │   ├── messageTypes.ts    # Message type constants
+│   │   └── bingoEngine.ts     # LEGACY (line logic now in dailyCard)
+│   ├── types/
+│   │   ├── index.ts           # BingoSquare, BingoPlayer, etc.
+│   │   └── shared.ts          # Shared types
+│   ├── data/
+│   │   └── buzzwords.ts       # 172 corporate buzzwords
+│   ├── App.tsx                # Main app container
+│   └── main.tsx
+├── worker.js                  # Cloudflare Worker (~1000 lines)
+├── package.json
+├── vite.config.ts
+├── tailwind.config.js
+├── netlify.toml
+└── wrangler.toml
+```
+
+---
+
+## Next Steps (Resume Here)
+
+### 1. Deploy Backend
+```bash
+npx wrangler deploy
+```
+
+### 2. Test Locally
+```bash
+# Terminal 1 - Frontend
+npm run dev
+
+# Terminal 2 - Backend
+npx wrangler dev --port 8787
+```
+
+### 3. Test Flow
+1. Open http://localhost:5175 in two browser tabs
+2. Tab 1: Enter name, click "Create Room"
+3. Tab 2: Enter name, paste code, click "Join"
+4. Both: Pick different lines
+5. Both: Mark squares, verify scoring works
+6. Verify BINGO triggers correctly
+
+### 4. Optional Cleanup
+Delete unused legacy files:
+- `src/stores/gameStore.ts`
+- `src/components/bingo/Leaderboard.tsx`
+- `src/components/bingo/ScoreDisplay.tsx`
+
+---
+
+## Development Commands
+
+```bash
+npm run dev              # Frontend dev server (port 5175)
+npm run build            # Production build
+npx wrangler dev --port 8787  # Local backend
+npx wrangler deploy      # Deploy backend
+npx wrangler tail        # Stream backend logs
+```
+
+---
+
+## Line Selection Reference
+
+Grid layout (indices 0-24):
+```
+ 0  1  2  3  4   ← Row 0
+ 5  6  7  8  9   ← Row 1
+10 11 12 13 14   ← Row 2
+15 16 17 18 19   ← Row 3
+20 21 22 23 24   ← Row 4
+ ↑  ↑  ↑  ↑  ↑
+Col Col Col Col Col
+ 0   1   2   3   4
+```
+
+12 possible lines:
+- 5 rows: `{ type: 'row', index: 0-4 }`
+- 5 cols: `{ type: 'col', index: 0-4 }`
+- 2 diags: `{ type: 'diag', index: 0 }` (↘) and `{ type: 'diag', index: 1 }` (↙)
+
+---
+
+## Color Coding (Duo Mode)
+
+| Color | Meaning |
+|-------|---------|
+| Cyan ring | Your line |
+| Orange ring | Partner's line |
+| Purple ring | Overlap (both have this square) |
+| Green checkmark | Square is marked |
+
+---
+
+## Known Issues
+
+### Not Yet Tested
+- Full end-to-end duo flow
+- WebSocket reconnection
+- Daily reset across midnight
+- Line conflict handling
+
+### Potential Issues
+- Backend not deployed yet (still has old multiplayer code in production)
+- No error handling UI for failed API calls
+- No loading states during API calls
+
+---
+
+## Tech Stack
+
+- **Frontend**: React 19 + TypeScript + Vite + Tailwind
+- **State**: Zustand with persist middleware
+- **Backend**: Cloudflare Workers + Durable Objects
+- **Real-time**: WebSocket + HTTP polling fallback
+- **Hosting**: Netlify (frontend) + Cloudflare (backend)
+
+---
+
+*Last updated: January 6, 2026 | v2.0.0 Duo Mode*

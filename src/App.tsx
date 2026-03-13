@@ -1,24 +1,22 @@
-// Corporate Bingo - Single-page Apple Dark Mode Experience  
-// Version: 2.0.1 - Performance optimized with accessibility enhancements
+// Corporate Bingo - Duo Mode
+// Two players, same card, different lines, compete for score
 
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BingoCard } from './components/bingo/BingoCard';
-import { SoloScoreDisplay } from './components/bingo/SoloScoreDisplay';
 import { BingoModal } from './components/bingo/BingoModal';
-import { VerificationModal } from './components/bingo/VerificationModal';
 import { WelcomeTutorial } from './components/shared/WelcomeTutorial';
-import { useBingoStore } from './utils/store';
+import { DuoScoreboard } from './components/bingo/DuoScoreboard';
+import { LineSelector } from './components/bingo/LineSelector';
+import { useDuoStore, regenerateDailyCardIfNeeded } from './stores/duoStore';
+import { useConnectionStore } from './stores/connectionStore';
 import { APP_VERSION } from './utils/version';
-import { BingoEngine } from './lib/bingoEngine';
-import { ToastContainer } from './components/shared/ToastNotification';
+import { ToastContainer, showGameToast } from './components/shared/ToastNotification';
 import corporateBingoLogo from './assets/corporate-bingo-logo.svg';
 import './App.css';
 
-// Lazy load non-critical components
+// Lazy load RoomManager
 const RoomManager = lazy(() => import('./components/bingo/RoomManager').then(module => ({ default: module.RoomManager })));
-const BingoStats = lazy(() => import('./components/bingo/BingoStats').then(module => ({ default: module.BingoStats })));
 
-// Loading component for lazy loaded components
 function ComponentLoader() {
   return (
     <div className="flex items-center justify-center p-8">
@@ -30,59 +28,56 @@ function ComponentLoader() {
 function App() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activePanel, setActivePanel] = useState<'rooms' | 'stats' | null>(null);
-  const dismissedPatternRef = useRef<string | null>(null);
-  
+  const [showBingoModal, setShowBingoModal] = useState(false);
+  const [lastBingoState, setLastBingoState] = useState({ myBingo: false, partnerBingo: false });
+
+  // Duo store state
   const {
-    currentRoom,
-    currentPlayer,
-    gameState,
-    gamesPlayed,
-    wins,
-    totalSquares,
-    currentScore,
-    isConnected,
-    connectionError,
+    phase,
+    pairCode,
+    odName,
+    partnerName,
+    isPaired,
+    myLine,
+    partnerLine,
+    dailyCard,
+    markedSquares,
+    myScore,
+    partnerScore,
+    myBingo,
+    partnerBingo,
+    selectLine,
     markSquare,
-    resetGame,
-    resetScore,
-    incrementGamesPlayed,
-    incrementWins,
-    incrementTotalSquares,
-    setGameWon,
-    emergencyReset
-  } = useBingoStore();
+    leaveGame,
+    getMyLineIndices,
+    getPartnerLineIndices
+  } = useDuoStore();
 
-  // Watch for bingo condition using BingoEngine
+  // Connection state
+  const { isConnected, connectionError } = useConnectionStore();
+
+  // Initialize on mount - regenerate card and reconnect if needed
   useEffect(() => {
-    // Convert marked squares array to board format for BingoEngine
-    const boardSquares = gameState.board.map((square, index) => ({
-      ...square,
-      isMarked: gameState.markedSquares[index] || false
-    }));
+    regenerateDailyCardIfNeeded();
+  }, []);
 
-    const result = BingoEngine.checkBingo(boardSquares);
+  // Watch for bingo events
+  useEffect(() => {
+    // Check if new bingo occurred
+    if ((myBingo && !lastBingoState.myBingo) || (partnerBingo && !lastBingoState.partnerBingo)) {
+      setShowBingoModal(true);
+      setLastBingoState({ myBingo, partnerBingo });
 
-    if (result.hasWon && !gameState.hasWon) {
-      // Create a unique identifier for this winning pattern
-      const patternKey = result.winningCells?.sort().join(',') || '';
-
-      // Only show modal if this pattern hasn't been dismissed
-      if (patternKey !== dismissedPatternRef.current) {
-        setGameWon(true, result.winningCells);
-        dismissedPatternRef.current = null; // Clear dismissed state when showing new BINGO
+      // Show toast
+      if (myBingo && !lastBingoState.myBingo) {
+        showGameToast('BINGO!', 'You completed your line!', 'success');
+      } else if (partnerBingo && !lastBingoState.partnerBingo) {
+        showGameToast('Partner BINGO!', `${partnerName} completed their line!`, 'success');
       }
-    } else if (!result.hasWon) {
-      // Pattern is broken - always clear dismissed pattern and update state if needed
-      if (gameState.hasWon) {
-        setGameWon(false);
-      }
-      dismissedPatternRef.current = null; // Always clear dismissed state when pattern is broken
     }
-  }, [gameState.markedSquares, gameState.hasWon, gameState.board, setGameWon]);
+  }, [myBingo, partnerBingo, lastBingoState, partnerName]);
 
-
-  // Check if this is the user's first visit
+  // Check for first visit
   useEffect(() => {
     const hasSeenTutorial = localStorage.getItem('cb_tutorial_completed');
     if (!hasSeenTutorial) {
@@ -95,211 +90,125 @@ function App() {
     setShowTutorial(false);
   };
 
-  const handleShowTutorial = () => {
-    setShowTutorial(true);
-  };
-
   const handleSquareClick = async (squareId: string) => {
+    if (phase !== 'playing') return;
+
     const squareIndex = parseInt(squareId.split('-')[1]);
+    if (markedSquares[squareIndex]) return;
 
-    // In multiplayer mode, request verification from other players
-    if (currentRoom && currentRoom.players.length > 1) {
-      const square = gameState.board[squareIndex];
-      if (!square) return;
+    await markSquare(squareIndex);
+  };
 
-      try {
-        // Import connectionStore dynamically to avoid circular dependencies
-        const { useConnectionStore } = await import('./stores/connectionStore');
-        const sendMessage = useConnectionStore.getState().sendMessage;
-
-        // Request verification via WebSocket
-        await sendMessage('request_verification', {
-          squareIndex,
-          buzzword: square.text
-        });
-
-        // Show toast notification
-        const { showGameToast } = await import('./components/shared/ToastNotification');
-        showGameToast('Verification Requested', `Waiting for votes on "${square.text}"`, 'info');
-      } catch (error) {
-        console.error('Failed to request verification:', error);
-        const { showGameToast } = await import('./components/shared/ToastNotification');
-        showGameToast('Verification Failed', 'Failed to request verification', 'error');
-      }
-    } else {
-      // Solo mode: mark directly without verification
-      markSquare(squareIndex);
-      incrementTotalSquares();
+  const handleLineSelect = async (line: { type: 'row' | 'col' | 'diag'; index: number }) => {
+    const result = await selectLine(line);
+    if (result.taken) {
+      showGameToast('Line Taken', 'Your partner already picked that line. Choose another.', 'error');
+    } else if (result.success) {
+      showGameToast('Line Selected', 'Waiting for partner to pick...', 'success');
     }
   };
 
-  const handleNewGame = () => {
-    resetGame();
-    incrementGamesPlayed();
-    dismissedPatternRef.current = null; // Clear dismissed pattern on new game
-  };
-
-  const handleBingo = () => {
-    incrementWins();
-    handleNewGame();
-  };
-
-  const handleCancelBingo = () => {
-    // Store the current winning pattern so it doesn't re-trigger
-    const patternKey = gameState.winningPattern?.sort().join(',') || '';
-    dismissedPatternRef.current = patternKey;
-    setGameWon(false);
-  };
-
-  const gameStats = {
-    gamesPlayed,
-    wins,
-    totalSquares,
-    favoriteSquares: [] as string[]
-  };
-
-  const togglePanel = (panel: 'rooms' | 'stats') => {
-    if (activePanel === panel) {
-      setActivePanel(null);
+  const handleLeaveGame = () => {
+    if (confirm('Leave this game?')) {
+      leaveGame();
       setSidebarOpen(false);
-    } else {
-      setActivePanel(panel);
-      setSidebarOpen(true);
     }
+  };
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
   };
 
   const closeSidebar = () => {
-    setActivePanel(null);
     setSidebarOpen(false);
   };
 
+  // Determine bingo modal winner
+  const getBingoWinner = (): 'me' | 'partner' | 'both' | undefined => {
+    if (myBingo && partnerBingo) return 'both';
+    if (myBingo) return 'me';
+    if (partnerBingo) return 'partner';
+    return undefined;
+  };
+
+  // Convert dailyCard to format BingoCard expects
+  const boardSquares = dailyCard.map((square, index) => ({
+    ...square,
+    isMarked: markedSquares[index] || false
+  }));
+
   return (
     <div className="h-screen bg-black text-white font-system flex flex-col overflow-hidden">
-      {/* Apple-style Header */}
+      {/* Header */}
       <header className="bg-apple-dark border-b border-apple-border z-50 backdrop-blur-xl bg-opacity-80 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 flex items-center justify-center shadow-lg border border-purple-400/30 relative overflow-hidden">
-                {/* Background grid pattern */}
-                <div className="absolute inset-0 opacity-20">
-                  <svg width="40" height="40" viewBox="0 0 40 40">
-                    <defs>
-                      <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
-                        <path d="M 8 0 L 0 0 0 8" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5"/>
-                      </pattern>
-                    </defs>
-                    <rect width="40" height="40" fill="url(#grid)" />
-                  </svg>
-                </div>
-                {/* Professional Corporate Bingo Logo */}
-                <img 
-                  src={corporateBingoLogo} 
-                  alt="Corporate Bingo" 
+                <img
+                  src={corporateBingoLogo}
+                  alt="Corporate Bingo"
                   className="w-6 h-6 relative z-10"
                 />
-                {/* Subtle highlight */}
-                <div className="absolute top-1 left-1 right-1 h-3 bg-gradient-to-b from-white/20 to-transparent rounded-lg"></div>
               </div>
               <div>
                 <h1 className="text-lg font-medium text-apple-text">Corporate Bingo</h1>
+                <span className="text-xs text-apple-tertiary">Duo Mode</span>
               </div>
             </div>
 
-            {/* Center Status */}
-            <div className="hidden md:flex items-center space-x-6">
-              {currentRoom && (
-                <div className="flex items-center space-x-4 text-sm text-apple-secondary">
-                  <div>
-                    <span className="font-medium">{currentRoom.code}</span>
-                    <span className="mx-2">•</span>
-                    <span>{currentRoom.players.length} players</span>
+            {/* Center - Connection Status */}
+            <div className="hidden md:flex items-center space-x-4">
+              {phase !== 'unpaired' && (
+                <>
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    <span className="text-xs text-apple-secondary">
+                      {isConnected ? 'Connected' : connectionError || 'Disconnected'}
+                    </span>
                   </div>
-                  <div className={`flex items-center space-x-1 ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
-                    <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                    <span>{isConnected ? 'Connected' : 'Offline'}</span>
-                  </div>
-                  {/* Current Player Score */}
-                  {currentPlayer && (
-                    <div className="flex items-center space-x-2 px-3 py-1 bg-apple-darkest rounded-md">
-                      <span className="text-apple-secondary">Your Score:</span>
-                      <span className="font-bold text-cyan-400">{currentPlayer.currentScore || 0}</span>
+                  {pairCode && (
+                    <div className="px-3 py-1 bg-apple-darkest rounded-lg">
+                      <span className="text-xs text-apple-tertiary">Room: </span>
+                      <span className="font-mono text-cyan-400">{pairCode}</span>
                     </div>
                   )}
-                </div>
+                </>
               )}
             </div>
 
             {/* Right Controls */}
             <div className="flex items-center space-x-4">
-              <button
-                onClick={() => togglePanel('rooms')}
-                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                  activePanel === 'rooms' 
-                    ? 'bg-apple-accent text-white' 
-                    : 'text-apple-secondary hover:text-apple-text hover:bg-apple-hover'
-                }`}
-              >
-                Rooms
-              </button>
-              
-              <button
-                onClick={() => togglePanel('stats')}
-                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                  activePanel === 'stats' 
-                    ? 'bg-apple-accent text-white' 
-                    : 'text-apple-secondary hover:text-apple-text hover:bg-apple-hover'
-                }`}
-              >
-                Stats
-              </button>
-
-              {gameState.board.length > 0 && (
+              {phase !== 'unpaired' && (
                 <button
-                  onClick={handleNewGame}
-                  className="px-4 py-1.5 text-sm bg-apple-accent hover:bg-apple-accent-hover text-white rounded-md transition-colors font-medium"
+                  onClick={toggleSidebar}
+                  className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                    sidebarOpen
+                      ? 'bg-apple-accent text-white'
+                      : 'text-apple-secondary hover:text-apple-text hover:bg-apple-hover'
+                  }`}
                 >
-                  New Game
+                  {sidebarOpen ? 'Close' : 'Game Info'}
                 </button>
               )}
 
-              {/* Reset Score button for solo mode */}
-              {!currentRoom && currentScore > 0 && (
+              {phase !== 'unpaired' && (
                 <button
-                  onClick={() => {
-                    if (confirm('Reset your score to 0?')) {
-                      resetScore();
-                    }
-                  }}
-                  className="px-4 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors font-medium"
+                  onClick={handleLeaveGame}
+                  className="px-3 py-1.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-md transition-colors"
                 >
-                  Reset Score
+                  Leave
                 </button>
               )}
+
               <button
-                onClick={handleShowTutorial}
+                onClick={() => setShowTutorial(true)}
                 className="p-2 text-apple-secondary hover:text-apple-text transition-colors"
                 title="Show tutorial"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-
-
-
-              <button
-                onClick={() => {
-                  if (confirm('Reset all data?')) {
-                    emergencyReset();
-                  }
-                }}
-                className="p-2 text-apple-secondary hover:text-apple-text transition-colors"
-                title="Reset data"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </button>
 
@@ -314,107 +223,184 @@ function App() {
       <div className="flex flex-1 overflow-hidden min-h-0 relative">
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
-          <div 
+          <div
             className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
             onClick={closeSidebar}
-            role="button"
-            tabIndex={0}
-            aria-label="Close sidebar"
           />
         )}
 
         {/* Main Content */}
-        <main className="flex-1 overflow-hidden">
-          <div className="h-full flex flex-col">
-            {/* Error Display */}
-            {connectionError && (
-              <div className="mx-4 mt-4 p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                  <p className="text-red-300 text-sm font-medium">{connectionError}</p>
+        <main className="flex-1 overflow-auto p-4">
+          <div className="max-w-2xl mx-auto">
+            {/* Phase: Unpaired - Show RoomManager */}
+            {phase === 'unpaired' && (
+              <Suspense fallback={<ComponentLoader />}>
+                <RoomManager />
+              </Suspense>
+            )}
+
+            {/* Phase: Waiting - Show waiting screen with code */}
+            {phase === 'waiting' && (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 mx-auto mb-6 bg-apple-accent/20 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 border-3 border-apple-accent border-t-transparent rounded-full animate-spin"></div>
                 </div>
+                <h2 className="text-2xl font-semibold text-apple-text mb-2">Waiting for Partner</h2>
+                <p className="text-apple-secondary mb-6">Share the code below with your teammate</p>
+
+                <div className="inline-block p-6 bg-apple-darkest rounded-xl">
+                  <p className="text-xs text-apple-tertiary uppercase tracking-wider mb-2">Your Game Code</p>
+                  <div className="text-5xl font-mono font-bold text-cyan-400 tracking-widest">
+                    {pairCode}
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-center gap-3">
+                  <button
+                    onClick={() => {
+                      if (pairCode) {
+                        navigator.clipboard.writeText(pairCode);
+                        showGameToast('Copied!', 'Code copied to clipboard', 'success');
+                      }
+                    }}
+                    className="px-4 py-2 bg-apple-darkest hover:bg-apple-hover text-apple-text rounded-lg transition-colors"
+                  >
+                    Copy Code
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (pairCode) {
+                        const link = `${window.location.origin}?join=${pairCode}`;
+                        navigator.clipboard.writeText(link);
+                        showGameToast('Link Copied!', 'Share this link with your partner', 'success');
+                      }
+                    }}
+                    className="px-4 py-2 bg-apple-accent hover:bg-apple-accent-hover text-white rounded-lg transition-colors"
+                  >
+                    Copy Link
+                  </button>
+                </div>
+
+                <p className="mt-6 text-apple-tertiary text-sm">
+                  Playing as: <span className="text-apple-text">{odName}</span>
+                </p>
               </div>
             )}
 
-            {/* Game Content */}
-            <div className="flex-1 p-4 overflow-auto">
-              <div className="max-w-2xl mx-auto">
-                {/* Solo Play Mode - Always Ready */}
-                {!currentRoom && (
-                  <>
-                    <div className="text-center mb-6">
-                      <h2 className="text-xl font-medium text-apple-text mb-2">Solo Play Mode</h2>
-                      <p className="text-apple-secondary text-sm">Play solo or create/join a room for multiplayer</p>
-                    </div>
-                    
-                    {/* Solo Score Display */}
-                    <div className="mb-8">
-                      <SoloScoreDisplay score={currentScore || 0} className="py-6" />
-                    </div>
-                  </>
-                )}
-                
-                <BingoCard 
-                  squares={gameState.board.map((square, index) => ({
-                    ...square,
-                    isMarked: gameState.markedSquares[index] || false
-                  }))}
-                  onSquareClick={handleSquareClick}
-                  hasBingo={gameState.hasWon}
+            {/* Phase: Selecting - Show LineSelector */}
+            {phase === 'selecting' && (
+              <div className="py-8">
+                <LineSelector
+                  onSelect={handleLineSelect}
+                  selectedLine={myLine}
+                  takenLine={partnerLine}
+                  disabled={!!myLine}
                 />
+
+                {isPaired && (
+                  <div className="mt-6 text-center text-apple-tertiary text-sm">
+                    Playing with: <span className="text-apple-text">{partnerName}</span>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
+
+            {/* Phase: Playing - Show BingoCard */}
+            {phase === 'playing' && dailyCard.length > 0 && (
+              <>
+                {/* Duo Scoreboard */}
+                <div className="mb-6">
+                  <DuoScoreboard />
+                </div>
+
+                {/* Bingo Card */}
+                <BingoCard
+                  squares={boardSquares}
+                  onSquareClick={handleSquareClick}
+                  hasBingo={myBingo || partnerBingo}
+                  isDuoMode={true}
+                  myLineIndices={getMyLineIndices()}
+                  partnerLineIndices={getPartnerLineIndices()}
+                  myScore={myScore}
+                  partnerScore={partnerScore}
+                />
+              </>
+            )}
           </div>
         </main>
 
-        {/* Sidebar - Mobile overlay on small screens, side panel on larger */}
-        {sidebarOpen && (
-          <aside className={`
-            w-80 bg-apple-sidebar border-l border-apple-border overflow-hidden h-full max-h-full z-50
-            md:relative md:translate-x-0
-            fixed right-0 top-0 transform transition-transform duration-300 ease-in-out
-          `}>
-            {/* Mobile Close Button */}
-            <div className="md:hidden sticky top-0 z-10 bg-apple-sidebar border-b border-apple-border p-4 flex items-center justify-between">
-              <h3 className="text-lg font-medium text-apple-text">
-                {activePanel === 'rooms' ? 'Rooms' : 'Stats'}
-              </h3>
-              <button 
-                onClick={closeSidebar}
-                className="p-2 hover:bg-apple-hover rounded-lg transition-colors"
-                aria-label="Close sidebar"
-              >
+        {/* Sidebar - Game Info */}
+        {sidebarOpen && phase !== 'unpaired' && (
+          <aside className="w-80 bg-apple-sidebar border-l border-apple-border overflow-auto fixed right-0 top-16 bottom-0 z-50 md:relative md:top-0">
+            {/* Mobile Close */}
+            <div className="md:hidden sticky top-0 bg-apple-sidebar border-b border-apple-border p-4 flex items-center justify-between">
+              <h3 className="text-lg font-medium text-apple-text">Game Info</h3>
+              <button onClick={closeSidebar} className="p-2 hover:bg-apple-hover rounded-lg">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            <div className="h-full max-h-full overflow-auto">
-              <Suspense fallback={<ComponentLoader />}>
-                {activePanel === 'rooms' && <RoomManager />}
-                {activePanel === 'stats' && <BingoStats stats={gameStats} />}
-              </Suspense>
+            <div className="p-4 space-y-4">
+              {/* Player Info */}
+              <div className="apple-panel p-4">
+                <h3 className="text-sm font-medium text-apple-secondary mb-3">Players</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-cyan-400">{odName || 'You'}</span>
+                    <span className="text-cyan-400 font-bold">{myScore} pts</span>
+                  </div>
+                  {partnerName && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-orange-400">{partnerName}</span>
+                      <span className="text-orange-400 font-bold">{partnerScore} pts</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Scoring Rules */}
+              <div className="apple-panel p-4">
+                <h3 className="text-sm font-medium text-apple-secondary mb-3">Scoring</h3>
+                <ul className="text-xs text-apple-tertiary space-y-1">
+                  <li>+1 point per square in your line</li>
+                  <li>+5 bonus for completing your line (BINGO)</li>
+                  <li>New card at midnight in your timezone</li>
+                </ul>
+              </div>
+
+              {/* Connection Status */}
+              <div className="apple-panel p-4">
+                <h3 className="text-sm font-medium text-apple-secondary mb-3">Connection</h3>
+                <div className="flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <span className="text-xs text-apple-tertiary">
+                    {isConnected ? 'Real-time sync active' : 'Reconnecting...'}
+                  </span>
+                </div>
+              </div>
             </div>
           </aside>
         )}
       </div>
 
-
       {/* BINGO Modal */}
       <BingoModal
-        show={gameState.hasWon}
-        onBingo={handleBingo}
-        onCancel={handleCancelBingo}
-        board={gameState.board}
-        markedSquares={gameState.markedSquares}
-        winningCells={gameState.winningPattern}
-        score={currentScore}
-        gamesPlayed={gamesPlayed}
+        show={showBingoModal}
+        onBingo={() => setShowBingoModal(false)}
+        onCancel={() => setShowBingoModal(false)}
+        board={dailyCard}
+        markedSquares={markedSquares}
+        score={myScore}
+        gamesPlayed={1}
+        isDuoMode={true}
+        duoWinner={getBingoWinner()}
+        myName={odName || 'You'}
+        partnerName={partnerName || 'Partner'}
+        myScore={myScore}
+        partnerScore={partnerScore}
       />
-
-      {/* Verification Modal */}
-      <VerificationModal />
 
       {/* Toast Notifications */}
       <ToastContainer />

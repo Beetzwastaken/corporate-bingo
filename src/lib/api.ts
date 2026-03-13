@@ -1,4 +1,7 @@
-// Shared API functions for Corporate Bingo - Real Backend Integration
+// API functions for Corporate Bingo - Duo Mode
+
+import { getApiBaseUrl } from './config';
+import type { LineSelection } from '../stores/duoStore';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -6,52 +9,49 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
-// Room creation response from backend
-export interface CreateRoomResponse {
+// Duo Mode API Responses
+export interface DuoCreateResponse {
   success: boolean;
-  roomCode: string;
+  code: string;
   playerId: string;
-  board: string[];
+  playerName: string;
+  timezone: string;
+  dailySeed: string;
+}
+
+export interface DuoJoinResponse {
+  success: boolean;
+  playerId: string;
+  playerName: string;
+  partnerName: string;
+  phase: 'waiting' | 'selecting' | 'playing';
+  timezone: string;
+  dailySeed: string;
   isHost: boolean;
 }
 
-// Backend player data structure
-export interface BackendPlayer {
-  id: string;
-  name: string;
-  isHost: boolean;
-  joinedAt: string;
-  score?: number;
-}
-
-// Backend room data structure
-export interface BackendRoom {
-  name: string;
-  gameMode: 'play' | 'host';
-  hostId: string;
-  createdAt: string;
-  expiresAt: string;
-  players: BackendPlayer[];
-}
-
-// Room join response from backend
-export interface JoinRoomResponse {
+export interface DuoSelectResponse {
   success: boolean;
-  playerId: string;
-  board: string[];
-  roomName: string;
-  playerCount: number;
-  roundNumber: number;
-  gameMode?: 'play' | 'host';
-  room?: BackendRoom; // Nested room object with full details
+  waiting?: boolean;
+  conflict?: boolean;
+  phase?: string;
+  hostLine?: LineSelection;
+  partnerLine?: LineSelection;
+  message?: string;
 }
 
-import { getApiBaseUrl } from './config';
+export interface DuoMarkResponse {
+  success: boolean;
+  hostScore: number;
+  partnerScore: number;
+}
 
-// Generic API request handler with error handling
+// Generic API request handler
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   try {
-    const url = `${getApiBaseUrl()}${endpoint}`;
+    const baseUrl = getApiBaseUrl();
+    const url = baseUrl ? `${baseUrl}${endpoint}` : endpoint;
+
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -82,79 +82,55 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
   }
 }
 
-// Create a new bingo room
-export async function createBingoRoom(roomName: string, playerName: string, gameMode: 'play' | 'host' = 'play'): Promise<ApiResponse<CreateRoomResponse>> {
-  return apiRequest<CreateRoomResponse>('/api/room/create', {
+// Create a duo game
+export async function createDuoGame(playerName: string, timezone: string): Promise<ApiResponse<DuoCreateResponse>> {
+  return apiRequest<DuoCreateResponse>('/api/duo/create', {
     method: 'POST',
-    body: JSON.stringify({ roomName, playerName, gameMode }),
+    body: JSON.stringify({ playerName, timezone }),
   });
 }
 
-// Join an existing room
-export async function joinBingoRoom(roomCode: string, playerName: string): Promise<ApiResponse<JoinRoomResponse>> {
-  return apiRequest<JoinRoomResponse>('/api/room/join', {
+// Join a duo game
+export async function joinDuoGame(code: string, playerName: string): Promise<ApiResponse<DuoJoinResponse>> {
+  return apiRequest<DuoJoinResponse>('/api/duo/join', {
     method: 'POST',
-    body: JSON.stringify({ roomCode, playerName }),
+    body: JSON.stringify({ code, playerName }),
   });
 }
 
-// Test API connection
-export async function testApiConnection(): Promise<ApiResponse<{ message: string; buzzwordCount: number }>> {
-  return apiRequest<{ message: string; buzzwordCount: number }>('/api/test');
+// Select a line
+export async function selectLine(roomCode: string, playerId: string, line: LineSelection): Promise<ApiResponse<DuoSelectResponse>> {
+  return apiRequest<DuoSelectResponse>(`/api/duo/${roomCode}/select`, {
+    method: 'POST',
+    headers: {
+      'X-Player-ID': playerId
+    },
+    body: JSON.stringify({ line }),
+  });
 }
 
-// Buzzword suggestions API (keep for compatibility)
-export async function suggestBuzzwords(): Promise<ApiResponse<{ suggestions: string[] }>> {
-  try {
-    const suggestions = [
-      'Synergy', 'Leverage', 'Deep Dive', 'Circle Back', 'Touch Base',
-      'Low-hanging Fruit', 'Move the Needle', 'Paradigm Shift', 'Think Outside the Box',
-      'Best Practice', 'Core Competency', 'Value-add', 'Game Changer', 'Win-win'
-    ];
-
-    return {
-      success: true,
-      data: { suggestions }
-    };
-  } catch {
-    return {
-      success: false,
-      error: 'Failed to get buzzword suggestions'
-    };
-  }
+// Mark a square
+export async function markSquare(roomCode: string, playerId: string, index: number): Promise<ApiResponse<DuoMarkResponse>> {
+  return apiRequest<DuoMarkResponse>(`/api/duo/${roomCode}/mark`, {
+    method: 'POST',
+    headers: {
+      'X-Player-ID': playerId
+    },
+    body: JSON.stringify({ index }),
+  });
 }
 
-// Analytics API
-export async function trackBuzzwordUsage(buzzwordData: {
-  word: string;
-  gameId: string;
-  timestamp: Date;
-}): Promise<ApiResponse<void>> {
-  try {
-    // TODO: Send to analytics service
-    console.log('Tracking buzzword usage:', buzzwordData);
-    return { success: true };
-  } catch {
-    return {
-      success: false,
-      error: 'Failed to track analytics'
-    };
-  }
+// Leave a game
+export async function leaveDuoGame(roomCode: string, playerId: string): Promise<ApiResponse<{ success: boolean }>> {
+  return apiRequest<{ success: boolean }>(`/api/duo/${roomCode}/leave`, {
+    method: 'POST',
+    headers: {
+      'X-Player-ID': playerId
+    },
+  });
 }
 
-export async function trackBingoPlay(gameData: {
-  squaresMarked: number;
-  gameWon: boolean;
-  roomId?: string;
-}): Promise<ApiResponse<void>> {
-  try {
-    // TODO: Send to analytics service
-    console.log('Tracking bingo play:', gameData);
-    return { success: true };
-  } catch {
-    return {
-      success: false,
-      error: 'Failed to track analytics'
-    };
-  }
+// Health check
+export async function checkHealth(): Promise<ApiResponse<{ status: string; version: string }>> {
+  return apiRequest<{ status: string; version: string }>('/api/health');
 }

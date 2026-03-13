@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { BingoPlayer } from '../../stores/roomStore';
+import type { BingoPlayer } from '../../types/shared';
 import { ScoreDisplay } from './ScoreDisplay';
 
 interface LeaderboardProps {

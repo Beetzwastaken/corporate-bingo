@@ -1,9 +1,8 @@
 // Central export for all stores
-export { useGameStore } from './gameStore';
 export { useUIStore } from './uiStore';
-export { useRoomStore } from './roomStore';
 export { useConnectionStore } from './connectionStore';
+export { useDuoStore, regenerateDailyCardIfNeeded } from './duoStore';
 
-// Export types
-export type { BingoSquare, GameState } from './gameStore';
-export type { BingoPlayer, BingoRoom } from './roomStore';
+// Export types from shared types
+export type { BingoSquare, BingoPlayer, BingoRoom } from '../types';
+export type { LineSelection, DuoPhase } from './duoStore';

@@ -1,20 +1,37 @@
-// HTTP polling service as WebSocket alternative for multiplayer updates
-// Provides basic real-time functionality when WebSocket SSL fails
+// HTTP polling service for Duo Mode as WebSocket fallback
+// Provides real-time updates when WebSocket unavailable
 
 import { getApiBaseUrl } from './config';
-import type { BingoPlayer } from '../utils/store';
+import type { LineSelection } from '../stores/duoStore';
 
-export interface GameStateUpdate {
-  players?: BingoPlayer[];
-  playerCount?: number;
-  roomName?: string;
-  isActive?: boolean;
+export interface DuoStateUpdate {
+  code: string;
+  phase: 'waiting' | 'selecting' | 'playing';
+  timezone: string;
+  dailySeed: string;
+  isHost: boolean;
+  hostName: string;
+  partnerName: string | null;
+  isPaired: boolean;
+  // Selection phase
+  myHasSelected?: boolean;
+  partnerHasSelected?: boolean;
+  myLine?: LineSelection;
+  // Playing phase
+  hostLine?: LineSelection;
+  partnerLine?: LineSelection;
+  markedSquares?: boolean[];
+  hostScore?: number;
+  partnerScore?: number;
+  hostBingo?: boolean;
+  partnerBingo?: boolean;
+  card?: string[];
 }
 
 export interface PollingOptions {
   roomCode: string;
   playerId: string;
-  onUpdate: (gameState: GameStateUpdate) => void;
+  onUpdate: (state: DuoStateUpdate) => void;
   onError?: (error: Error) => void;
   pollInterval?: number;
 }
@@ -27,19 +44,18 @@ export class BingoPollingClient {
 
   constructor(options: PollingOptions) {
     this.options = {
-      pollInterval: 2000, // Poll every 2 seconds
+      pollInterval: 2000,
       ...options
     };
   }
 
-  // Start polling for game state updates
+  // Start polling
   startPolling(): void {
     if (this.polling) return;
-    
+
     this.polling = true;
-    console.log('🔄 Starting HTTP polling for multiplayer updates');
-    
-    // Poll immediately, then at intervals
+    console.log('🔄 Starting HTTP polling for duo updates');
+
     this.poll();
     this.scheduleNextPoll();
   }
@@ -60,10 +76,10 @@ export class BingoPollingClient {
 
     try {
       const baseUrl = getApiBaseUrl();
-      const url = baseUrl ? 
-        `${baseUrl}/api/room/${this.options.roomCode}/players` :
-        `/api/room/${this.options.roomCode}/players`;
-      
+      const url = baseUrl
+        ? `${baseUrl}/api/duo/${this.options.roomCode}/state`
+        : `/api/duo/${this.options.roomCode}/state`;
+
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -72,18 +88,17 @@ export class BingoPollingClient {
       });
 
       if (response.ok) {
-        const gameState = await response.json();
-        
-        // Only trigger update if state actually changed
-        const stateHash = JSON.stringify(gameState);
+        const state: DuoStateUpdate = await response.json();
+
+        // Only trigger update if state changed
+        const stateHash = JSON.stringify(state);
         if (stateHash !== this.lastStateHash) {
           this.lastStateHash = stateHash;
-          this.options.onUpdate(gameState);
+          this.options.onUpdate(state);
         }
       } else if (response.status === 404) {
-        // Room might not exist or endpoint not available
-        // Try alternative polling endpoint
-        await this.pollAlternative();
+        console.warn('Room not found during polling');
+        this.options.onError?.(new Error('Room not found'));
       }
     } catch (error) {
       console.error('Polling error:', error);
@@ -91,46 +106,10 @@ export class BingoPollingClient {
     }
   }
 
-  // Alternative polling method if main endpoint doesn't exist
-  private async pollAlternative(): Promise<void> {
-    try {
-      // Try to get room info by making a dummy join request
-      // This will return current room state without actually joining
-      const baseUrl = getApiBaseUrl();
-      const url = baseUrl ? 
-        `${baseUrl}/api/room/info` :
-        `/api/room/info`;
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          roomCode: this.options.roomCode,
-          playerId: this.options.playerId,
-          checkOnly: true // Flag to indicate we just want room info
-        })
-      });
-
-      if (response.ok) {
-        const gameState = await response.json();
-        const stateHash = JSON.stringify(gameState);
-        if (stateHash !== this.lastStateHash) {
-          this.lastStateHash = stateHash;
-          this.options.onUpdate(gameState);
-        }
-      }
-    } catch (error) {
-      // Silent fail for alternative method
-      console.debug('Alternative polling failed:', error);
-    }
-  }
-
   // Schedule next poll
   private scheduleNextPoll(): void {
     if (!this.polling) return;
-    
+
     this.pollTimer = setTimeout(() => {
       if (this.polling) {
         this.poll().then(() => {
@@ -140,13 +119,13 @@ export class BingoPollingClient {
     }, this.options.pollInterval);
   }
 
-  // Send player action (marks, etc.)
-  async sendAction(action: string, payload: Record<string, unknown>): Promise<boolean> {
+  // Select line
+  async selectLine(line: LineSelection): Promise<boolean> {
     try {
       const baseUrl = getApiBaseUrl();
-      const url = baseUrl ?
-        `${baseUrl}/api/room/${this.options.roomCode}/action` :
-        `/api/room/${this.options.roomCode}/action`;
+      const url = baseUrl
+        ? `${baseUrl}/api/duo/${this.options.roomCode}/select`
+        : `/api/duo/${this.options.roomCode}/select`;
 
       const response = await fetch(url, {
         method: 'POST',
@@ -154,43 +133,82 @@ export class BingoPollingClient {
           'Content-Type': 'application/json',
           'X-Player-ID': this.options.playerId
         },
-        body: JSON.stringify({
-          action,
-          payload,
-          timestamp: Date.now()
-        })
+        body: JSON.stringify({ line })
       });
 
       if (response.ok) {
-        // Trigger immediate poll to get updated state
-        this.poll();
+        this.poll(); // Immediate poll for updated state
         return true;
       }
-      
       return false;
     } catch (error) {
-      console.error('Action send error:', error);
+      console.error('Select line error:', error);
       return false;
     }
   }
 
-  // Mark a square
-  async markSquare(squareIndex: number): Promise<boolean> {
-    return this.sendAction('MARK_SQUARE', { squareIndex });
+  // Mark square
+  async markSquare(index: number): Promise<boolean> {
+    try {
+      const baseUrl = getApiBaseUrl();
+      const url = baseUrl
+        ? `${baseUrl}/api/duo/${this.options.roomCode}/mark`
+        : `/api/duo/${this.options.roomCode}/mark`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Player-ID': this.options.playerId
+        },
+        body: JSON.stringify({ index })
+      });
+
+      if (response.ok) {
+        this.poll();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Mark square error:', error);
+      return false;
+    }
+  }
+
+  // Leave game
+  async leaveGame(): Promise<boolean> {
+    try {
+      const baseUrl = getApiBaseUrl();
+      const url = baseUrl
+        ? `${baseUrl}/api/duo/${this.options.roomCode}/leave`
+        : `/api/duo/${this.options.roomCode}/leave`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Player-ID': this.options.playerId
+        }
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('Leave game error:', error);
+      return false;
+    }
   }
 
   // Update polling interval
   setPollInterval(intervalMs: number): void {
     this.options.pollInterval = intervalMs;
-    
+
     if (this.polling) {
-      // Restart with new interval
       this.stopPolling();
       this.startPolling();
     }
   }
 
-  // Check if currently polling
+  // Check if polling
   isPolling(): boolean {
     return this.polling;
   }
