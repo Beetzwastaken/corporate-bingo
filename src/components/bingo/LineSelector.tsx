@@ -5,6 +5,7 @@ interface SquareSelectorProps {
   onSelect: (squares: number[]) => void;
   myReady: boolean;
   partnerReady: boolean;
+  pairCode: string | null;
   disabled?: boolean;
 }
 
@@ -14,6 +15,7 @@ export function SquareSelector({
   onSelect,
   myReady,
   partnerReady,
+  pairCode,
   disabled = false,
 }: SquareSelectorProps) {
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -41,6 +43,30 @@ export function SquareSelector({
   const handleLockIn = () => {
     if (selected.size === MAX_SQUARES) {
       onSelect(Array.from(selected).sort((a, b) => a - b));
+    }
+  };
+
+  const [nudgeCopied, setNudgeCopied] = useState(false);
+
+  const handleNudge = async () => {
+    const url = `https://playjargon.com?join=${pairCode}`;
+    const text = "I'm ready — pick your squares! 🎯";
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Jargon', text, url });
+        return;
+      } catch {
+        // User cancelled share sheet — fall through to clipboard
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      setNudgeCopied(true);
+      setTimeout(() => setNudgeCopied(false), 2000);
+    } catch {
+      // Clipboard failed — no action needed
     }
   };
 
@@ -110,14 +136,24 @@ export function SquareSelector({
 
       {/* Status panel */}
       {myReady && (
-        <div className="text-center p-3 bg-j-accent/10 rounded-lg border border-j-accent/20">
+        <div className="text-center p-3 bg-j-accent/10 rounded-lg border border-j-accent/20 space-y-2">
           <p className="text-j-accent font-medium text-sm">
             Your squares are locked in!
           </p>
           {!partnerReady && (
-            <p className="text-j-tertiary text-xs font-mono mt-1">
-              Waiting for partner...
-            </p>
+            <>
+              <p className="text-j-tertiary text-xs font-mono">
+                Waiting for partner...
+              </p>
+              {pairCode && (
+                <button
+                  onClick={handleNudge}
+                  className="mt-1 px-4 py-1.5 bg-j-accent/20 hover:bg-j-accent/30 text-j-accent text-xs font-semibold rounded-lg transition-colors"
+                >
+                  {nudgeCopied ? 'Copied!' : 'Nudge Partner'}
+                </button>
+              )}
+            </>
           )}
         </div>
       )}

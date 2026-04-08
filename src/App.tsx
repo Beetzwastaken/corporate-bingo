@@ -296,6 +296,7 @@ function App() {
                   onSelect={handleSquaresSelect}
                   myReady={myReady}
                   partnerReady={partnerReady}
+                  pairCode={pairCode}
                   disabled={myReady}
                 />
 
