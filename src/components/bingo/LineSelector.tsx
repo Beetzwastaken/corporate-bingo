@@ -1,5 +1,5 @@
 // SquareSelector - Tap to toggle up to 5 squares for battleship placement
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 interface SquareSelectorProps {
   onSelect: (squares: number[]) => void;
@@ -19,6 +19,10 @@ export function SquareSelector({
   disabled = false,
 }: SquareSelectorProps) {
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [nudgeCopied, setNudgeCopied] = useState(false);
+  const nudgeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => clearTimeout(nudgeTimerRef.current), []);
 
   const atLimit = selected.size >= MAX_SQUARES;
 
@@ -46,10 +50,8 @@ export function SquareSelector({
     }
   };
 
-  const [nudgeCopied, setNudgeCopied] = useState(false);
-
   const handleNudge = async () => {
-    const url = `https://playjargon.com?join=${pairCode}`;
+    const url = `${window.location.origin}?join=${pairCode}`;
     const text = "I'm ready — pick your squares! 🎯";
 
     if (navigator.share) {
@@ -64,7 +66,8 @@ export function SquareSelector({
     try {
       await navigator.clipboard.writeText(`${text}\n${url}`);
       setNudgeCopied(true);
-      setTimeout(() => setNudgeCopied(false), 2000);
+      clearTimeout(nudgeTimerRef.current);
+      nudgeTimerRef.current = setTimeout(() => setNudgeCopied(false), 2000);
     } catch {
       // Clipboard failed — no action needed
     }
