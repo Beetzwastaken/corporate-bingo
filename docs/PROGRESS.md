@@ -1,5 +1,32 @@
 # Jargon — Progress Log
 
+## 2026-04-08 — Nudge Partner Button
+
+### What we did
+- Added "Nudge Partner" button to square selection screen
+- Appears after locking in squares, while waiting for partner
+- Uses `navigator.share()` (native share sheet on mobile), clipboard fallback on desktop
+- Shows "Copied!" inline confirmation for clipboard fallback
+- Uses `window.location.origin` for URL (works in dev/staging)
+
+### Key commits
+```
+0bc5229 feat: nudge partner button after locking in squares
+351cb08 fix: move nudge state to top, cleanup timeout, use location.origin
+```
+
+### Key files changed
+- `src/components/bingo/LineSelector.tsx` — nudge button, share/clipboard logic
+- `src/App.tsx` — pass pairCode prop to SquareSelector
+
+### Next session
+- Real phone testing (iOS Safari, Android Chrome) — test nudge share sheet
+- Hit animation ("something cool" on hit — not yet built)
+- Friend's Discord ideas: demotivational sayings, productivity meter, meeting cost calculator
+- Rewrite API integration tests for battleship (currently stale)
+
+---
+
 ## 2026-04-07 — Battleship Mode + Rebrand
 
 ### What we did
