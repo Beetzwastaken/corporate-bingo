@@ -37,7 +37,7 @@ describe('PWA Configuration', () => {
     });
 
     it('should have correct app name', () => {
-      expect(manifest.name).toBe('Jargon — Buzzword Bingo for Meetings');
+      expect(manifest.name).toBe('Jargon — Your meetings needed a point.');
       expect(manifest.short_name).toBe('Jargon');
     });
 

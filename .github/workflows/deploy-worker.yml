@@ -16,6 +16,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Run unit tests
+        run: npm test -- --run
+
       - name: Deploy to Cloudflare Workers
         run: npx wrangler deploy
         env:
