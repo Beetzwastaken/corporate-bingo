@@ -95,7 +95,14 @@ export function Game() {
   return (
     <div className="min-h-screen bg-j-bg text-j-text font-display flex flex-col items-center px-6 py-8">
       <header className="w-full max-w-md mb-5 flex flex-col gap-1">
-        <Link to="/decode" className="text-j-muted text-xs font-mono hover:text-j-tertiary self-start">← My Games</Link>
+        <div className="flex items-center justify-between w-full">
+          <Link to="/decode" className="text-j-muted text-xs font-mono hover:text-j-tertiary">← My Games</Link>
+          {state.rounds.some((r) => r.bothComplete) && (
+            <Link to={`/decode/game/${gameId}/history`} className="text-j-muted text-xs font-mono hover:text-j-tertiary">
+              History →
+            </Link>
+          )}
+        </div>
         <h1 className="text-xl font-bold mt-1">{state.lobbyName}</h1>
       </header>
 
