@@ -98,9 +98,9 @@ export function LetterGrid({
   }
 
   function onChange(i: number, raw: string) {
-    // Take last typed alpha char only.
+    // Take last typed alpha char only, store uppercase.
     const match = raw.match(/[A-Za-z]/g);
-    const ch = match ? match[match.length - 1] : '';
+    const ch = match ? match[match.length - 1].toUpperCase() : '';
     if (!ch) {
       setCharAt(i, '');
       return;
