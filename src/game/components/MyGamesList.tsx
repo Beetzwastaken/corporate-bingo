@@ -11,6 +11,24 @@ const STATUS_META: Record<string, { label: string; classes: string }> = {
   game_over:           { label: 'Abandoned',       classes: 'bg-j-error/20 text-j-error border-j-error/40' }
 };
 
+function formatOpponents(g: GameSummary): string {
+  const names = g.opponentNames && g.opponentNames.length > 0
+    ? g.opponentNames
+    : (g.opponentName ? [g.opponentName] : []);
+  if (names.length === 0) return 'vs waiting…';
+  if (names.length <= 2) return `vs ${names.join(', ')}`;
+  return `vs ${names[0]} +${names.length - 1}`;
+}
+
+function formatScores(g: GameSummary): string {
+  const oppScores = g.opponentScores && g.opponentScores.length > 0
+    ? g.opponentScores
+    : (Number.isFinite(g.opponentScore) ? [g.opponentScore] : []);
+  if (oppScores.length === 0) return `${g.yourScore}`;
+  if (oppScores.length === 1) return `${g.yourScore} – ${oppScores[0]}`;
+  return `${g.yourScore} vs ${oppScores.join('/')}`;
+}
+
 function StatusBadge({ status }: { status: string }) {
   const meta = STATUS_META[status] ?? { label: status, classes: 'bg-j-surface text-j-tertiary border-j-muted/30' };
   return (
@@ -59,12 +77,12 @@ export function MyGamesList() {
             <div className="flex items-center justify-between gap-2">
               <span className="text-j-text font-medium truncate">{g.lobbyName}</span>
               <span className="text-j-tertiary text-xs font-mono shrink-0">
-                {g.yourScore} – {g.opponentScore}
+                {formatScores(g)}
               </span>
             </div>
             <div className="flex items-center justify-between gap-2 mt-2">
               <span className="text-j-tertiary text-xs truncate">
-                vs {g.opponentName ?? 'waiting…'}
+                {formatOpponents(g)}
               </span>
               <StatusBadge status={g.status} />
             </div>

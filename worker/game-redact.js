@@ -1,13 +1,14 @@
 // Pure redaction. Given a full game state and the requesting playerId,
 // strip information the player isn't allowed to see.
 //
-// During an active round (not bothComplete):
-//   - opponent's guesses, currentClueIndex, solvedOnGuess: hidden
-//   - opponent visible: name, guessCount, solved (boolean)
+// During an active round (not allComplete):
+//   - other players' guesses, currentClueIndex, solvedOnGuess: hidden
+//   - opponents visible: name, guessCount, solved (boolean)
 //   - the wordId/answer for current round: hidden
 //   - the requester's clues: only [0..currentClueIndex] revealed
 //
-// After bothComplete (or for prior rounds): full reveal.
+// After allComplete (or for prior rounds): full reveal.
+// API field name `bothComplete` is preserved for backward compat — semantically "all complete".
 
 import { getWord } from './game-pool.js';
 
@@ -17,6 +18,7 @@ export function redactState(state, requesterId) {
     lobbyName: state.lobbyName,
     status: state.status,
     createdAt: state.createdAt,
+    maxPlayers: state.maxPlayers,
     scores: state.scores,
     players: state.players.map(p => ({
       playerId: p.playerId,
@@ -35,9 +37,7 @@ export function redactState(state, requesterId) {
 function redactRound(round, requesterId) {
   const playerStates = round.playerStates || {};
   const myState = playerStates[requesterId] || null;
-  const opponentEntry = Object.entries(playerStates).find(([pid]) => pid !== requesterId);
-  const opponentId = opponentEntry ? opponentEntry[0] : null;
-  const opponentState = opponentEntry ? opponentEntry[1] : null;
+  const opponentEntries = Object.entries(playerStates).filter(([pid]) => pid !== requesterId);
 
   const fullReveal = !!round.bothComplete;
   const word = round.wordId ? getWord(round.wordId) : null;
@@ -54,27 +54,26 @@ function redactRound(round, requesterId) {
           solvedOnGuess: myState.solvedOnGuess,
           pointsEarned: myState.pointsEarned,
           currentClueIndex: myState.currentClueIndex,
-          // Reveal clues only up to current index (or all if round complete)
           revealedClues: word
             ? word.clues.slice(0, fullReveal ? 4 : (myState.currentClueIndex + 1))
             : []
         }
       : null,
-    opponent: opponentState
-      ? fullReveal
+    opponents: opponentEntries.map(([pid, st]) =>
+      fullReveal
         ? {
-            playerId: opponentId,
-            guesses: opponentState.guesses,
-            solved: opponentState.solved,
-            solvedOnGuess: opponentState.solvedOnGuess,
-            pointsEarned: opponentState.pointsEarned
+            playerId: pid,
+            guesses: st.guesses,
+            solved: !!st.solved,
+            solvedOnGuess: st.solvedOnGuess,
+            pointsEarned: st.pointsEarned
           }
         : {
-            playerId: opponentId,
-            guessCount: (opponentState.guesses || []).length,
-            solved: !!opponentState.solved
+            playerId: pid,
+            guessCount: (st.guesses || []).length,
+            solved: !!st.solved
           }
-      : null
+    )
   };
 
   if (fullReveal && word) {

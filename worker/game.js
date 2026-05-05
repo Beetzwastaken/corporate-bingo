@@ -31,7 +31,8 @@ export class Game {
         created_at INTEGER,
         scores_json TEXT DEFAULT '{}',
         recent_word_ids_json TEXT DEFAULT '[]',
-        current_round_number INTEGER DEFAULT 0
+        current_round_number INTEGER DEFAULT 0,
+        max_players INTEGER DEFAULT 2
       );
       CREATE TABLE IF NOT EXISTS players (
         player_id TEXT PRIMARY KEY,
@@ -49,6 +50,8 @@ export class Game {
         player_states_json TEXT DEFAULT '{}'
       );
     `);
+    // Forward migration for pre-existing games (no-op on fresh DOs).
+    try { this.sql.exec('ALTER TABLE game ADD COLUMN max_players INTEGER DEFAULT 2'); } catch { /* already exists */ }
   }
 
   getGame() {
@@ -56,6 +59,7 @@ export class Game {
     if (!row) return null;
     return {
       ...row,
+      max_players: row.max_players ?? 2,
       scores: JSON.parse(row.scores_json || '{}'),
       recentWordIds: JSON.parse(row.recent_word_ids_json || '[]')
     };
@@ -93,6 +97,7 @@ export class Game {
       lobbyName: game.lobby_name,
       status: game.status,
       createdAt: game.created_at,
+      maxPlayers: game.max_players,
       players,
       rounds,
       currentRound: rounds.find(r => r.roundNumber === game.current_round_number) || null,
@@ -109,6 +114,7 @@ export class Game {
     try {
       if (path === '/create' && method === 'POST') return await this.handleCreate(request);
       if (path === '/join' && method === 'POST') return await this.handleJoin(request);
+      if (path === '/start' && method === 'POST') return await this.handleStart(request);
       if (path === '/state' && method === 'GET') return this.handleState(request);
       if (path === '/ready' && method === 'POST') return await this.handleReady(request);
       if (path === '/guess' && method === 'POST') return await this.handleGuess(request);
@@ -136,22 +142,23 @@ export class Game {
   async handleCreate(request) {
     const body = await request.json();
     const { gameId, lobbyName, creatorName, playerId } = body;
+    let maxPlayers = parseInt(body.maxPlayers, 10);
+    if (!Number.isFinite(maxPlayers) || maxPlayers < 2 || maxPlayers > 4) maxPlayers = 2;
     const existing = this.getGame();
     if (existing) {
       return new Response(JSON.stringify({ error: 'Game already exists' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
     }
     const now = Date.now();
     this.sql.exec(
-      'INSERT INTO game (id, game_id, lobby_name, status, created_at, scores_json, recent_word_ids_json) VALUES (1, ?, ?, ?, ?, ?, ?)',
-      gameId, lobbyName, 'waiting', now, JSON.stringify({ [playerId]: 0 }), '[]'
+      'INSERT INTO game (id, game_id, lobby_name, status, created_at, scores_json, recent_word_ids_json, max_players) VALUES (1, ?, ?, ?, ?, ?, ?, ?)',
+      gameId, lobbyName, 'waiting', now, JSON.stringify({ [playerId]: 0 }), '[]', maxPlayers
     );
     this.sql.exec(
       'INSERT INTO players (player_id, name, slot, joined_at) VALUES (?, ?, ?, ?)',
       playerId, creatorName, 0, now
     );
     // Index in UserGames
-    await this.upsertUserGame(playerId, gameId, lobbyName, 'waiting', null, 0, 0, now);
-    // (creator alone, no opponent — status='waiting')
+    await this.upsertUserGame(playerId, gameId, lobbyName, 'waiting', [], 0, [], now);
     this.scheduleAbandonAlarm();
     return new Response(JSON.stringify({ gameId, playerId, state: this.buildState() }), { headers: { 'Content-Type': 'application/json' } });
   }
@@ -162,38 +169,72 @@ export class Game {
     const game = this.getGame();
     if (!game) return new Response(JSON.stringify({ error: 'Game not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     const players = this.getPlayers();
-    if (players.length >= 2) {
-      // Idempotent rejoin: if playerId already a member, return state
-      if (players.some(p => p.playerId === playerId)) {
-        return new Response(JSON.stringify({ gameId: game.game_id, playerId, state: this.buildState() }), { headers: { 'Content-Type': 'application/json' } });
-      }
-      return new Response(JSON.stringify({ error: 'Game full' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
-    }
+    // Idempotent rejoin
     if (players.some(p => p.playerId === playerId)) {
       return new Response(JSON.stringify({ gameId: game.game_id, playerId, state: this.buildState() }), { headers: { 'Content-Type': 'application/json' } });
     }
+    if (game.status !== 'waiting') {
+      return new Response(JSON.stringify({ error: 'Game already started' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (players.length >= game.max_players) {
+      return new Response(JSON.stringify({ error: 'Game full' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+    }
     const now = Date.now();
+    const slot = players.length;
     this.sql.exec(
       'INSERT INTO players (player_id, name, slot, joined_at) VALUES (?, ?, ?, ?)',
-      playerId, playerName, 1, now
+      playerId, playerName, slot, now
     );
-    // Init this player's score
+    // Init this player's score; do NOT auto-start — creator must call /start.
     const scores = game.scores;
     scores[playerId] = 0;
-    this.sql.exec('UPDATE game SET scores_json = ?, status = ? WHERE id = 1', JSON.stringify(scores), 'active');
+    this.sql.exec('UPDATE game SET scores_json = ? WHERE id = 1', JSON.stringify(scores));
 
-    // Index in UserGames for both players (no round started yet → 'your_turn' for both = "ready up")
-    const opponent = players[0];
     const fullState = this.buildState();
     const allPlayers = this.getPlayers();
-    const cur = this.getCurrentRound(this.getGame());
-    const meStatus = this.computePlayerStatus(playerId, allPlayers, cur, 'active');
-    const oppStatus = this.computePlayerStatus(opponent.playerId, allPlayers, cur, 'active');
-    await this.upsertUserGame(playerId, game.game_id, game.lobby_name, meStatus, opponent.name, 0, 0, now);
-    await this.upsertUserGame(opponent.playerId, game.game_id, game.lobby_name, oppStatus, playerName, 0, 0, now);
+    const scoresAfter = scores;
+    for (const p of allPlayers) {
+      const opps = allPlayers.filter(x => x.playerId !== p.playerId);
+      const oppNames = opps.map(o => o.name);
+      const oppScores = opps.map(o => scoresAfter[o.playerId] || 0);
+      const status = this.computePlayerStatus(p.playerId, allPlayers, null, game.status);
+      await this.upsertUserGame(p.playerId, game.game_id, game.lobby_name, status, oppNames, scoresAfter[p.playerId] || 0, oppScores, now);
+    }
 
     this.scheduleAbandonAlarm();
     return new Response(JSON.stringify({ gameId: game.game_id, playerId, state: fullState }), { headers: { 'Content-Type': 'application/json' } });
+  }
+
+  async handleStart(request) {
+    const game = this.getGame();
+    if (!game) return new Response(JSON.stringify({ error: 'Game not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+    const playerId = request.headers.get('X-Player-Id');
+    if (!playerId) return new Response(JSON.stringify({ error: 'X-Player-Id required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    const players = this.getPlayers();
+    const me = players.find(p => p.playerId === playerId);
+    if (!me) return new Response(JSON.stringify({ error: 'Not a member' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+    if (me.slot !== 0) return new Response(JSON.stringify({ error: 'Only the host can start' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+    if (game.status !== 'waiting') return new Response(JSON.stringify({ error: 'Already started' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+    if (players.length < 2) return new Response(JSON.stringify({ error: 'Need at least 2 players' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+
+    this.sql.exec('UPDATE game SET status = ? WHERE id = 1', 'active');
+    await this.startNextRound(this.getGame());
+
+    // Refresh dashboard for all players
+    const gameAfter = this.getGame();
+    const playersAfter = this.getPlayers();
+    const roundAfter = this.getCurrentRound(gameAfter);
+    const scoresAfter = gameAfter.scores;
+    const now = Date.now();
+    for (const p of playersAfter) {
+      const opps = playersAfter.filter(x => x.playerId !== p.playerId);
+      const oppNames = opps.map(o => o.name);
+      const oppScores = opps.map(o => scoresAfter[o.playerId] || 0);
+      const status = this.computePlayerStatus(p.playerId, playersAfter, roundAfter, gameAfter.status);
+      await this.upsertUserGame(p.playerId, gameAfter.game_id, gameAfter.lobby_name, status, oppNames, scoresAfter[p.playerId] || 0, oppScores, now);
+    }
+    this.scheduleAbandonAlarm();
+    return new Response(JSON.stringify({ ok: true, state: this.buildState() }), { headers: { 'Content-Type': 'application/json' } });
   }
 
   handleState(request) {
@@ -232,26 +273,21 @@ export class Game {
     // Toggle ready true
     this.sql.exec('UPDATE players SET ready_for_next_round = 1 WHERE player_id = ?', playerId);
     const updatedPlayers = this.getPlayers();
-    const allReady = updatedPlayers.length === 2 && updatedPlayers.every(p => p.readyForNextRound);
+    const allReady = updatedPlayers.length >= 2 && updatedPlayers.every(p => p.readyForNextRound);
     if (allReady) {
       await this.startNextRound(game);
     }
-    // Refresh dashboard status for both players (ready toggle or round-start changes status)
     const gameAfter = this.getGame();
     const roundAfter = this.getCurrentRound(gameAfter);
     const playersAfter = this.getPlayers();
     const scoresAfter = gameAfter.scores;
     const now = Date.now();
     for (const p of playersAfter) {
-      const opp = playersAfter.find(x => x.playerId !== p.playerId);
+      const opps = playersAfter.filter(x => x.playerId !== p.playerId);
+      const oppNames = opps.map(o => o.name);
+      const oppScores = opps.map(o => scoresAfter[o.playerId] || 0);
       const status = this.computePlayerStatus(p.playerId, playersAfter, roundAfter, gameAfter.status);
-      await this.upsertUserGame(
-        p.playerId, gameAfter.game_id, gameAfter.lobby_name, status,
-        opp ? opp.name : null,
-        scoresAfter[p.playerId] || 0,
-        opp ? (scoresAfter[opp.playerId] || 0) : 0,
-        now
-      );
+      await this.upsertUserGame(p.playerId, gameAfter.game_id, gameAfter.lobby_name, status, oppNames, scoresAfter[p.playerId] || 0, oppScores, now);
     }
     this.scheduleAbandonAlarm();
     return new Response(JSON.stringify({ ok: true, started: allReady, state: this.buildState() }), { headers: { 'Content-Type': 'application/json' } });
@@ -363,32 +399,12 @@ export class Game {
       playerStates: updatedStates
     };
 
-    if (allDone) {
-      // Both finished → 'round_complete' for both until they ready-up
-      for (const p of players) {
-        const opp = players.find(x => x.playerId !== p.playerId);
-        const status = this.computePlayerStatus(p.playerId, players, roundForStatus, 'active');
-        await this.upsertUserGame(
-          p.playerId, game.game_id, game.lobby_name, status,
-          opp ? opp.name : null,
-          scoresAfter[p.playerId] || 0,
-          opp ? (scoresAfter[opp.playerId] || 0) : 0,
-          now
-        );
-      }
-    } else {
-      // Update both players: guesser may now be 'waiting_on_opponent', opp 'your_turn'
-      for (const p of players) {
-        const opp = players.find(x => x.playerId !== p.playerId);
-        const status = this.computePlayerStatus(p.playerId, players, roundForStatus, 'active');
-        await this.upsertUserGame(
-          p.playerId, game.game_id, game.lobby_name, status,
-          opp ? opp.name : null,
-          scoresAfter[p.playerId] || 0,
-          opp ? (scoresAfter[opp.playerId] || 0) : 0,
-          now
-        );
-      }
+    for (const p of players) {
+      const opps = players.filter(x => x.playerId !== p.playerId);
+      const oppNames = opps.map(o => o.name);
+      const oppScores = opps.map(o => scoresAfter[o.playerId] || 0);
+      const status = this.computePlayerStatus(p.playerId, players, roundForStatus, 'active');
+      await this.upsertUserGame(p.playerId, game.game_id, game.lobby_name, status, oppNames, scoresAfter[p.playerId] || 0, oppScores, now);
     }
 
     this.scheduleAbandonAlarm();
@@ -406,11 +422,16 @@ export class Game {
   }
 
   // Derives per-player status used by the dashboard.
-  // Values: 'waiting' (alone) | 'your_turn' | 'waiting_on_opponent' | 'round_complete' | 'game_over'
+  // Values: 'waiting' (alone or pre-start) | 'your_turn' | 'waiting_on_opponent' | 'round_complete' | 'game_over'
   computePlayerStatus(playerId, players, currentRound, gameStatus) {
     if (gameStatus === 'abandoned') return 'game_over';
     if (players.length < 2) return 'waiting';
-    if (!currentRound) return 'your_turn'; // both joined, no round yet → ready up
+    if (gameStatus === 'waiting') {
+      // Pre-start: host (slot 0) can start; others wait.
+      const me = players.find(p => p.playerId === playerId);
+      return me && me.slot === 0 ? 'your_turn' : 'waiting';
+    }
+    if (!currentRound) return 'your_turn';
     if (currentRound.bothComplete) return 'round_complete';
     const ps = currentRound.playerStates?.[playerId];
     if (!ps) return 'your_turn';
@@ -418,14 +439,24 @@ export class Game {
     return finishedSelf ? 'waiting_on_opponent' : 'your_turn';
   }
 
-  async upsertUserGame(playerId, gameId, lobbyName, status, opponentName, yourScore, opponentScore, lastActivity) {
+  async upsertUserGame(playerId, gameId, lobbyName, status, opponentNames, yourScore, opponentScores, lastActivity) {
     if (!this.env.USER_GAMES) return;
     const id = this.env.USER_GAMES.idFromName(playerId);
     const obj = this.env.USER_GAMES.get(id);
+    const names = Array.isArray(opponentNames) ? opponentNames : (opponentNames ? [opponentNames] : []);
+    const scores = Array.isArray(opponentScores) ? opponentScores : (Number.isFinite(opponentScores) ? [opponentScores] : []);
     await obj.fetch(new Request('https://internal/upsert', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ playerId, gameId, lobbyName, status, opponentName, yourScore, opponentScore, lastActivity })
+      body: JSON.stringify({
+        playerId, gameId, lobbyName, status,
+        opponentNames: names,
+        opponentScores: scores,
+        // Legacy single-opponent fields for backward-compat
+        opponentName: names[0] || null,
+        opponentScore: scores[0] || 0,
+        yourScore, lastActivity
+      })
     }));
   }
 }
@@ -444,6 +475,8 @@ export async function handleGameRequest(request, env, origin) {
     const body = await request.json();
     const lobbyName = (body.lobbyName || '').toString().trim().slice(0, 80);
     const creatorName = (body.creatorName || '').toString().trim().slice(0, 40);
+    let maxPlayers = parseInt(body.maxPlayers, 10);
+    if (!Number.isFinite(maxPlayers) || maxPlayers < 2 || maxPlayers > 4) maxPlayers = 2;
     if (!lobbyName || !creatorName) {
       return new Response(JSON.stringify({ error: 'lobbyName and creatorName required' }), { status: 400, headers: JSON_HEADERS(origin) });
     }
@@ -454,7 +487,7 @@ export async function handleGameRequest(request, env, origin) {
     const upstream = await obj.fetch(new Request('https://internal/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ gameId, lobbyName, creatorName, playerId })
+      body: JSON.stringify({ gameId, lobbyName, creatorName, playerId, maxPlayers })
     }));
     const data = await upstream.json();
     if (!upstream.ok) return new Response(JSON.stringify(data), { status: upstream.status, headers: JSON_HEADERS(origin) });
@@ -496,6 +529,22 @@ export async function handleGameRequest(request, env, origin) {
     const upstream = await obj.fetch(new Request('https://internal/state', {
       method: 'GET',
       headers: playerId ? { 'X-Player-Id': playerId } : {}
+    }));
+    const data = await upstream.json();
+    return new Response(JSON.stringify(data), { status: upstream.status, headers: JSON_HEADERS(origin) });
+  }
+
+  // POST /api/games/:gameId/start
+  const startMatch = path.match(/^\/api\/games\/([^/]+)\/start$/);
+  if (startMatch && method === 'POST') {
+    const gameId = startMatch[1];
+    const playerId = request.headers.get('X-Player-Id');
+    if (!playerId) return new Response(JSON.stringify({ error: 'X-Player-Id required' }), { status: 400, headers: JSON_HEADERS(origin) });
+    const id = env.GAMES.idFromName(gameId);
+    const obj = env.GAMES.get(id);
+    const upstream = await obj.fetch(new Request('https://internal/start', {
+      method: 'POST',
+      headers: { 'X-Player-Id': playerId }
     }));
     const data = await upstream.json();
     return new Response(JSON.stringify(data), { status: upstream.status, headers: JSON_HEADERS(origin) });

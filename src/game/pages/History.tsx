@@ -42,9 +42,14 @@ export function History() {
 
 function RoundCard({ round, state }: { round: RoundView; state: GameStateView }) {
   const me = state.players.find((p) => p.playerId === state.you);
-  const opp = state.players.find((p) => p.playerId !== state.you);
+  const others = state.players.filter((p) => p.playerId !== state.you);
   const myState = round.you;
-  const oppState = round.opponent && 'guesses' in round.opponent ? round.opponent : null;
+  const oppById = new Map(
+    round.opponents
+      .filter((o): o is { playerId: string; guesses: string[]; solved: boolean; solvedOnGuess: number | null; pointsEarned: number } => 'guesses' in o)
+      .map((o) => [o.playerId, o])
+  );
+  const colsClass = state.players.length === 2 ? 'grid-cols-2' : 'grid-cols-1';
 
   return (
     <div className="bg-j-surface border border-j-muted/20 rounded-xl p-4 flex flex-col gap-3">
@@ -54,9 +59,20 @@ function RoundCard({ round, state }: { round: RoundView; state: GameStateView })
         </span>
         <span className="text-j-accent text-sm font-bold">{round.word?.display ?? '—'}</span>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className={`grid gap-3 ${colsClass}`}>
         <PlayerColumn name={me?.name ?? 'You'} guesses={myState?.guesses ?? []} solvedOn={myState?.solvedOnGuess ?? null} points={myState?.pointsEarned ?? 0} />
-        <PlayerColumn name={opp?.name ?? 'Opp'} guesses={oppState?.guesses ?? []} solvedOn={oppState?.solvedOnGuess ?? null} points={oppState?.pointsEarned ?? 0} />
+        {others.map((p) => {
+          const o = oppById.get(p.playerId);
+          return (
+            <PlayerColumn
+              key={p.playerId}
+              name={p.name}
+              guesses={o?.guesses ?? []}
+              solvedOn={o?.solvedOnGuess ?? null}
+              points={o?.pointsEarned ?? 0}
+            />
+          );
+        })}
       </div>
     </div>
   );

@@ -38,8 +38,8 @@ describe('redactState', () => {
   it('hides opponent guesses during active round', () => {
     const state = { ...baseState, currentRound: makeRound(), rounds: [makeRound()] };
     const r = redactState(state, ME);
-    expect(r.currentRound.opponent.guesses).toBeUndefined();
-    expect(r.currentRound.opponent.guessCount).toBe(2);
+    expect(r.currentRound.opponents[0].guesses).toBeUndefined();
+    expect(r.currentRound.opponents[0].guessCount).toBe(2);
     expect(JSON.stringify(r)).not.toContain('secret1');
     expect(JSON.stringify(r)).not.toContain('secret2');
   });
@@ -47,8 +47,8 @@ describe('redactState', () => {
   it('hides opponent currentClueIndex and solvedOnGuess during active round', () => {
     const state = { ...baseState, currentRound: makeRound(), rounds: [makeRound()] };
     const r = redactState(state, ME);
-    expect(r.currentRound.opponent.currentClueIndex).toBeUndefined();
-    expect(r.currentRound.opponent.solvedOnGuess).toBeUndefined();
+    expect(r.currentRound.opponents[0].currentClueIndex).toBeUndefined();
+    expect(r.currentRound.opponents[0].solvedOnGuess).toBeUndefined();
   });
 
   it('hides word answer during active round', () => {
@@ -56,7 +56,7 @@ describe('redactState', () => {
     const r = redactState(state, ME);
     expect(r.currentRound.word).toBeUndefined();
     // Should not include the canonical answer "synergy" anywhere in opponent block
-    expect(JSON.stringify(r.currentRound.opponent)).not.toContain('synergy');
+    expect(JSON.stringify(r.currentRound.opponents)).not.toContain('synergy');
   });
 
   it('reveals only requester clues 0..currentClueIndex during active round', () => {
@@ -69,7 +69,7 @@ describe('redactState', () => {
   it('full reveal after bothComplete (opponent guesses, word, all clues)', () => {
     const state = { ...baseState, currentRound: makeRound({ bothComplete: true }), rounds: [makeRound({ bothComplete: true })] };
     const r = redactState(state, ME);
-    expect(r.currentRound.opponent.guesses).toEqual(['secret1', 'secret2']);
+    expect(r.currentRound.opponents[0].guesses).toEqual(['secret1', 'secret2']);
     expect(r.currentRound.word.id).toBe('synergy');
     expect(r.currentRound.word.answer).toBe('synergy');
     expect(r.currentRound.you.revealedClues).toHaveLength(4);

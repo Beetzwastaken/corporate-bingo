@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useGameStore } from '../stores/gameStore';
-import { readyForNextRound, submitGuess } from '../lib/api';
+import { readyForNextRound, startGame, submitGuess } from '../lib/api';
 import { Scoreboard } from '../components/Scoreboard';
 import { Lobby } from '../components/Lobby';
 import { ClueCard } from '../components/ClueCard';
@@ -72,6 +72,20 @@ export function Game() {
     }
   }, [gameId, setState]);
 
+  const onStart = useCallback(async () => {
+    if (!gameId) return;
+    setActionBusy(true);
+    setActionError(null);
+    try {
+      const res = await startGame(gameId);
+      setState(res.state);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to start');
+    } finally {
+      setActionBusy(false);
+    }
+  }, [gameId, setState]);
+
   const onGuess = useCallback(async (guess: string) => {
     if (!gameId) return;
     setActionError(null);
@@ -112,13 +126,13 @@ export function Game() {
         {actionError && <p className="text-j-error text-xs font-mono">{actionError}</p>}
 
         {state.players.length < 2 || !round ? (
-          <Lobby state={state} gameId={gameId} onReady={onReady} busy={actionBusy} />
+          <Lobby state={state} gameId={gameId} onReady={onReady} onStart={onStart} busy={actionBusy} />
         ) : isResults ? (
           <RoundResults round={round} state={state} onReady={onReady} busy={actionBusy} />
         ) : isActiveRound && round.you ? (
           <ActiveRound round={round} state={state} onGuess={onGuess} />
         ) : (
-          <Lobby state={state} gameId={gameId} onReady={onReady} busy={actionBusy} />
+          <Lobby state={state} gameId={gameId} onReady={onReady} onStart={onStart} busy={actionBusy} />
         )}
       </main>
     </div>
@@ -136,9 +150,10 @@ function ActiveRound({
 }) {
   const you = round.you!;
   const guessesRemaining = 4 - you.guesses.length;
-  const opponent = state.players.find((p) => p.playerId !== state.you) ?? null;
+  const opponents = state.players.filter((p) => p.playerId !== state.you);
   const currentClue = you.revealedClues[you.revealedClues.length - 1] ?? '…';
   const finishedSelf = you.solved || you.guesses.length >= 4;
+  const stillGuessing = round.opponents.filter((o) => !o.solved && (('guessCount' in o ? o.guessCount : (o as { guesses: string[] }).guesses?.length) ?? 0) < 4).length;
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -147,8 +162,8 @@ function ActiveRound({
       {finishedSelf ? (
         <p className="text-j-secondary text-sm">
           {you.solved
-            ? `Solved on guess ${you.solvedOnGuess}. Waiting on ${opponent?.name ?? 'opponent'}…`
-            : `Out of guesses. Waiting on ${opponent?.name ?? 'opponent'} to finish.`}
+            ? `Solved on guess ${you.solvedOnGuess}. ${stillGuessing > 0 ? `Waiting on ${stillGuessing} of ${opponents.length}.` : ''}`
+            : `Out of guesses. ${stillGuessing > 0 ? `Waiting on ${stillGuessing} of ${opponents.length}.` : ''}`}
         </p>
       ) : (
         <GuessInput
@@ -157,7 +172,7 @@ function ActiveRound({
           disabled={false}
         />
       )}
-      <OpponentStatus round={round} opponent={opponent} />
+      <OpponentStatus round={round} opponents={opponents} />
     </div>
   );
 }

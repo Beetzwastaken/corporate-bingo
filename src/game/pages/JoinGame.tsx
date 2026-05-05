@@ -1,4 +1,4 @@
-// Opponent landing from invite link. Prompts name, posts join, redirects.
+// Opponent landing from invite link. Uses global username; prompts only if unset.
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { joinGame } from '../lib/api';
@@ -7,11 +7,13 @@ import { getUserName, setUserName } from '../lib/identity';
 export function JoinGame() {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
-  const [name, setName] = useState(getUserName() ?? '');
+  const stored = getUserName();
+  const [name, setName] = useState(stored ?? '');
+  const [editing, setEditing] = useState(!stored);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onJoin(e: React.FormEvent) {
     e.preventDefault();
     if (!gameId || !name.trim()) return;
     setBusy(true);
@@ -35,23 +37,33 @@ export function JoinGame() {
       <header className="text-center mb-8">
         <h1 className="text-2xl font-bold">Join Game</h1>
         <p className="text-j-tertiary text-xs font-mono uppercase tracking-wider mt-1">
-          Enter your name to join
+          {editing ? 'Set your name to join' : `Joining as ${name}`}
         </p>
       </header>
 
-      <form onSubmit={onSubmit} className="w-full max-w-md flex flex-col gap-4">
-        <label className="flex flex-col gap-1">
-          <span className="text-j-secondary text-xs font-mono uppercase tracking-wider">Your name</span>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            maxLength={40}
-            className="bg-j-surface border border-j-muted/20 rounded-lg px-3 py-2 text-j-text outline-none focus:border-j-accent/60"
-            required
-            autoFocus
-          />
-        </label>
+      <form onSubmit={onJoin} className="w-full max-w-md flex flex-col gap-4">
+        {editing ? (
+          <label className="flex flex-col gap-1">
+            <span className="text-j-secondary text-xs font-mono uppercase tracking-wider">Your name</span>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={40}
+              className="bg-j-surface border border-j-muted/20 rounded-lg px-3 py-2 text-j-text outline-none focus:border-j-accent/60"
+              required
+              autoFocus
+            />
+          </label>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="text-j-accent text-xs font-mono self-start hover:text-j-accent-hover"
+          >
+            Change name
+          </button>
+        )}
 
         {error && <p className="text-j-error text-xs font-mono">{error}</p>}
 

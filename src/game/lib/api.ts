@@ -9,11 +9,15 @@ export interface Word {
   clues: string[];
 }
 
+export type OpponentRoundView =
+  | { playerId: string; guessCount: number; solved: boolean }
+  | { playerId: string; guesses: string[]; solved: boolean; solvedOnGuess: number | null; pointsEarned: number };
+
 export interface RoundView {
   roundNumber: number;
   startedAt: number;
   endedAt: number | null;
-  bothComplete: boolean;
+  bothComplete: boolean; // semantically "all complete" — kept for compat
   you: {
     guesses: string[];
     solved: boolean;
@@ -22,10 +26,7 @@ export interface RoundView {
     currentClueIndex: number;
     revealedClues: string[];
   } | null;
-  opponent:
-    | { playerId: string; guessCount: number; solved: boolean }
-    | { playerId: string; guesses: string[]; solved: boolean; solvedOnGuess: number | null; pointsEarned: number }
-    | null;
+  opponents: OpponentRoundView[];
   word?: Word;
 }
 
@@ -42,6 +43,7 @@ export interface GameStateView {
   lobbyName: string;
   status: 'waiting' | 'active' | 'abandoned';
   createdAt: number;
+  maxPlayers: number;
   scores: Record<string, number>;
   players: Player[];
   rounds: RoundView[];
@@ -52,9 +54,11 @@ export interface GameStateView {
 export interface GameSummary {
   gameId: string;
   lobbyName: string;
-  opponentName: string | null;
+  opponentName: string | null; // legacy: first opponent
+  opponentNames: string[];
   yourScore: number;
-  opponentScore: number;
+  opponentScore: number; // legacy: first opponent
+  opponentScores: number[];
   status: string;
   lastActivity: number;
 }
@@ -86,8 +90,12 @@ export interface CreateGameResponse {
   state: GameStateView;
 }
 
-export function createGame(lobbyName: string, creatorName: string): Promise<CreateGameResponse> {
-  return req('POST', '/api/games', { lobbyName, creatorName });
+export function createGame(lobbyName: string, creatorName: string, maxPlayers: number = 2): Promise<CreateGameResponse> {
+  return req('POST', '/api/games', { lobbyName, creatorName, maxPlayers });
+}
+
+export function startGame(gameId: string): Promise<{ ok: boolean; state: GameStateView }> {
+  return req('POST', `/api/games/${gameId}/start`);
 }
 
 export interface JoinGameResponse {
