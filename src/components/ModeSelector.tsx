@@ -1,4 +1,6 @@
+import { Link } from 'react-router-dom';
 import { JargonLogo } from './JargonLogo';
+import { FEATURES } from '../lib/config';
 
 interface ModeSelectorProps {
   onSelectMode: (mode: 'solo' | 'duo') => void;
@@ -11,6 +13,10 @@ export function ModeSelector({ onSelectMode }: ModeSelectorProps) {
     day: 'numeric',
     weekday: 'short'
   });
+
+  const visible = FEATURES.MODES_VISIBLE;
+  const showDecode = visible.includes('decode');
+  const showDuo = visible.includes('duo');
 
   return (
     <div className="h-screen bg-j-bg text-j-text font-display flex flex-col items-center justify-center overflow-hidden relative">
@@ -32,25 +38,47 @@ export function ModeSelector({ onSelectMode }: ModeSelectorProps) {
 
       {/* Mode cards */}
       <div className="flex flex-col gap-4 max-w-xl w-full px-6 relative">
-        {/* Duo */}
-        <button
-          onClick={() => onSelectMode('duo')}
-          className="group p-6 bg-j-surface hover:bg-j-hover border border-j-muted/20 hover:border-j-accent/30 rounded-2xl transition-all duration-200 text-left animate-fade-in-up stagger-1"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xl font-semibold text-j-text group-hover:text-j-accent transition-colors">Play</h2>
-            <span className="text-j-tertiary text-xs font-mono uppercase tracking-wider">2 players</span>
-          </div>
-          <p className="text-j-tertiary text-sm leading-relaxed">
-            Pair with a colleague. Hide squares, mark buzzwords, find their hidden spots.
-          </p>
-          <div className="mt-4 flex items-center gap-2 text-j-accent/60 group-hover:text-j-accent/90 transition-colors">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-            <span className="text-xs font-mono">Find a partner</span>
-          </div>
-        </button>
+        {showDecode && (
+          <Link
+            to="/decode"
+            className="group p-6 bg-j-surface hover:bg-j-hover border border-j-muted/20 hover:border-j-accent/30 rounded-2xl transition-all duration-200 text-left animate-fade-in-up stagger-1 block"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xl font-semibold text-j-text group-hover:text-j-accent transition-colors">Decode</h2>
+              <span className="text-j-tertiary text-xs font-mono uppercase tracking-wider">2 players · async</span>
+            </div>
+            <p className="text-j-tertiary text-sm leading-relaxed">
+              Guess the corporate buzzword from cryptic clues. Head-to-head, take your time, no timer.
+            </p>
+            <div className="mt-4 flex items-center gap-2 text-j-accent/60 group-hover:text-j-accent/90 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+              <span className="text-xs font-mono">Start a game</span>
+            </div>
+          </Link>
+        )}
+
+        {showDuo && (
+          <button
+            onClick={() => onSelectMode('duo')}
+            className="group p-6 bg-j-surface hover:bg-j-hover border border-j-muted/20 hover:border-j-accent/30 rounded-2xl transition-all duration-200 text-left animate-fade-in-up stagger-1"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xl font-semibold text-j-text group-hover:text-j-accent transition-colors">Play</h2>
+              <span className="text-j-tertiary text-xs font-mono uppercase tracking-wider">2 players</span>
+            </div>
+            <p className="text-j-tertiary text-sm leading-relaxed">
+              Pair with a colleague. Hide squares, mark buzzwords, find their hidden spots.
+            </p>
+            <div className="mt-4 flex items-center gap-2 text-j-accent/60 group-hover:text-j-accent/90 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+              <span className="text-xs font-mono">Find a partner</span>
+            </div>
+          </button>
+        )}
       </div>
 
       {/* Footer */}
