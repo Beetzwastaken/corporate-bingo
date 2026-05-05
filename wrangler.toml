@@ -6,6 +6,10 @@ compatibility_date = "2024-12-01"
 tag = "v1"
 new_sqlite_classes = [ "BingoRoom", "DashboardAnalytics" ]
 
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = [ "DecodeGame", "UserGames" ]
+
 [vars]
 CORS_ORIGIN = "https://playjargon.com"
 
@@ -17,11 +21,19 @@ class_name = "BingoRoom"
 name = "ANALYTICS"
 class_name = "DashboardAnalytics"
 
+[[durable_objects.bindings]]
+name = "DECODE_GAMES"
+class_name = "DecodeGame"
+
+[[durable_objects.bindings]]
+name = "USER_GAMES"
+class_name = "UserGames"
+
 [build]
 command = ""
 
 [env.production]
 vars = { CORS_ORIGIN = "https://playjargon.com" }
 
-[env.development]
+[env.development]  
 vars = { CORS_ORIGIN = "http://localhost:8080" }

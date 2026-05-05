@@ -3,9 +3,11 @@
 
 import { corsHeaders } from './cors.js';
 import { handleDuoRequest, BingoRoom } from './duo.js';
+import { handleDecodeRequest, DecodeGame } from './decode.js';
+import { UserGames } from './userGames.js';
 import { DashboardAnalytics } from '../analytics-worker.js';
 
-export { BingoRoom, DashboardAnalytics };
+export { BingoRoom, DashboardAnalytics, DecodeGame, UserGames };
 
 export default {
   async fetch(request, env) {
@@ -46,6 +48,10 @@ export default {
           });
         }
       }
+
+      // Decode
+      const decodeResponse = await handleDecodeRequest(request, env, origin);
+      if (decodeResponse) return decodeResponse;
 
       // Duo
       const duoResponse = await handleDuoRequest(request, env, origin);
