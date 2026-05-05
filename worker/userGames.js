@@ -49,6 +49,12 @@ export class UserGames {
         `, b.gameId, b.lobbyName, oppNames[0] || null, b.yourScore || 0, oppScores[0] || 0, b.status, b.lastActivity, JSON.stringify(oppNames), JSON.stringify(oppScores));
         return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
       }
+      if (path === '/remove' && method === 'POST') {
+        const b = await request.json();
+        if (!b.gameId) return new Response(JSON.stringify({ error: 'gameId required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+        this.sql.exec('DELETE FROM user_games WHERE game_id = ?', b.gameId);
+        return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
+      }
       if (path === '/list' && method === 'GET') {
         const rows = this.sql.exec('SELECT * FROM user_games ORDER BY last_activity DESC').toArray();
         return new Response(JSON.stringify(rows.map(r => {

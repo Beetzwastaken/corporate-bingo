@@ -78,6 +78,10 @@ function redactRound(round, requesterId) {
 
   if (fullReveal && word) {
     result.word = { id: word.id, display: word.display, answer: word.answer, clues: word.clues };
+  } else if (word) {
+    // Active round: expose letter-mask pattern so client can render letter squares.
+    // Letters → '_', everything else (spaces, hyphens, apostrophes) preserved.
+    result.wordPattern = word.display.replace(/[A-Za-z]/g, '_');
   }
 
   return result;

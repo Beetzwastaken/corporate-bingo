@@ -118,6 +118,7 @@ export class Game {
       if (path === '/state' && method === 'GET') return this.handleState(request);
       if (path === '/ready' && method === 'POST') return await this.handleReady(request);
       if (path === '/guess' && method === 'POST') return await this.handleGuess(request);
+      if (path === '/delete' && method === 'POST') return await this.handleDelete(request);
       return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     } catch (err) {
       return new Response(JSON.stringify({ error: err.message || String(err) }), { status: 500, headers: { 'Content-Type': 'application/json' } });
@@ -421,6 +422,35 @@ export class Game {
     }), { headers: { 'Content-Type': 'application/json' } });
   }
 
+  async handleDelete(request) {
+    const game = this.getGame();
+    if (!game) return new Response(JSON.stringify({ error: 'Game not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+    const playerId = request.headers.get('X-Player-Id');
+    if (!playerId) return new Response(JSON.stringify({ error: 'X-Player-Id required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    const players = this.getPlayers();
+    const me = players.find(p => p.playerId === playerId);
+    if (!me) return new Response(JSON.stringify({ error: 'Not a member' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+    if (me.slot !== 0) return new Response(JSON.stringify({ error: 'Only the host can delete' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+
+    // Remove from each player's UserGames index
+    for (const p of players) {
+      if (this.env.USER_GAMES) {
+        const id = this.env.USER_GAMES.idFromName(p.playerId);
+        const obj = this.env.USER_GAMES.get(id);
+        await obj.fetch(new Request('https://internal/remove', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gameId: game.game_id })
+        }));
+      }
+    }
+    // Wipe DO state
+    this.sql.exec('DELETE FROM rounds');
+    this.sql.exec('DELETE FROM players');
+    this.sql.exec('DELETE FROM game');
+    return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
+  }
+
   // Derives per-player status used by the dashboard.
   // Values: 'waiting' (alone or pre-start) | 'your_turn' | 'waiting_on_opponent' | 'round_complete' | 'game_over'
   computePlayerStatus(playerId, players, currentRound, gameStatus) {
@@ -579,6 +609,22 @@ export async function handleGameRequest(request, env, origin) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Player-Id': playerId },
       body
+    }));
+    const data = await upstream.json();
+    return new Response(JSON.stringify(data), { status: upstream.status, headers: JSON_HEADERS(origin) });
+  }
+
+  // DELETE /api/games/:gameId — host only
+  const deleteMatch = path.match(/^\/api\/games\/([^/]+)$/);
+  if (deleteMatch && method === 'DELETE') {
+    const gameId = deleteMatch[1];
+    const playerId = request.headers.get('X-Player-Id');
+    if (!playerId) return new Response(JSON.stringify({ error: 'X-Player-Id required' }), { status: 400, headers: JSON_HEADERS(origin) });
+    const id = env.GAMES.idFromName(gameId);
+    const obj = env.GAMES.get(id);
+    const upstream = await obj.fetch(new Request('https://internal/delete', {
+      method: 'POST',
+      headers: { 'X-Player-Id': playerId }
     }));
     const data = await upstream.json();
     return new Response(JSON.stringify(data), { status: upstream.status, headers: JSON_HEADERS(origin) });

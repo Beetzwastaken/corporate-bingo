@@ -38,28 +38,55 @@ export function Home() {
                 maxLength={40}
                 placeholder="Your name"
                 autoFocus
-                className="bg-j-surface border border-j-muted/30 rounded px-2 py-1 text-j-text outline-none focus:border-j-accent/60 lowercase tracking-normal"
+                className="bg-j-surface border border-j-muted/30 rounded px-2 py-1 text-j-text outline-none focus:border-j-accent/60 tracking-normal text-sm"
               />
               <button
                 type="button"
                 onClick={save}
                 disabled={!draft.trim()}
-                className="text-j-accent hover:text-j-accent-hover disabled:opacity-40"
+                aria-label="Save name"
+                className="p-1.5 rounded hover:bg-j-surface text-j-accent hover:text-j-accent-hover disabled:opacity-40 transition-colors"
               >
-                Save
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setDraft(name); setEditing(false); }}
+                aria-label="Cancel"
+                className="p-1.5 rounded hover:bg-j-surface text-j-tertiary hover:text-j-text transition-colors"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </>
           ) : (
-            <>
-              <span className="text-j-tertiary">Playing as {name}</span>
-              <button
-                type="button"
-                onClick={() => { setDraft(name); setEditing(true); }}
-                className="text-j-accent hover:text-j-accent-hover"
+            <button
+              type="button"
+              onClick={() => { setDraft(name); setEditing(true); }}
+              className="group flex items-center gap-2 text-j-tertiary hover:text-j-text transition-colors"
+              aria-label="Edit your name"
+            >
+              <span>Playing as {name}</span>
+              <svg
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="opacity-50 group-hover:opacity-100 transition-opacity"
+                aria-hidden
               >
-                edit
-              </button>
-            </>
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            </button>
           )}
         </div>
       </header>

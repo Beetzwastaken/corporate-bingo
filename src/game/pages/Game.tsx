@@ -1,13 +1,13 @@
 // Game view — state-driven: lobby vs round vs results.
 // Polling: refresh every 15s while visible + on focus/visibility change.
 import { useEffect, useState, useCallback } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useGameStore } from '../stores/gameStore';
-import { readyForNextRound, startGame, submitGuess } from '../lib/api';
+import { deleteGame, readyForNextRound, startGame, submitGuess } from '../lib/api';
 import { Scoreboard } from '../components/Scoreboard';
 import { Lobby } from '../components/Lobby';
 import { ClueCard } from '../components/ClueCard';
-import { GuessInput } from '../components/GuessInput';
+import { LetterGrid } from '../components/LetterGrid';
 import { GuessHistory } from '../components/GuessHistory';
 import { OpponentStatus } from '../components/OpponentStatus';
 import { RoundResults } from '../components/RoundResults';
@@ -16,6 +16,7 @@ const POLL_INTERVAL_MS = 15000;
 
 export function Game() {
   const { gameId } = useParams<{ gameId: string }>();
+  const navigate = useNavigate();
   const { state, error, loading, setGame, refresh, setState } = useGameStore();
   const [actionBusy, setActionBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -86,6 +87,20 @@ export function Game() {
     }
   }, [gameId, setState]);
 
+  const onDelete = useCallback(async () => {
+    if (!gameId) return;
+    if (!window.confirm('Delete this lobby? This removes it for all players.')) return;
+    setActionBusy(true);
+    setActionError(null);
+    try {
+      await deleteGame(gameId);
+      navigate('/');
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to delete');
+      setActionBusy(false);
+    }
+  }, [gameId, navigate]);
+
   const onGuess = useCallback(async (guess: string) => {
     if (!gameId) return;
     setActionError(null);
@@ -105,17 +120,32 @@ export function Game() {
   const round = state.currentRound;
   const isResults = round && round.bothComplete;
   const isActiveRound = round && !round.bothComplete;
+  const me = state.players.find((p) => p.playerId === state.you);
+  const isHost = me?.slot === 0;
 
   return (
     <div className="min-h-screen bg-j-bg text-j-text font-display flex flex-col items-center px-6 py-8">
       <header className="w-full max-w-md mb-5 flex flex-col gap-1">
         <div className="flex items-center justify-between w-full">
           <Link to="/" className="text-j-muted text-xs font-mono hover:text-j-tertiary">← My Games</Link>
-          {state.rounds.some((r) => r.bothComplete) && (
-            <Link to={`/game/${gameId}/history`} className="text-j-muted text-xs font-mono hover:text-j-tertiary">
-              History →
-            </Link>
-          )}
+          <div className="flex items-center gap-3">
+            {state.rounds.some((r) => r.bothComplete) && (
+              <Link to={`/game/${gameId}/history`} className="text-j-muted text-xs font-mono hover:text-j-tertiary">
+                History →
+              </Link>
+            )}
+            {isHost && (
+              <button
+                type="button"
+                onClick={onDelete}
+                disabled={actionBusy}
+                aria-label="Delete lobby"
+                className="text-j-muted text-xs font-mono hover:text-j-error transition-colors disabled:opacity-40"
+              >
+                Delete
+              </button>
+            )}
+          </div>
         </div>
         <h1 className="text-xl font-bold mt-1">{state.lobbyName}</h1>
       </header>
@@ -165,12 +195,15 @@ function ActiveRound({
             ? `Solved on guess ${you.solvedOnGuess}. ${stillGuessing > 0 ? `Waiting on ${stillGuessing} of ${opponents.length}.` : ''}`
             : `Out of guesses. ${stillGuessing > 0 ? `Waiting on ${stillGuessing} of ${opponents.length}.` : ''}`}
         </p>
-      ) : (
-        <GuessInput
+      ) : round.wordPattern ? (
+        <LetterGrid
+          pattern={round.wordPattern}
           guessesRemaining={guessesRemaining}
           onSubmit={onGuess}
           disabled={false}
         />
+      ) : (
+        <p className="text-j-tertiary text-xs font-mono">Loading word…</p>
       )}
       <OpponentStatus round={round} opponents={opponents} />
     </div>

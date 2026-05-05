@@ -17,7 +17,7 @@ export function corsHeaders(origin) {
 
   return {
     'Access-Control-Allow-Origin': validOrigin || 'null',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, X-Player-ID',
     'Access-Control-Max-Age': '86400',
   };

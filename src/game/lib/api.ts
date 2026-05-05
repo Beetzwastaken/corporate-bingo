@@ -28,6 +28,8 @@ export interface RoundView {
   } | null;
   opponents: OpponentRoundView[];
   word?: Word;
+  // Letter-mask of word.display for active rounds: letters → '_', separators preserved.
+  wordPattern?: string;
 }
 
 export interface Player {
@@ -131,4 +133,8 @@ export function submitGuess(gameId: string, guess: string): Promise<GuessRespons
 
 export function listMyGames(): Promise<GameSummary[]> {
   return req('GET', '/api/users/me/games');
+}
+
+export function deleteGame(gameId: string): Promise<{ ok: boolean }> {
+  return req('DELETE', `/api/games/${gameId}`);
 }
