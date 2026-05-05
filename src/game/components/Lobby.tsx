@@ -1,8 +1,8 @@
 // Pre-round lobby: waiting for opponent OR both ready-up.
-import type { DecodeStateView } from '../lib/api';
+import type { GameStateView } from '../lib/api';
 
 export function Lobby({ state, gameId, onReady, busy }: {
-  state: DecodeStateView;
+  state: GameStateView;
   gameId: string;
   onReady: () => void;
   busy: boolean;
@@ -11,7 +11,7 @@ export function Lobby({ state, gameId, onReady, busy }: {
   const opp = state.players.find((p) => p.playerId !== state.you);
 
   if (state.players.length === 1) {
-    const inviteUrl = `${window.location.origin}/decode/join/${gameId}`;
+    const inviteUrl = `${window.location.origin}/join/${gameId}`;
     return (
       <div className="flex flex-col gap-3 w-full">
         <p className="text-j-secondary text-sm">Waiting for opponent. Share invite link:</p>

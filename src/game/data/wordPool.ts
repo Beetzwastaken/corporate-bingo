@@ -1,14 +1,14 @@
-// Decode mode word pool. 20 buzzwords × 4 clues each (cryptic → giveaway).
+// Jargon word pool. 20 buzzwords × 4 clues each (cryptic → giveaway).
 // `answer` is the canonical pre-normalized form; matched via normalizeGuess().
 
-export interface DecodeWord {
+export interface Word {
   id: string;
   answer: string;
   display: string;
   clues: [string, string, string, string];
 }
 
-export const WORD_POOL: DecodeWord[] = [
+export const WORD_POOL: Word[] = [
   {
     id: "synergy",
     answer: "synergy",

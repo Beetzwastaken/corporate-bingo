@@ -1,4 +1,4 @@
-// Per-player game index. One DO per playerId. Updated by DecodeGame on mutation.
+// Per-player game index. One DO per playerId. Updated by Game on mutation.
 
 export class UserGames {
   constructor(state, env) {

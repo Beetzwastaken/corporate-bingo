@@ -1,7 +1,7 @@
-// Server mirror of src/decode/data/wordPool.ts.
+// Server mirror of src/game/data/wordPool.ts.
 // Server holds answers + clues so it can redact for active rounds and
 // validate guesses without trusting the client.
-// Keep contents in sync with src/decode/data/wordPool.ts.
+// Keep contents in sync with src/game/data/wordPool.ts.
 
 export const WORD_POOL = [
   { id: "synergy", answer: "synergy", display: "Synergy", clues: [

@@ -2,12 +2,12 @@
 // Reads state.rounds from store (already populated by polling on Game page).
 import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useDecodeStore } from '../stores/decodeStore';
-import type { DecodeRoundView, DecodeStateView } from '../lib/api';
+import { useGameStore } from '../stores/gameStore';
+import type { RoundView, GameStateView } from '../lib/api';
 
 export function History() {
   const { gameId } = useParams<{ gameId: string }>();
-  const { state, error, loading, setGame, refresh } = useDecodeStore();
+  const { state, error, loading, setGame, refresh } = useGameStore();
 
   useEffect(() => {
     if (!gameId) return;
@@ -25,7 +25,7 @@ export function History() {
   return (
     <div className="min-h-screen bg-j-bg text-j-text font-display flex flex-col items-center px-6 py-8">
       <header className="w-full max-w-md mb-5 flex flex-col gap-1">
-        <Link to={`/decode/game/${gameId}`} className="text-j-muted text-xs font-mono hover:text-j-tertiary self-start">← Game</Link>
+        <Link to={`/game/${gameId}`} className="text-j-muted text-xs font-mono hover:text-j-tertiary self-start">← Game</Link>
         <h1 className="text-xl font-bold mt-1">{state.lobbyName} · History</h1>
       </header>
 
@@ -40,7 +40,7 @@ export function History() {
   );
 }
 
-function RoundCard({ round, state }: { round: DecodeRoundView; state: DecodeStateView }) {
+function RoundCard({ round, state }: { round: RoundView; state: GameStateView }) {
   const me = state.players.find((p) => p.playerId === state.you);
   const opp = state.players.find((p) => p.playerId !== state.you);
   const myState = round.you;

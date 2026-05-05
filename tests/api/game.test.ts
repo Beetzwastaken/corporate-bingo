@@ -1,8 +1,8 @@
 // @vitest-environment node
-// Live-API integration tests for Decode mode. Requires deployed worker.
+// Live-API integration tests for Jargon. Requires deployed worker.
 import { describe, it, expect } from 'vitest';
 
-const API_BASE = 'https://jargon-api.playjargon.workers.dev/api/decode';
+const API_BASE = 'https://jargon-api.playjargon.workers.dev/api/games';
 
 async function api(method: string, path: string, body?: any, playerId?: string) {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -16,7 +16,7 @@ async function api(method: string, path: string, body?: any, playerId?: string) 
   return { status: res.status, data };
 }
 
-describe('Decode API', () => {
+describe('Jargon API', () => {
   it('create + join roundtrip', async () => {
     const c = await api('POST', '/games', { lobbyName: 'Test Lobby', creatorName: 'Alice' });
     expect(c.status).toBe(200);

@@ -1,4 +1,4 @@
-// Mirror of src/decode/lib/normalize.ts. Keep logic identical.
+// Mirror of src/game/lib/normalize.ts. Keep logic identical.
 export function normalizeGuess(input) {
   return input
     .toLowerCase()

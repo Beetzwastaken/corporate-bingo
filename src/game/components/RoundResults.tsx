@@ -1,6 +1,6 @@
 // Round-end view. Phase 6 stub renders answer + both guess histories + ready button.
 // Phase 7 polishes copy, animations, and ready-up flow.
-import type { DecodeRoundView, DecodeStateView } from '../lib/api';
+import type { RoundView, GameStateView } from '../lib/api';
 
 export function RoundResults({
   round,
@@ -8,8 +8,8 @@ export function RoundResults({
   onReady,
   busy
 }: {
-  round: DecodeRoundView;
-  state: DecodeStateView;
+  round: RoundView;
+  state: GameStateView;
   onReady: () => void;
   busy: boolean;
 }) {

@@ -1,15 +1,15 @@
-// Decode API wrapper. Sends X-Player-Id header for the current user.
+// Jargon API wrapper. Sends X-Player-Id header for the current user.
 import { getApiBaseUrl } from '../../lib/config';
 import { getOrCreateUserId } from './identity';
 
-export interface DecodeWord {
+export interface Word {
   id: string;
   display: string;
   answer: string;
   clues: string[];
 }
 
-export interface DecodeRoundView {
+export interface RoundView {
   roundNumber: number;
   startedAt: number;
   endedAt: number | null;
@@ -26,10 +26,10 @@ export interface DecodeRoundView {
     | { playerId: string; guessCount: number; solved: boolean }
     | { playerId: string; guesses: string[]; solved: boolean; solvedOnGuess: number | null; pointsEarned: number }
     | null;
-  word?: DecodeWord;
+  word?: Word;
 }
 
-export interface DecodePlayer {
+export interface Player {
   playerId: string;
   name: string;
   slot: number;
@@ -37,19 +37,19 @@ export interface DecodePlayer {
   readyForNextRound: boolean;
 }
 
-export interface DecodeStateView {
+export interface GameStateView {
   gameId: string;
   lobbyName: string;
   status: 'waiting' | 'active' | 'abandoned';
   createdAt: number;
   scores: Record<string, number>;
-  players: DecodePlayer[];
-  rounds: DecodeRoundView[];
-  currentRound: DecodeRoundView | null;
+  players: Player[];
+  rounds: RoundView[];
+  currentRound: RoundView | null;
   you: string;
 }
 
-export interface DecodeGameSummary {
+export interface GameSummary {
   gameId: string;
   lobbyName: string;
   opponentName: string | null;
@@ -83,29 +83,29 @@ export interface CreateGameResponse {
   gameId: string;
   playerId: string;
   inviteUrl: string;
-  state: DecodeStateView;
+  state: GameStateView;
 }
 
 export function createGame(lobbyName: string, creatorName: string): Promise<CreateGameResponse> {
-  return req('POST', '/api/decode/games', { lobbyName, creatorName });
+  return req('POST', '/api/games', { lobbyName, creatorName });
 }
 
 export interface JoinGameResponse {
   gameId: string;
   playerId: string;
-  state: DecodeStateView;
+  state: GameStateView;
 }
 
 export function joinGame(gameId: string, playerName: string): Promise<JoinGameResponse> {
-  return req('POST', `/api/decode/games/${gameId}/join`, { playerName });
+  return req('POST', `/api/games/${gameId}/join`, { playerName });
 }
 
-export function getGameState(gameId: string): Promise<DecodeStateView> {
-  return req('GET', `/api/decode/games/${gameId}`);
+export function getGameState(gameId: string): Promise<GameStateView> {
+  return req('GET', `/api/games/${gameId}`);
 }
 
-export function readyForNextRound(gameId: string): Promise<{ ok: boolean; started: boolean; state: DecodeStateView }> {
-  return req('POST', `/api/decode/games/${gameId}/ready`);
+export function readyForNextRound(gameId: string): Promise<{ ok: boolean; started: boolean; state: GameStateView }> {
+  return req('POST', `/api/games/${gameId}/ready`);
 }
 
 export interface GuessResponse {
@@ -114,13 +114,13 @@ export interface GuessResponse {
   guessesRemaining: number;
   solved: boolean;
   bothComplete: boolean;
-  state: DecodeStateView;
+  state: GameStateView;
 }
 
 export function submitGuess(gameId: string, guess: string): Promise<GuessResponse> {
-  return req('POST', `/api/decode/games/${gameId}/guess`, { guess });
+  return req('POST', `/api/games/${gameId}/guess`, { guess });
 }
 
-export function listMyGames(): Promise<DecodeGameSummary[]> {
-  return req('GET', '/api/decode/users/me/games');
+export function listMyGames(): Promise<GameSummary[]> {
+  return req('GET', '/api/users/me/games');
 }

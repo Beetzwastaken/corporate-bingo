@@ -1,9 +1,12 @@
-// Decode mode identity: localStorage-backed userId + name.
+// Jargon identity: localStorage-backed userId + name.
 // Future migration note: when email auth is added, userId remains the stable
 // key; backend records map userId → email account, so existing games carry over.
 
-const USER_ID_KEY = 'jargon.decode.userId';
-const USER_NAME_KEY = 'jargon.decode.userName';
+const USER_ID_KEY = 'jargon.userId';
+const USER_NAME_KEY = 'jargon.userName';
+// Old keys from prior naming. Read once on first access, then drop.
+const LEGACY_USER_ID_KEY = 'jargon.decode.userId';
+const LEGACY_USER_NAME_KEY = 'jargon.decode.userName';
 
 function uuid(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -16,7 +19,21 @@ function uuid(): string {
   });
 }
 
+function migrateLegacy(): void {
+  const legacyId = localStorage.getItem(LEGACY_USER_ID_KEY);
+  if (legacyId && !localStorage.getItem(USER_ID_KEY)) {
+    localStorage.setItem(USER_ID_KEY, legacyId);
+  }
+  const legacyName = localStorage.getItem(LEGACY_USER_NAME_KEY);
+  if (legacyName && !localStorage.getItem(USER_NAME_KEY)) {
+    localStorage.setItem(USER_NAME_KEY, legacyName);
+  }
+  localStorage.removeItem(LEGACY_USER_ID_KEY);
+  localStorage.removeItem(LEGACY_USER_NAME_KEY);
+}
+
 export function getOrCreateUserId(): string {
+  migrateLegacy();
   let id = localStorage.getItem(USER_ID_KEY);
   if (!id) {
     id = uuid();
@@ -26,6 +43,7 @@ export function getOrCreateUserId(): string {
 }
 
 export function getUserName(): string | null {
+  migrateLegacy();
   return localStorage.getItem(USER_NAME_KEY);
 }
 

@@ -1,7 +1,7 @@
 // Small unobtrusive opponent status during active round.
-import type { DecodeRoundView, DecodePlayer } from '../lib/api';
+import type { RoundView, Player } from '../lib/api';
 
-export function OpponentStatus({ round, opponent }: { round: DecodeRoundView; opponent: DecodePlayer | null }) {
+export function OpponentStatus({ round, opponent }: { round: RoundView; opponent: Player | null }) {
   if (!opponent || !round.opponent) return null;
   const opp = round.opponent as { guessCount?: number; solved: boolean };
   const guesses = opp.guessCount ?? 0;

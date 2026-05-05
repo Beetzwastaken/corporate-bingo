@@ -1,10 +1,10 @@
-// Decode mode landing. Lists user's games + entry to create new.
+// Jargon landing. Lists user's games + entry to create new.
 import { Link } from 'react-router-dom';
 import { JargonLogo } from '../../components/JargonLogo';
 import { MyGamesList } from '../components/MyGamesList';
 import { getOrCreateUserId, getUserName } from '../lib/identity';
 
-export function DecodeHome() {
+export function Home() {
   // Touch identity on landing — ensures userId exists before any API call.
   getOrCreateUserId();
   const name = getUserName();
@@ -14,7 +14,7 @@ export function DecodeHome() {
       <header className="text-center mb-10">
         <div className="w-12 h-12 mx-auto mb-3"><JargonLogo size={48} /></div>
         <h1 className="text-3xl font-bold tracking-tight">
-          <span className="text-j-accent">Decode</span>
+          <span className="text-j-accent">Jargon</span>
         </h1>
         <p className="text-j-tertiary text-xs font-mono uppercase tracking-wider mt-1">
           {name ? `Playing as ${name}` : '2 players · async'}
@@ -28,14 +28,10 @@ export function DecodeHome() {
         </section>
 
         <Link
-          to="/decode/new"
+          to="/new"
           className="block p-4 bg-j-accent/10 hover:bg-j-accent/20 border border-j-accent/30 rounded-xl text-center text-j-accent transition-colors"
         >
           + Create New Game
-        </Link>
-
-        <Link to="/" className="text-center text-j-muted text-xs font-mono">
-          ← Back
         </Link>
       </main>
     </div>

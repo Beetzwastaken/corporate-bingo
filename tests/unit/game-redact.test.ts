@@ -1,6 +1,6 @@
-// Unit tests for decode redact. Imports the JS module directly.
+// Unit tests for game redact. Imports the JS module directly.
 // @ts-expect-error — JS module without types
-import { redactState } from '../../worker/decode-redact.js';
+import { redactState } from '../../worker/game-redact.js';
 import { describe, it, expect } from 'vitest';
 
 const ME = 'p-me';

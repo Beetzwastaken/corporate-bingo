@@ -39,10 +39,7 @@ export const FEATURES = {
   enableDevTools: isDevelopment,
   maxRoomSize: 10,
   maxReconnectAttempts: 5,
-  reconnectDelay: 1000,
-  // Which game modes are visible on the landing page.
-  // Hide a mode by removing it from this list; routes/code stay live.
-  MODES_VISIBLE: ['decode'] as ReadonlyArray<'decode' | 'duo' | 'solo'>
+  reconnectDelay: 1000
 } as const;
 
 export default {

@@ -1,4 +1,4 @@
-// Normalize a Decode-mode guess for comparison against canonical answers.
+// Normalize a Jargon guess for comparison against canonical answers.
 // Rules:
 //   - lowercase
 //   - strip apostrophes, hyphens, commas, periods, exclamation, question marks

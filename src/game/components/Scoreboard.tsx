@@ -1,6 +1,6 @@
-import type { DecodeStateView } from '../lib/api';
+import type { GameStateView } from '../lib/api';
 
-export function Scoreboard({ state }: { state: DecodeStateView }) {
+export function Scoreboard({ state }: { state: GameStateView }) {
   const me = state.players.find((p) => p.playerId === state.you);
   const opp = state.players.find((p) => p.playerId !== state.you);
   const myScore = state.scores[state.you] ?? 0;

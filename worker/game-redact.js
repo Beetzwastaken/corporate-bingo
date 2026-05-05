@@ -9,7 +9,7 @@
 //
 // After bothComplete (or for prior rounds): full reveal.
 
-import { getWord } from './decode-pool.js';
+import { getWord } from './game-pool.js';
 
 export function redactState(state, requesterId) {
   const out = {

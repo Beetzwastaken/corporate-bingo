@@ -1,21 +1,21 @@
-// Zustand store for the active Decode game in view. Server is source of truth.
+// Zustand store for the active game in view. Server is source of truth.
 // Last state cached for offline read; identity persisted via identity.ts.
 import { create } from 'zustand';
-import type { DecodeStateView } from '../lib/api';
+import type { GameStateView } from '../lib/api';
 import { getGameState } from '../lib/api';
 
-interface DecodeStore {
+interface GameStore {
   currentGameId: string | null;
-  state: DecodeStateView | null;
+  state: GameStateView | null;
   loading: boolean;
   error: string | null;
   setGame: (gameId: string) => void;
-  setState: (s: DecodeStateView) => void;
+  setState: (s: GameStateView) => void;
   refresh: () => Promise<void>;
   clear: () => void;
 }
 
-export const useDecodeStore = create<DecodeStore>((set, get) => ({
+export const useGameStore = create<GameStore>((set, get) => ({
   currentGameId: null,
   state: null,
   loading: false,

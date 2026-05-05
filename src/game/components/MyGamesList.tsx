@@ -1,7 +1,7 @@
 // MyGamesList: per-player game dashboard with status badges.
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { listMyGames, type DecodeGameSummary } from '../lib/api';
+import { listMyGames, type GameSummary } from '../lib/api';
 
 const STATUS_META: Record<string, { label: string; classes: string }> = {
   your_turn:           { label: 'Your turn',       classes: 'bg-j-accent/20 text-j-accent border-j-accent/40' },
@@ -21,7 +21,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export function MyGamesList() {
-  const [games, setGames] = useState<DecodeGameSummary[] | null>(null);
+  const [games, setGames] = useState<GameSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export function MyGamesList() {
       {sorted.map((g) => (
         <li key={g.gameId}>
           <Link
-            to={`/decode/game/${g.gameId}`}
+            to={`/game/${g.gameId}`}
             className="block p-4 bg-j-surface hover:bg-j-hover border border-j-muted/20 rounded-xl transition-colors"
           >
             <div className="flex items-center justify-between gap-2">

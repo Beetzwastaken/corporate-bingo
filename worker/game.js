@@ -1,19 +1,19 @@
-// Decode mode backend.
-// One DecodeGame Durable Object per game (keyed by gameId).
+// Jargon backend.
+// One Game Durable Object per game (keyed by gameId).
 // SQLite-backed for persistence across DO eviction. Async play; no timers.
 
 import { corsHeaders } from './cors.js';
-import { normalizeGuess } from './decode-normalize.js';
-import { getWord, pickWord, pointsForGuess } from './decode-pool.js';
-import { redactState } from './decode-redact.js';
+import { normalizeGuess } from './game-normalize.js';
+import { getWord, pickWord, pointsForGuess } from './game-pool.js';
+import { redactState } from './game-redact.js';
 
 const JSON_HEADERS = (origin) => ({ 'Content-Type': 'application/json', ...corsHeaders(origin) });
 const RECENT_WORD_LIMIT = 10;
 const ABANDON_MS = 30 * 24 * 60 * 60 * 1000; // 30d
 
-// ---------- DecodeGame DO ----------
+// ---------- Game DO ----------
 
-export class DecodeGame {
+export class Game {
   constructor(state, env) {
     this.state = state;
     this.env = env;
@@ -431,16 +431,16 @@ export class DecodeGame {
 }
 
 // ---------- Route dispatcher ----------
-// Returns Response or null if no decode route matched.
-export async function handleDecodeRequest(request, env, origin) {
+// Returns Response or null if no game route matched.
+export async function handleGameRequest(request, env, origin) {
   const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method;
 
-  if (!path.startsWith('/api/decode')) return null;
+  if (!path.startsWith('/api/games') && !path.startsWith('/api/users/')) return null;
 
-  // POST /api/decode/games — create new game
-  if (path === '/api/decode/games' && method === 'POST') {
+  // POST /api/games — create new game
+  if (path === '/api/games' && method === 'POST') {
     const body = await request.json();
     const lobbyName = (body.lobbyName || '').toString().trim().slice(0, 80);
     const creatorName = (body.creatorName || '').toString().trim().slice(0, 40);
@@ -449,8 +449,8 @@ export async function handleDecodeRequest(request, env, origin) {
     }
     const gameId = crypto.randomUUID();
     const playerId = request.headers.get('X-Player-Id') || crypto.randomUUID();
-    const id = env.DECODE_GAMES.idFromName(gameId);
-    const obj = env.DECODE_GAMES.get(id);
+    const id = env.GAMES.idFromName(gameId);
+    const obj = env.GAMES.get(id);
     const upstream = await obj.fetch(new Request('https://internal/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -461,21 +461,21 @@ export async function handleDecodeRequest(request, env, origin) {
     return new Response(JSON.stringify({
       gameId,
       playerId,
-      inviteUrl: `/decode/join/${gameId}`,
+      inviteUrl: `/join/${gameId}`,
       state: data.state
     }), { headers: JSON_HEADERS(origin) });
   }
 
-  // POST /api/decode/games/:gameId/join
-  const joinMatch = path.match(/^\/api\/decode\/games\/([^/]+)\/join$/);
+  // POST /api/games/:gameId/join
+  const joinMatch = path.match(/^\/api\/games\/([^/]+)\/join$/);
   if (joinMatch && method === 'POST') {
     const gameId = joinMatch[1];
     const body = await request.json();
     const playerName = (body.playerName || '').toString().trim().slice(0, 40);
     if (!playerName) return new Response(JSON.stringify({ error: 'playerName required' }), { status: 400, headers: JSON_HEADERS(origin) });
     const playerId = request.headers.get('X-Player-Id') || crypto.randomUUID();
-    const id = env.DECODE_GAMES.idFromName(gameId);
-    const obj = env.DECODE_GAMES.get(id);
+    const id = env.GAMES.idFromName(gameId);
+    const obj = env.GAMES.get(id);
     const upstream = await obj.fetch(new Request('https://internal/join', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -486,13 +486,13 @@ export async function handleDecodeRequest(request, env, origin) {
     return new Response(JSON.stringify({ gameId, playerId, state: data.state }), { headers: JSON_HEADERS(origin) });
   }
 
-  // GET /api/decode/games/:gameId
-  const stateMatch = path.match(/^\/api\/decode\/games\/([^/]+)$/);
+  // GET /api/games/:gameId
+  const stateMatch = path.match(/^\/api\/games\/([^/]+)$/);
   if (stateMatch && method === 'GET') {
     const gameId = stateMatch[1];
     const playerId = request.headers.get('X-Player-Id');
-    const id = env.DECODE_GAMES.idFromName(gameId);
-    const obj = env.DECODE_GAMES.get(id);
+    const id = env.GAMES.idFromName(gameId);
+    const obj = env.GAMES.get(id);
     const upstream = await obj.fetch(new Request('https://internal/state', {
       method: 'GET',
       headers: playerId ? { 'X-Player-Id': playerId } : {}
@@ -501,14 +501,14 @@ export async function handleDecodeRequest(request, env, origin) {
     return new Response(JSON.stringify(data), { status: upstream.status, headers: JSON_HEADERS(origin) });
   }
 
-  // POST /api/decode/games/:gameId/ready
-  const readyMatch = path.match(/^\/api\/decode\/games\/([^/]+)\/ready$/);
+  // POST /api/games/:gameId/ready
+  const readyMatch = path.match(/^\/api\/games\/([^/]+)\/ready$/);
   if (readyMatch && method === 'POST') {
     const gameId = readyMatch[1];
     const playerId = request.headers.get('X-Player-Id');
     if (!playerId) return new Response(JSON.stringify({ error: 'X-Player-Id required' }), { status: 400, headers: JSON_HEADERS(origin) });
-    const id = env.DECODE_GAMES.idFromName(gameId);
-    const obj = env.DECODE_GAMES.get(id);
+    const id = env.GAMES.idFromName(gameId);
+    const obj = env.GAMES.get(id);
     const upstream = await obj.fetch(new Request('https://internal/ready', {
       method: 'POST',
       headers: { 'X-Player-Id': playerId }
@@ -517,15 +517,15 @@ export async function handleDecodeRequest(request, env, origin) {
     return new Response(JSON.stringify(data), { status: upstream.status, headers: JSON_HEADERS(origin) });
   }
 
-  // POST /api/decode/games/:gameId/guess
-  const guessMatch = path.match(/^\/api\/decode\/games\/([^/]+)\/guess$/);
+  // POST /api/games/:gameId/guess
+  const guessMatch = path.match(/^\/api\/games\/([^/]+)\/guess$/);
   if (guessMatch && method === 'POST') {
     const gameId = guessMatch[1];
     const playerId = request.headers.get('X-Player-Id');
     if (!playerId) return new Response(JSON.stringify({ error: 'X-Player-Id required' }), { status: 400, headers: JSON_HEADERS(origin) });
     const body = await request.text();
-    const id = env.DECODE_GAMES.idFromName(gameId);
-    const obj = env.DECODE_GAMES.get(id);
+    const id = env.GAMES.idFromName(gameId);
+    const obj = env.GAMES.get(id);
     const upstream = await obj.fetch(new Request('https://internal/guess', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Player-Id': playerId },
@@ -535,8 +535,8 @@ export async function handleDecodeRequest(request, env, origin) {
     return new Response(JSON.stringify(data), { status: upstream.status, headers: JSON_HEADERS(origin) });
   }
 
-  // GET /api/decode/users/me/games
-  if (path === '/api/decode/users/me/games' && method === 'GET') {
+  // GET /api/users/me/games
+  if (path === '/api/users/me/games' && method === 'GET') {
     const playerId = request.headers.get('X-Player-Id');
     if (!playerId) return new Response(JSON.stringify({ error: 'X-Player-Id required' }), { status: 400, headers: JSON_HEADERS(origin) });
     const id = env.USER_GAMES.idFromName(playerId);
