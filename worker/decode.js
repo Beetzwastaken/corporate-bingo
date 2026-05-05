@@ -151,6 +151,7 @@ export class DecodeGame {
     );
     // Index in UserGames
     await this.upsertUserGame(playerId, gameId, lobbyName, 'waiting', null, 0, 0, now);
+    // (creator alone, no opponent — status='waiting')
     this.scheduleAbandonAlarm();
     return new Response(JSON.stringify({ gameId, playerId, state: this.buildState() }), { headers: { 'Content-Type': 'application/json' } });
   }
@@ -181,11 +182,15 @@ export class DecodeGame {
     scores[playerId] = 0;
     this.sql.exec('UPDATE game SET scores_json = ?, status = ? WHERE id = 1', JSON.stringify(scores), 'active');
 
-    // Index in UserGames for both players
+    // Index in UserGames for both players (no round started yet → 'your_turn' for both = "ready up")
     const opponent = players[0];
     const fullState = this.buildState();
-    await this.upsertUserGame(playerId, game.game_id, game.lobby_name, 'active', opponent.name, 0, 0, now);
-    await this.upsertUserGame(opponent.playerId, game.game_id, game.lobby_name, 'active', playerName, 0, 0, now);
+    const allPlayers = this.getPlayers();
+    const cur = this.getCurrentRound(this.getGame());
+    const meStatus = this.computePlayerStatus(playerId, allPlayers, cur, 'active');
+    const oppStatus = this.computePlayerStatus(opponent.playerId, allPlayers, cur, 'active');
+    await this.upsertUserGame(playerId, game.game_id, game.lobby_name, meStatus, opponent.name, 0, 0, now);
+    await this.upsertUserGame(opponent.playerId, game.game_id, game.lobby_name, oppStatus, playerName, 0, 0, now);
 
     this.scheduleAbandonAlarm();
     return new Response(JSON.stringify({ gameId: game.game_id, playerId, state: fullState }), { headers: { 'Content-Type': 'application/json' } });
@@ -230,6 +235,23 @@ export class DecodeGame {
     const allReady = updatedPlayers.length === 2 && updatedPlayers.every(p => p.readyForNextRound);
     if (allReady) {
       await this.startNextRound(game);
+    }
+    // Refresh dashboard status for both players (ready toggle or round-start changes status)
+    const gameAfter = this.getGame();
+    const roundAfter = this.getCurrentRound(gameAfter);
+    const playersAfter = this.getPlayers();
+    const scoresAfter = gameAfter.scores;
+    const now = Date.now();
+    for (const p of playersAfter) {
+      const opp = playersAfter.find(x => x.playerId !== p.playerId);
+      const status = this.computePlayerStatus(p.playerId, playersAfter, roundAfter, gameAfter.status);
+      await this.upsertUserGame(
+        p.playerId, gameAfter.game_id, gameAfter.lobby_name, status,
+        opp ? opp.name : null,
+        scoresAfter[p.playerId] || 0,
+        opp ? (scoresAfter[opp.playerId] || 0) : 0,
+        now
+      );
     }
     this.scheduleAbandonAlarm();
     return new Response(JSON.stringify({ ok: true, started: allReady, state: this.buildState() }), { headers: { 'Content-Type': 'application/json' } });
@@ -324,35 +346,49 @@ export class DecodeGame {
     );
 
     // Update scores if round just ended
+    let scoresAfter;
     if (allDone) {
-      const scores = JSON.parse(game.scores_json || '{}');
+      scoresAfter = JSON.parse(game.scores_json || '{}');
       for (const [pid, st] of Object.entries(updatedStates)) {
-        scores[pid] = (scores[pid] || 0) + (st.pointsEarned || 0);
+        scoresAfter[pid] = (scoresAfter[pid] || 0) + (st.pointsEarned || 0);
       }
-      this.sql.exec('UPDATE game SET scores_json = ? WHERE id = 1', JSON.stringify(scores));
+      this.sql.exec('UPDATE game SET scores_json = ? WHERE id = 1', JSON.stringify(scoresAfter));
+    } else {
+      scoresAfter = JSON.parse(game.scores_json || '{}');
+    }
 
-      // Update UserGames index for both players
+    // Recompute round shape for status calc (post-write)
+    const roundForStatus = {
+      bothComplete: allDone,
+      playerStates: updatedStates
+    };
+
+    if (allDone) {
+      // Both finished → 'round_complete' for both until they ready-up
       for (const p of players) {
-        const opponent = players.find(x => x.playerId !== p.playerId);
+        const opp = players.find(x => x.playerId !== p.playerId);
+        const status = this.computePlayerStatus(p.playerId, players, roundForStatus, 'active');
         await this.upsertUserGame(
-          p.playerId, game.game_id, game.lobby_name, 'active',
-          opponent ? opponent.name : null,
-          scores[p.playerId] || 0,
-          opponent ? (scores[opponent.playerId] || 0) : 0,
+          p.playerId, game.game_id, game.lobby_name, status,
+          opp ? opp.name : null,
+          scoresAfter[p.playerId] || 0,
+          opp ? (scoresAfter[opp.playerId] || 0) : 0,
           now
         );
       }
     } else {
-      // Touch last_activity for current player
-      const opponent = players.find(x => x.playerId !== playerId);
-      const scoresNow = JSON.parse(game.scores_json || '{}');
-      await this.upsertUserGame(
-        playerId, game.game_id, game.lobby_name, 'active',
-        opponent ? opponent.name : null,
-        scoresNow[playerId] || 0,
-        opponent ? (scoresNow[opponent.playerId] || 0) : 0,
-        now
-      );
+      // Update both players: guesser may now be 'waiting_on_opponent', opp 'your_turn'
+      for (const p of players) {
+        const opp = players.find(x => x.playerId !== p.playerId);
+        const status = this.computePlayerStatus(p.playerId, players, roundForStatus, 'active');
+        await this.upsertUserGame(
+          p.playerId, game.game_id, game.lobby_name, status,
+          opp ? opp.name : null,
+          scoresAfter[p.playerId] || 0,
+          opp ? (scoresAfter[opp.playerId] || 0) : 0,
+          now
+        );
+      }
     }
 
     this.scheduleAbandonAlarm();
@@ -367,6 +403,19 @@ export class DecodeGame {
       bothComplete: allDone,
       state: redactState(fullAfter, playerId)
     }), { headers: { 'Content-Type': 'application/json' } });
+  }
+
+  // Derives per-player status used by the dashboard.
+  // Values: 'waiting' (alone) | 'your_turn' | 'waiting_on_opponent' | 'round_complete' | 'game_over'
+  computePlayerStatus(playerId, players, currentRound, gameStatus) {
+    if (gameStatus === 'abandoned') return 'game_over';
+    if (players.length < 2) return 'waiting';
+    if (!currentRound) return 'your_turn'; // both joined, no round yet → ready up
+    if (currentRound.bothComplete) return 'round_complete';
+    const ps = currentRound.playerStates?.[playerId];
+    if (!ps) return 'your_turn';
+    const finishedSelf = ps.solved || (ps.guesses && ps.guesses.length >= 4);
+    return finishedSelf ? 'waiting_on_opponent' : 'your_turn';
   }
 
   async upsertUserGame(playerId, gameId, lobbyName, status, opponentName, yourScore, opponentScore, lastActivity) {
