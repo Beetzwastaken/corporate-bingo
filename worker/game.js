@@ -6,6 +6,7 @@ import { corsHeaders } from './cors.js';
 import { normalizeGuess } from './game-normalize.js';
 import { getWord, pickWord, pointsForGuess } from './game-pool.js';
 import { redactState } from './game-redact.js';
+import { computeFeedback } from './game-feedback.js';
 
 const JSON_HEADERS = (origin) => ({ 'Content-Type': 'application/json', ...corsHeaders(origin) });
 const RECENT_WORD_LIMIT = 10;
@@ -311,6 +312,7 @@ export class Game {
     for (const p of players) {
       playerStates[p.playerId] = {
         guesses: [],
+        feedbacks: [],
         solved: false,
         solvedOnGuess: null,
         pointsEarned: 0,
@@ -358,6 +360,8 @@ export class Game {
 
     const correct = normalizeGuess(guessRaw) === normalizeGuess(word.answer);
     ps.guesses.push(guessRaw);
+    if (!Array.isArray(ps.feedbacks)) ps.feedbacks = [];
+    ps.feedbacks.push(computeFeedback(guessRaw, word.answer));
     let pointsEarned = 0;
     if (correct) {
       ps.solved = true;

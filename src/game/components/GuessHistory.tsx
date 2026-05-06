@@ -1,18 +1,22 @@
-// Renders the requesting player's guess history for the active round.
-export function GuessHistory({ guesses, solvedOnGuess }: { guesses: string[]; solvedOnGuess: number | null }) {
+// Active-round guess history: renders past guesses as colored letter rows.
+import type { LetterFeedback } from '../lib/api';
+import { GuessRow } from './GuessRow';
+
+export function GuessHistory({
+  guesses,
+  feedbacks,
+  pattern
+}: {
+  guesses: string[];
+  feedbacks: LetterFeedback[][];
+  pattern: string;
+}) {
   if (guesses.length === 0) return null;
   return (
-    <ul className="flex flex-col gap-1 w-full">
-      {guesses.map((g, i) => {
-        const isWinner = solvedOnGuess === i + 1;
-        return (
-          <li key={i} className="flex items-center justify-between text-sm font-mono">
-            <span className="text-j-tertiary">Guess {i + 1}</span>
-            <span className={isWinner ? 'text-j-success' : 'text-j-text'}>{g}</span>
-            <span>{isWinner ? '\u2713' : '\u2717'}</span>
-          </li>
-        );
-      })}
-    </ul>
+    <div className="flex flex-col gap-2 w-full">
+      {guesses.map((g, i) => (
+        <GuessRow key={i} pattern={pattern} guess={g} feedback={feedbacks[i] ?? []} />
+      ))}
+    </div>
   );
 }

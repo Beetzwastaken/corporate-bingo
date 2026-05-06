@@ -188,7 +188,7 @@ function ActiveRound({
   return (
     <div className="flex flex-col gap-4 w-full">
       <ClueCard clue={currentClue} clueNumber={you.revealedClues.length} totalClues={4} />
-      <GuessHistory guesses={you.guesses} solvedOnGuess={you.solvedOnGuess} />
+      <GuessHistory guesses={you.guesses} feedbacks={you.feedbacks ?? []} pattern={round.wordPattern ?? ''} />
       {finishedSelf ? (
         <p className="text-j-secondary text-sm">
           {you.solved

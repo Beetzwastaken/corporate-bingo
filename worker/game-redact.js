@@ -50,6 +50,7 @@ function redactRound(round, requesterId) {
     you: myState
       ? {
           guesses: myState.guesses,
+          feedbacks: myState.feedbacks || [],
           solved: myState.solved,
           solvedOnGuess: myState.solvedOnGuess,
           pointsEarned: myState.pointsEarned,
@@ -64,6 +65,7 @@ function redactRound(round, requesterId) {
         ? {
             playerId: pid,
             guesses: st.guesses,
+            feedbacks: st.feedbacks || [],
             solved: !!st.solved,
             solvedOnGuess: st.solvedOnGuess,
             pointsEarned: st.pointsEarned

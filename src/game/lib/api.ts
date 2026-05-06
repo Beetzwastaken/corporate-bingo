@@ -9,9 +9,11 @@ export interface Word {
   clues: string[];
 }
 
+export type LetterFeedback = 'correct' | 'present' | 'absent';
+
 export type OpponentRoundView =
   | { playerId: string; guessCount: number; solved: boolean }
-  | { playerId: string; guesses: string[]; solved: boolean; solvedOnGuess: number | null; pointsEarned: number };
+  | { playerId: string; guesses: string[]; feedbacks: LetterFeedback[][]; solved: boolean; solvedOnGuess: number | null; pointsEarned: number };
 
 export interface RoundView {
   roundNumber: number;
@@ -20,6 +22,7 @@ export interface RoundView {
   bothComplete: boolean; // semantically "all complete" — kept for compat
   you: {
     guesses: string[];
+    feedbacks: LetterFeedback[][];
     solved: boolean;
     solvedOnGuess: number | null;
     pointsEarned: number;

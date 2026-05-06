@@ -3,7 +3,12 @@
 import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useGameStore } from '../stores/gameStore';
-import type { RoundView, GameStateView } from '../lib/api';
+import type { RoundView, GameStateView, LetterFeedback } from '../lib/api';
+import { GuessRow } from '../components/GuessRow';
+
+function maskDisplay(display: string): string {
+  return display.replace(/[A-Za-z]/g, '_');
+}
 
 export function History() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -46,10 +51,11 @@ function RoundCard({ round, state }: { round: RoundView; state: GameStateView })
   const myState = round.you;
   const oppById = new Map(
     round.opponents
-      .filter((o): o is { playerId: string; guesses: string[]; solved: boolean; solvedOnGuess: number | null; pointsEarned: number } => 'guesses' in o)
+      .filter((o): o is { playerId: string; guesses: string[]; feedbacks: LetterFeedback[][]; solved: boolean; solvedOnGuess: number | null; pointsEarned: number } => 'guesses' in o)
       .map((o) => [o.playerId, o])
   );
   const colsClass = state.players.length === 2 ? 'grid-cols-2' : 'grid-cols-1';
+  const pattern = round.word ? maskDisplay(round.word.display) : '';
 
   return (
     <div className="bg-j-surface border border-j-muted/20 rounded-xl p-4 flex flex-col gap-3">
@@ -60,7 +66,7 @@ function RoundCard({ round, state }: { round: RoundView; state: GameStateView })
         <span className="text-j-accent text-sm font-bold">{round.word?.display ?? '—'}</span>
       </div>
       <div className={`grid gap-3 ${colsClass}`}>
-        <PlayerColumn name={me?.name ?? 'You'} guesses={myState?.guesses ?? []} solvedOn={myState?.solvedOnGuess ?? null} points={myState?.pointsEarned ?? 0} />
+        <PlayerColumn name={me?.name ?? 'You'} guesses={myState?.guesses ?? []} feedbacks={myState?.feedbacks ?? []} pattern={pattern} points={myState?.pointsEarned ?? 0} />
         {others.map((p) => {
           const o = oppById.get(p.playerId);
           return (
@@ -68,7 +74,8 @@ function RoundCard({ round, state }: { round: RoundView; state: GameStateView })
               key={p.playerId}
               name={p.name}
               guesses={o?.guesses ?? []}
-              solvedOn={o?.solvedOnGuess ?? null}
+              feedbacks={o?.feedbacks ?? []}
+              pattern={pattern}
               points={o?.pointsEarned ?? 0}
             />
           );
@@ -78,23 +85,22 @@ function RoundCard({ round, state }: { round: RoundView; state: GameStateView })
   );
 }
 
-function PlayerColumn({ name, guesses, solvedOn, points }: {
+function PlayerColumn({ name, guesses, feedbacks, pattern, points }: {
   name: string;
   guesses: string[];
-  solvedOn: number | null;
+  feedbacks: LetterFeedback[][];
+  pattern: string;
   points: number;
 }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1.5">
       <p className="text-j-tertiary text-xs font-mono uppercase tracking-wider">{name}</p>
-      {guesses.length > 0 ? (
-        <ul className="text-xs font-mono text-j-text flex flex-col gap-0.5">
+      {guesses.length > 0 && pattern ? (
+        <div className="flex flex-col gap-1">
           {guesses.map((g, i) => (
-            <li key={i} className={solvedOn === i + 1 ? 'text-j-success' : ''}>
-              {i + 1}. {g}
-            </li>
+            <GuessRow key={i} pattern={pattern} guess={g} feedback={feedbacks[i] ?? []} />
           ))}
-        </ul>
+        </div>
       ) : (
         <p className="text-j-tertiary text-xs">No guesses</p>
       )}

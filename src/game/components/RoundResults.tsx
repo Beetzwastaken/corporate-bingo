@@ -1,5 +1,10 @@
 // Round-end view. Reveals answer + every player's guesses + ready button.
-import type { RoundView, GameStateView } from '../lib/api';
+import type { RoundView, GameStateView, LetterFeedback } from '../lib/api';
+import { GuessRow } from './GuessRow';
+
+function maskDisplay(display: string): string {
+  return display.replace(/[A-Za-z]/g, '_');
+}
 
 export function RoundResults({
   round,
@@ -20,9 +25,11 @@ export function RoundResults({
   // After bothComplete, opponents have full guess data.
   const oppById = new Map(
     round.opponents
-      .filter((o): o is { playerId: string; guesses: string[]; solved: boolean; solvedOnGuess: number | null; pointsEarned: number } => 'guesses' in o)
+      .filter((o): o is { playerId: string; guesses: string[]; feedbacks: LetterFeedback[][]; solved: boolean; solvedOnGuess: number | null; pointsEarned: number } => 'guesses' in o)
       .map((o) => [o.playerId, o])
   );
+
+  const pattern = word ? maskDisplay(word.display) : '';
 
   const meReady = !!me?.readyForNextRound;
   const notReadyOthers = others.filter((p) => !p.readyForNextRound);
@@ -41,6 +48,8 @@ export function RoundResults({
         <PlayerCard
           name={me?.name ?? 'You'}
           guesses={myState?.guesses ?? []}
+          feedbacks={myState?.feedbacks ?? []}
+          pattern={pattern}
           solvedOnGuess={myState?.solvedOnGuess ?? null}
           pointsEarned={myState?.pointsEarned ?? 0}
         />
@@ -51,6 +60,8 @@ export function RoundResults({
               key={p.playerId}
               name={p.name}
               guesses={opp?.guesses ?? []}
+              feedbacks={opp?.feedbacks ?? []}
+              pattern={pattern}
               solvedOnGuess={opp?.solvedOnGuess ?? null}
               pointsEarned={opp?.pointsEarned ?? 0}
             />
@@ -85,25 +96,27 @@ export function RoundResults({
 function PlayerCard({
   name,
   guesses,
-  solvedOnGuess,
+  feedbacks,
+  pattern,
+  solvedOnGuess: _solvedOnGuess,
   pointsEarned
 }: {
   name: string;
   guesses: string[];
+  feedbacks: LetterFeedback[][];
+  pattern: string;
   solvedOnGuess: number | null;
   pointsEarned: number;
 }) {
   return (
     <div className="bg-j-surface border border-j-muted/20 rounded-xl p-3">
       <p className="text-j-tertiary text-xs font-mono uppercase tracking-wider mb-2">{name}</p>
-      {guesses.length > 0 ? (
-        <ul className="text-xs font-mono text-j-text flex flex-col gap-1">
+      {guesses.length > 0 && pattern ? (
+        <div className="flex flex-col gap-1.5">
           {guesses.map((g, i) => (
-            <li key={i} className={solvedOnGuess === i + 1 ? 'text-j-success' : ''}>
-              {i + 1}. {g}
-            </li>
+            <GuessRow key={i} pattern={pattern} guess={g} feedback={feedbacks[i] ?? []} />
           ))}
-        </ul>
+        </div>
       ) : (
         <p className="text-j-tertiary text-xs">No guesses</p>
       )}
