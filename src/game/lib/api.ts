@@ -43,6 +43,14 @@ export interface Player {
   readyForNextRound: boolean;
 }
 
+export interface ChatMessage {
+  id: number;
+  playerId: string;
+  name: string;
+  body: string;
+  createdAt: number;
+}
+
 export interface GameStateView {
   gameId: string;
   lobbyName: string;
@@ -53,6 +61,7 @@ export interface GameStateView {
   players: Player[];
   rounds: RoundView[];
   currentRound: RoundView | null;
+  messages: ChatMessage[];
   you: string;
 }
 
@@ -140,4 +149,8 @@ export function listMyGames(): Promise<GameSummary[]> {
 
 export function deleteGame(gameId: string): Promise<{ ok: boolean }> {
   return req('DELETE', `/api/games/${gameId}`);
+}
+
+export function sendChat(gameId: string, message: string): Promise<{ ok: boolean; state: GameStateView }> {
+  return req('POST', `/api/games/${gameId}/chat`, { message });
 }

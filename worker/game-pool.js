@@ -5,124 +5,124 @@
 
 export const WORD_POOL = [
   { id: "synergy", answer: "synergy", display: "Synergy", clues: [
-    "A word leadership uses to describe combining two failing departments and hoping they fail less together.",
-    "What you call it when the reorg makes everything worse but the slide deck looks great.",
-    "The official term for \"1 + 1 = whatever the McKinsey deck says it equals.\"",
-    "Three syllables. Starts with S. Means nothing. Said constantly."
+    "The reason given when two teams get smashed together and half the people get fired.",
+    "A word executives use to make \"we're cutting costs\" sound like a strategy.",
+    "\"Yeah, the merger's really about the ___ between the two teams.\"",
+    "The vague upside that's supposed to come from combining things. It never actually does."
   ]},
   { id: "leverage", answer: "leverage", display: "Leverage", clues: [
-    "A verb invented to make \"use\" sound like it deserves a six-figure salary.",
-    "What consultants do to \"existing assets\" right before they recommend layoffs.",
-    "Originally a physics term. Now a way to say \"use\" while charging $400/hour.",
-    "Eight letters. Verb. Means \"use\" but with extra steps and a Patagonia vest."
+    "A fancier word for \"use,\" invented so consultants could charge more.",
+    "What you do with assets, relationships, and people right before something bad happens to them.",
+    "\"We just need to ___ what we already have.\"",
+    "The corporate word for using something you already have to get something else."
   ]},
   { id: "low-hanging-fruit", answer: "low-hanging fruit", display: "Low-hanging Fruit", clues: [
-    "The work nobody wants to do but everyone agrees should be \"tackled first.\"",
-    "An agricultural metaphor used by people who have never picked anything in their lives.",
-    "What you call easy wins, right before discovering they're neither easy nor wins.",
-    "Three words. The first describes elevation. The last is something you eat."
+    "The easy shit nobody wants to do but everyone agrees should get done first.",
+    "A farming metaphor used by people who have never touched a piece of fruit in their lives.",
+    "\"Let's start with the ___ and build from there.\"",
+    "The phrase for the simplest tasks available — the ones you should knock out first."
   ]},
   { id: "boil-the-ocean", answer: "boil the ocean", display: "Boil the Ocean", clues: [
-    "A phrase used to describe ambition, right before someone explains why it's impossible.",
-    "What leadership asks for in Q1 and quietly abandons by Q2.",
-    "The corporate version of \"what if we just did everything, all at once, perfectly.\"",
-    "Three words. Involves a large body of water and a temperature change."
+    "What you say when someone proposes doing every fucking thing at once.",
+    "A phrase used to describe a goal so big it's obviously not going to happen.",
+    "\"Look, we don't need to ___ here. Let's just focus on phase one.\"",
+    "The phrase for taking on a task that's way too big to actually finish."
   ]},
   { id: "move-the-needle", answer: "move the needle", display: "Move the Needle", clues: [
-    "A metric-flavored phrase used by people who have not looked at the metrics.",
-    "What every initiative claims to do, and what no initiative has ever measurably done.",
-    "The thing your project must do, on a gauge nobody has actually defined.",
-    "Three words. Refers to a small piece of metal on an instrument you've never touched."
+    "What every project claims it'll do. What no project has ever measurably done.",
+    "A metric-flavored phrase used by people who haven't looked at the metrics.",
+    "\"Yeah, this initiative is really gonna ___ for us.\"",
+    "The phrase for actually making a difference on a number that matters."
   ]},
   { id: "bandwidth", answer: "bandwidth", display: "Bandwidth", clues: [
-    "A finite resource you ran out of in 2019 and have been faking ever since.",
-    "The polite word for \"I cannot absorb one more thing without something inside me breaking.\"",
-    "Originally a networking term. Now a way to refuse work without admitting you're drowning.",
-    "Nine letters. One word. What you don't have, which is why you keep saying you don't have it."
+    "A way to say \"I'm fucking drowning\" without admitting it.",
+    "What your manager asks if you have, right before piling more on you.",
+    "\"I'd love to take that on but I really don't have the ___ right now.\"",
+    "The corporate word for capacity. As in: you don't have any."
   ]},
   { id: "deep-dive", answer: "deep dive", display: "Deep Dive", clues: [
     "A 90-minute meeting that could have been a paragraph.",
     "What you propose when you don't understand something and don't want to admit it.",
-    "The act of looking at a slide for an hour without learning anything new.",
-    "Two words. Aquatic verb plus a depth descriptor. Means a long meeting."
+    "\"Let's set up a ___ to really get into this.\"",
+    "The phrase for a long, detailed examination of something — usually too detailed."
   ]},
   { id: "circle-back", answer: "circle back", display: "Circle Back", clues: [
-    "A promise that decays at the speed of the next calendar invite.",
-    "The corporate equivalent of \"I'll text you\" after a bad date.",
-    "What you said you'd do about that thing in March. It is now October.",
-    "Two words. A geometric shape, then a direction. Means \"I will not be doing that.\""
+    "A promise to deal with something later that everyone knows is a lie.",
+    "What you say to shut down a topic in a meeting without admitting you're shutting it down.",
+    "\"Great question — let's ___ on that next week.\"",
+    "The phrase you use when you have no intention of revisiting something."
   ]},
   { id: "touch-base", answer: "touch base", display: "Touch Base", clues: [
-    "A baseball metaphor for a 15-minute meeting that accomplishes nothing.",
+    "A 15-minute meeting that accomplishes nothing.",
     "What your manager wants to do every Tuesday for reasons neither of you understand.",
-    "The phrase that fills your calendar with conversations you've already had.",
-    "Two words. The first is a verb of contact. The second is part of a baseball diamond."
+    "\"Hey, just wanted to ___ real quick.\"",
+    "The corporate phrase for a quick conversation to stay in contact."
   ]},
   { id: "take-this-offline", answer: "take this offline", display: "Take This Offline", clues: [
-    "Said in a meeting to ensure a thing will never be discussed again.",
-    "A graceful way to bury a question your boss doesn't want answered in front of others.",
-    "The phrase used right before nothing happens for the rest of time.",
-    "Three words. Begins with \"take.\" Means \"let's pretend we'll discuss this later, but won't.\""
+    "Said in a meeting to make absolutely sure something never gets discussed again.",
+    "A polite way to bury a question that's making someone look bad in front of the room.",
+    "\"Yeah, why don't we ___ and follow up after.\"",
+    "What you say when you want to move a conversation out of the meeting."
   ]},
   { id: "run-it-up-the-flagpole", answer: "run it up the flagpole", display: "Run it Up the Flagpole", clues: [
-    "A phrase used by people who don't have authority to make a decision but enjoy delaying yours.",
-    "The act of asking permission from someone who will also need to ask permission.",
-    "What you do with an idea right before it dies in a VP's inbox.",
-    "Five words. Involves a verb of motion and a pole used for displaying fabric."
+    "What people without authority say when they want to look like they have authority.",
+    "The act of asking permission from someone who also has to ask permission.",
+    "\"Let me ___ and I'll get back to you.\"",
+    "The phrase for floating an idea past leadership to see if they'll approve it."
   ]},
   { id: "herding-cats", answer: "herding cats", display: "Herding Cats", clues: [
-    "How project managers describe their job to anyone who will pity them.",
-    "The metaphor for trying to align eight stakeholders with seven competing priorities.",
-    "What you say at happy hour when someone asks how the new initiative is going.",
-    "Two words. A verb done to livestock, applied to a small domestic animal."
+    "How project managers describe their job to anyone who'll feel sorry for them.",
+    "The metaphor for trying to align eight people who all want different shit.",
+    "\"Honestly, getting alignment on this has been like ___.\"",
+    "The phrase for managing a group of people who won't go in the same direction."
   ]},
   { id: "north-star", answer: "north star", display: "North Star", clues: [
-    "A guiding principle leadership invokes annually and abandons quarterly.",
-    "The thing your company is \"aligned on,\" which changes every six months without explanation.",
-    "A celestial metaphor for whatever priority is on this week's executive slide.",
-    "Two words. A direction plus a celestial object. Means \"the goal we'll change soon.\""
+    "A guiding principle leadership invokes once a year and abandons by Q2.",
+    "The thing your company is \"aligned on\" that changes every six months.",
+    "\"This is really our ___ for the next fiscal year.\"",
+    "The phrase for the long-term goal that's supposed to guide every decision."
   ]},
   { id: "roi", answer: "roi", display: "ROI", clues: [
-    "A three-letter acronym used to justify decisions that have already been made.",
+    "A three-letter acronym used to justify decisions that were already made.",
     "The number you back-calculate after the project ships to make it look intentional.",
-    "What every PowerPoint claims, what no spreadsheet confirms.",
-    "Three letters. Stands for Return On Investment. Pronounced like a fish or a king's name."
+    "\"What's the ___ on this initiative?\"",
+    "The acronym for return on investment."
   ]},
   { id: "above-my-paygrade", answer: "above my paygrade", display: "Above My Paygrade", clues: [
     "The most honest sentence ever spoken in a corporate meeting.",
-    "A polite way to say \"I am not paid enough to care about this and you know it.\"",
-    "What you say when someone asks your opinion and you'd like to keep your job.",
-    "Three words. Begins with a preposition of elevation. Refers to compensation."
+    "A polite way to say \"I'm not paid enough to give a shit about this.\"",
+    "\"Honestly, that's ___ — you'd have to ask my manager.\"",
+    "The phrase for a decision or topic that's not your responsibility."
   ]},
   { id: "culture-fit", answer: "culture fit", display: "Culture Fit", clues: [
     "The reason given for not hiring someone, which legally cannot be the real reason.",
     "A vague hiring criterion that means \"reminds me of myself but younger.\"",
-    "What HR says when the team didn't want to explain why they passed.",
-    "Two words. Refers to organizational vibes and clothing dimensions."
+    "\"Strong candidate, but we're not sure about the ___.\"",
+    "The phrase for whether a person matches the vibe of the company."
   ]},
   { id: "throw-under-the-bus", answer: "throw under the bus", display: "Throw Under the Bus", clues: [
-    "A vehicular metaphor for what your peer just did to you in the all-hands.",
-    "The act of naming a coworker by name during a postmortem to save yourself.",
-    "What happens to whoever isn't in the room when leadership asks \"who owns this?\"",
-    "Four words. Verb of propulsion, then a preposition, then a large public vehicle."
+    "What your peer just did to you in the all-hands.",
+    "The act of naming a coworker by name during a postmortem to save your own ass.",
+    "\"I don't want to ___ anyone, but the issue was on Sandy's team.\"",
+    "The phrase for blaming someone else to protect yourself."
   ]},
   { id: "youre-muted", answer: "you're muted", display: "You're Muted", clues: [
-    "The two words that have replaced \"amen\" as the most-spoken phrase in American professional life.",
+    "The two words that have replaced \"amen\" as the most-spoken phrase in professional life.",
     "What 60 million people heard for the first time in March 2020 and never stopped hearing.",
-    "The phrase that confirms you've been talking to yourself for the last 90 seconds.",
-    "Two words. A contraction, then a verb describing your microphone status."
+    "\"Hey, sorry — ___.\"",
+    "What people say to you on a video call when your microphone is off."
   ]},
   { id: "hard-stop", answer: "hard stop", display: "Hard Stop", clues: [
-    "The only sentence in the meeting that anyone is genuinely excited to say.",
+    "The only sentence in a meeting anyone is genuinely excited to say.",
     "A boundary that exists because without it you would simply not stop.",
-    "The phrase that saves you from continued existence in this Zoom.",
-    "Two words. An adjective of difficulty plus a verb of cessation."
+    "\"Just a heads up, I have a ___ at the top of the hour.\"",
+    "A firm time you have to leave a meeting, no matter what."
   ]},
   { id: "back-to-back-meetings", answer: "back-to-back meetings", display: "Back-to-Back Meetings", clues: [
     "The reason you ate a granola bar over the sink at 2pm and called it lunch.",
-    "A calendar pattern that would be illegal under the Geneva Convention.",
-    "What you have on Tuesdays, Wednesdays, Thursdays, and increasingly, Mondays and Fridays.",
-    "Three words separated by two hyphens, plus the noun for what fills your calendar."
+    "A calendar pattern that should be illegal.",
+    "\"Sorry I'm late — I've been in ___ all morning.\"",
+    "When you have meetings scheduled directly one after another with no gap."
   ]}
 ];
 

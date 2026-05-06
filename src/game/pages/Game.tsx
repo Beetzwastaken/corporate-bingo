@@ -3,9 +3,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useGameStore } from '../stores/gameStore';
-import { deleteGame, readyForNextRound, startGame, submitGuess } from '../lib/api';
+import { deleteGame, readyForNextRound, sendChat, startGame, submitGuess } from '../lib/api';
 import { Scoreboard } from '../components/Scoreboard';
 import { Lobby } from '../components/Lobby';
+import { Chat } from '../components/Chat';
 import { ClueCard } from '../components/ClueCard';
 import { LetterGrid } from '../components/LetterGrid';
 import { GuessHistory } from '../components/GuessHistory';
@@ -101,6 +102,12 @@ export function Game() {
     }
   }, [gameId, navigate]);
 
+  const onSendChat = useCallback(async (text: string) => {
+    if (!gameId) return;
+    const res = await sendChat(gameId, text);
+    setState(res.state);
+  }, [gameId, setState]);
+
   const onGuess = useCallback(async (guess: string) => {
     if (!gameId) return;
     setActionError(null);
@@ -164,6 +171,8 @@ export function Game() {
         ) : (
           <Lobby state={state} gameId={gameId} onReady={onReady} onStart={onStart} busy={actionBusy} />
         )}
+
+        <Chat messages={state.messages ?? []} you={state.you} onSend={onSendChat} />
       </main>
     </div>
   );

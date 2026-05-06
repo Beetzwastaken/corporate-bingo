@@ -29,6 +29,7 @@ export function redactState(state, requesterId) {
     })),
     rounds: state.rounds.map(r => redactRound(r, requesterId)),
     currentRound: state.currentRound ? redactRound(state.currentRound, requesterId) : null,
+    messages: state.messages || [],
     you: requesterId
   };
   return out;

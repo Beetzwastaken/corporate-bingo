@@ -50,6 +50,13 @@ export class Game {
         both_complete INTEGER DEFAULT 0,
         player_states_json TEXT DEFAULT '{}'
       );
+      CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        player_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        body TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
     `);
     // Forward migration for pre-existing games (no-op on fresh DOs).
     try { this.sql.exec('ALTER TABLE game ADD COLUMN max_players INTEGER DEFAULT 2'); } catch { /* already exists */ }
@@ -73,6 +80,21 @@ export class Game {
       slot: p.slot,
       joinedAt: p.joined_at,
       readyForNextRound: !!p.ready_for_next_round
+    }));
+  }
+
+  getMessages(limit = 100) {
+    // Most recent N, returned oldest-first.
+    const rows = this.sql.exec(
+      'SELECT * FROM (SELECT id, player_id, name, body, created_at FROM messages ORDER BY id DESC LIMIT ?) ORDER BY id ASC',
+      limit
+    ).toArray();
+    return rows.map(r => ({
+      id: r.id,
+      playerId: r.player_id,
+      name: r.name,
+      body: r.body,
+      createdAt: r.created_at
     }));
   }
 
@@ -103,7 +125,8 @@ export class Game {
       rounds,
       currentRound: rounds.find(r => r.roundNumber === game.current_round_number) || null,
       scores: game.scores,
-      recentWordIds: game.recentWordIds
+      recentWordIds: game.recentWordIds,
+      messages: this.getMessages(100)
     };
   }
 
@@ -120,6 +143,7 @@ export class Game {
       if (path === '/ready' && method === 'POST') return await this.handleReady(request);
       if (path === '/guess' && method === 'POST') return await this.handleGuess(request);
       if (path === '/delete' && method === 'POST') return await this.handleDelete(request);
+      if (path === '/chat' && method === 'POST') return await this.handleChat(request);
       return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     } catch (err) {
       return new Response(JSON.stringify({ error: err.message || String(err) }), { status: 500, headers: { 'Content-Type': 'application/json' } });
@@ -426,6 +450,25 @@ export class Game {
     }), { headers: { 'Content-Type': 'application/json' } });
   }
 
+  async handleChat(request) {
+    const game = this.getGame();
+    if (!game) return new Response(JSON.stringify({ error: 'Game not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+    const playerId = request.headers.get('X-Player-Id');
+    if (!playerId) return new Response(JSON.stringify({ error: 'X-Player-Id required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    const players = this.getPlayers();
+    const me = players.find(p => p.playerId === playerId);
+    if (!me) return new Response(JSON.stringify({ error: 'Not a member' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+    const body = await request.json();
+    const text = (body.message || '').toString().trim().slice(0, 500);
+    if (!text) return new Response(JSON.stringify({ error: 'message required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    const now = Date.now();
+    this.sql.exec(
+      'INSERT INTO messages (player_id, name, body, created_at) VALUES (?, ?, ?, ?)',
+      playerId, me.name, text, now
+    );
+    return new Response(JSON.stringify({ ok: true, state: this.buildState() }), { headers: { 'Content-Type': 'application/json' } });
+  }
+
   async handleDelete(request) {
     const game = this.getGame();
     if (!game) return new Response(JSON.stringify({ error: 'Game not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
@@ -449,6 +492,7 @@ export class Game {
       }
     }
     // Wipe DO state
+    this.sql.exec('DELETE FROM messages');
     this.sql.exec('DELETE FROM rounds');
     this.sql.exec('DELETE FROM players');
     this.sql.exec('DELETE FROM game');
@@ -610,6 +654,24 @@ export async function handleGameRequest(request, env, origin) {
     const id = env.GAMES.idFromName(gameId);
     const obj = env.GAMES.get(id);
     const upstream = await obj.fetch(new Request('https://internal/guess', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Player-Id': playerId },
+      body
+    }));
+    const data = await upstream.json();
+    return new Response(JSON.stringify(data), { status: upstream.status, headers: JSON_HEADERS(origin) });
+  }
+
+  // POST /api/games/:gameId/chat
+  const chatMatch = path.match(/^\/api\/games\/([^/]+)\/chat$/);
+  if (chatMatch && method === 'POST') {
+    const gameId = chatMatch[1];
+    const playerId = request.headers.get('X-Player-Id');
+    if (!playerId) return new Response(JSON.stringify({ error: 'X-Player-Id required' }), { status: 400, headers: JSON_HEADERS(origin) });
+    const body = await request.text();
+    const id = env.GAMES.idFromName(gameId);
+    const obj = env.GAMES.get(id);
+    const upstream = await obj.fetch(new Request('https://internal/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Player-Id': playerId },
       body
